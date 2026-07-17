@@ -5525,14 +5525,14 @@ function wireDashboardInputs(faction){
       if(el.value==='None'){ d.activated=''; d.expires=''; }
       else { d.activated = `${clock.season} ${clock.year}`; d.expires = addTurns(clock.season, clock.year, 4); }
       logAction(el.dataset.fac, 'Doctrine', `${el.dataset.nation} switches Doctrine: ${oldActive} → ${el.value}`, []);
-      await saveState(true);
+      await saveState(true, true);
       openDashboard(el.dataset.fac);
     });
   });
   document.querySelectorAll('.dash-token-sel').forEach(el=>{
     el.addEventListener('change', async ()=>{
       dashboards[el.dataset.fac].doctrine[el.dataset.nation].token = el.value;
-      await saveState(true);
+      await saveState(true, true);
       openDashboard(el.dataset.fac);
     });
   });
@@ -5540,12 +5540,14 @@ function wireDashboardInputs(faction){
     el.addEventListener('change', async ()=>{
       dashboards[faction].tokens[el.dataset.nation][el.dataset.token] = parseFloat(el.value)||0;
       await saveState(true);
+      openDashboard(faction);
     });
   });
   document.querySelectorAll('.dash-flag').forEach(el=>{
     el.addEventListener('change', async ()=>{
       dashboards[faction].flags[el.dataset.flag] = el.value;
-      await saveState(true);
+      await saveState(true, true);
+      openDashboard(faction);
     });
   });
   document.querySelectorAll('[data-mob-nation]').forEach(btn=>{
