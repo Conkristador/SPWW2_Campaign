@@ -354,6 +354,7 @@
         <button class="ctrl-btn ctrl-btn-gold" id="openRulebookBtn">📖 RULEBOOK</button>
         <button class="ctrl-btn" id="toggleInset">EUROPE DETAIL: ON</button>
         <button class="ctrl-btn" id="toggleInsetCN">CHINA DETAIL: ON</button>
+        <button class="ctrl-btn" id="togglePartisan">PARTISAN MARKERS: ON</button>
         <button class="ctrl-btn" id="resetView">RESET VIEW</button>
         <button class="ctrl-btn" id="resetData">RESTORE SCENARIO START</button>
       </div>
@@ -1691,18 +1692,19 @@ independent paths, described below (§11.1.6, §11.1.7). Neither depends
 on the other.</p>
 <p><strong>11.1.6 Lodgement Rotation.</strong> Reflecting the Western
 Allies’ superior sea-lift and logistics capacity, the Allied player may
-spend <strong>1× AMPH token alone</strong> — no RC capture required — to
-activate persistent Lodgement Rotation at a secured invasion sector.
-Once active, that sector acts as a <strong>supply source to itself and
-every directly adjacent sector</strong>, each independently supporting
-up to <strong>6 BGs</strong>. As with a <strong>Home Capital</strong>
-(§6), only <strong>2 BGs ever fight at a time</strong> in a given
-engagement (the player’s choice when resolving it) — fresh Battle Groups
-rotate in while battle-worn ones rest, rather than everyone fighting
-simultaneously. This stays active — no ongoing cost — until the player
-manually stands it down, at which point the cap immediately reverts to 2
-(or to whatever a nearby RC provides, per §11.1.7) and normal
-Contraction rules (§11.1.5) apply to any excess.</p>
+spend <strong>1× AMPH token every turn</strong> — no RC capture required
+— to maintain Lodgement Rotation at a secured invasion sector. While
+active and paid up for the current turn, that sector and every sector
+directly adjacent to it together support up to <strong>6 BGs
+total</strong> — a single shared pool across the whole zone, not 6 in
+each sector individually. As with a <strong>Home Capital</strong> (§6),
+only <strong>2 BGs ever fight at a time</strong> in a given engagement
+(the player’s choice when resolving it) — fresh Battle Groups rotate in
+while battle-worn ones rest, rather than everyone fighting
+simultaneously. The AMPH token must be spent again on every subsequent
+turn to keep it running; skipping a turn’s payment immediately reverts
+the cap to 2 (or to whatever a nearby RC provides, per §11.1.7) and
+normal Contraction rules (§11.1.5) apply to any excess.</p>
 <p><strong>11.1.7 Deep-Water Port Capture.</strong> Separately, and
 requiring no AMPH token, the Allied player may instead physically
 capture and secure an adjacent land sector containing a Resource Centre.
@@ -1715,13 +1717,21 @@ itself.</p>
 <h3 id="sec-11-2">11.2. Airborne Invasion</h3>
 <p>Triggered when an Airborne BG using an <strong>ABN token</strong>
 moves into an enemy-occupied sector. Range: <strong>1 or 2
-sectors</strong>. Two engagements:</p>
-<ul>
-<li><p><strong>Airborne Insertion</strong> — attacker may purchase
-airborne units only. Lose → <strong>BG is destroyed</strong>.</p></li>
-<li><p><strong>Advance/Delay</strong> against the same defending
-BG.</p></li>
-</ul>
+sectors</strong>.</p>
+<p>Resolved as a <strong>single engagement</strong> — Airborne
+Insertion, Meeting Engagement parameters, attacker may purchase airborne
+units only. <strong>Loss → the BG is destroyed.</strong> <strong>Win →
+the sector is secured</strong> (an Airborne Lodgement is established
+there).</p>
+<p>This is the entire Airborne Invasion regardless of what happens next
+— the same one engagement, the same two outcomes, whether it’s launched
+standalone, paired with an Amphibious Invasion as a Vanguard (§11.1.2,
+where a win additionally unlocks that operation’s Lodgement Benefits
+going into its own separate Beach Assault), or followed up afterward by
+an ordinary Coordinated Attack (§7.6) from other forces. The Airborne
+engagement itself never gains or loses a second phase depending on
+context — anything that follows is a separate action, not an extension
+of this one.</p>
 <h3 id="sec-11-3">11.3. Strategic Bombing (USA/UK)</h3>
 <p>Declared before Movement. Allies assign STRAT tokens to Axis RCs;
 Axis may assign Fighter tokens to defend; Allies may assign Fighter
@@ -2591,7 +2601,7 @@ function mergeSectorsWithSeed(saved){
       forwardStagingNation: prev.forwardStagingNation || null,
       ukGarrison: prev.ukGarrison!==undefined ? prev.ukGarrison : seed.ukGarrison,
       lodgementTurn: prev.lodgementTurn || null,
-      lodgementRotation: prev.lodgementRotation || false,
+      lodgementRotationTurn: prev.lodgementRotationTurn || null,
       faction: prev.faction!==undefined ? prev.faction : seed.faction,
     };
   });
@@ -3200,10 +3210,10 @@ function advancePartisans(){
 }
 
 function renderPartisanMarkers(nodeById, layer){
-  const placed = sectors.filter(s=>(s.partisan||0)>0 && nodeById[s.id]).map(s=>{
+  const placed = partisanMarkersVisible ? sectors.filter(s=>(s.partisan||0)>0 && nodeById[s.id]).map(s=>{
     const node = nodeById[s.id];
     return {key:s.id, level:s.partisan, cx:node.x-9, cy:node.y+9};
-  });
+  }) : [];
   const sel = layer.selectAll('g.partisan-marker').data(placed, d=>d.key)
     .join(enter=>{
       const g = enter.append('g').attr('class','partisan-marker');
@@ -3222,13 +3232,7 @@ function renderStackWarnings(nodeById, layer){
     if(s.type==='Home Capital' || s.type==='Sea') return;
     const node = nodeById[s.id];
     if(!node) return;
-    const byFaction = {};
-    bgs.filter(b=>b.sectorId===s.id && !b.isKampfgruppe).forEach(b=>{
-      const f = b.faction||factionForNation(b.nation);
-      byFaction[f] = (byFaction[f]||0)+1;
-    });
-    const cap = effectiveStackCap(s);
-    if(Object.values(byFaction).some(n=>n>cap)){
+    if(stackWarningFactions(s).length){
       placed.push({key:'stack-'+s.id, cx:node.x+9, cy:node.y+9});
     }
   });
@@ -3445,6 +3449,7 @@ let insetState = {
   cn: {visible:true, pos:null, zoom:null},
 };
 let labelsVisible = true;
+let partisanMarkersVisible = true;
 let sequenceChecklist = {turn:'', naval:false, bombing:false, movement:false, partisan:false};
 
 try{
@@ -3610,12 +3615,11 @@ function renderPanel(){
   const mixed = factionsHere.size > 1;
   const thisTurnLabel = `${clock.season} ${clock.year}`;
   const lodgementFreeTurn = s.lodgementTurn === thisTurnLabel;
-  const rotationActive = !!s.lodgementRotation;
-  const adjacentRotationHub = !rotationActive && (s.connections||[]).map(cid=>byId[cid]).find(adj=>adj && adj.lodgementRotation);
-  const lodgementActive = lodgementFreeTurn || rotationActive;
-  const stackCap = effectiveStackCap(s);
-  const stackWarnings = s.type!=='Home Capital' ? Array.from(factionsHere).filter(f=>
-    sectorBGs.filter(b=>(b.faction||factionForNation(b.nation))===f && !b.isKampfgruppe).length > stackCap) : [];
+  const rotationActive = s.lodgementRotationTurn === thisTurnLabel;
+  const rotationHub = activeLodgementHub(s);
+  const adjacentRotationHub = (!rotationActive && rotationHub && rotationHub.id!==s.id) ? rotationHub : null;
+  const lodgementActive = lodgementFreeTurn || rotationActive || !!adjacentRotationHub;
+  const stackWarnings = stackWarningFactions(s);
 
   const statusClass = (s.status||'NA').replace(/\s/g,'');
   el.innerHTML = `
@@ -3625,8 +3629,8 @@ function renderPanel(){
       <span class="faction-badge ${factionOf(s)}">${factionOf(s)}</span>
       ${s.contested ? `<span class="faction-badge rule-link" data-section="sec-8-1" style="color:var(--danger);border-color:var(--danger);cursor:pointer;" title="Result of a Stalemate (§8.1) — loser's score was >70% of the winner's, or tied. Both BGs stay, neither retreats. Clears when one side voluntarily moves out or a third BG enters and triggers a fresh engagement.">Contested</span>` : ''}
       ${lodgementFreeTurn ? `<span class="faction-badge rule-link" data-section="sec-11-1" style="color:var(--gold);border-color:var(--gold-dim);cursor:pointer;" title="§11.1.3 — free, automatic, this turn only. Stack cap here is 4 for Follow-On Exploitation. Reduce back to 2 by next turn's movement phase, or activate Lodgement Rotation below to keep it, or the excess takes 20%/turn attrition (not auto-enforced — track it yourself).">Lodgement Active (this turn)</span>` : ''}
-      ${rotationActive ? `<span class="faction-badge rule-link" data-section="sec-11-1" style="color:var(--gold);border-color:var(--gold-dim);cursor:pointer;" title="§11.1.6 Lodgement Rotation — paid with 1 AMPH token alone, persistent. Up to 6 BGs may be present here and at each directly adjacent sector; only 2 fight at a time per engagement (owner's choice), same pattern as a capital. Stays active until you stand it down.">Lodgement Rotation Active (6 BG)</span>` : ''}
-      ${adjacentRotationHub ? `<span class="faction-badge rule-link" data-section="sec-11-1" style="color:var(--gold);border-color:var(--gold-dim);cursor:pointer;" title="§11.1.6 — this sector is adjacent to ${adjacentRotationHub.name}'s active Lodgement Rotation, so it also gets a 6-BG cap.">Supplied by Lodgement Rotation (6 BG)</span>` : ''}
+      ${rotationActive ? `<span class="faction-badge rule-link" data-section="sec-11-1" style="color:var(--gold);border-color:var(--gold-dim);cursor:pointer;" title="§11.1.6 Lodgement Rotation — paid for THIS turn with 1 AMPH token. This sector and every directly adjacent sector share ONE pool of 6 BGs total, not 6 each; only 2 fight at a time per engagement (owner's choice), same pattern as a capital. Requires a fresh AMPH token every turn — skip a payment and it reverts to 2 immediately.">Lodgement Rotation Active this turn (6 BG pool)</span>` : ''}
+      ${adjacentRotationHub ? `<span class="faction-badge rule-link" data-section="sec-11-1" style="color:var(--gold);border-color:var(--gold-dim);cursor:pointer;" title="§11.1.6 — this sector shares ${adjacentRotationHub.name}'s active Lodgement Rotation pool this turn (6 BGs total across the whole zone, not 6 here alone).">Shares Lodgement Rotation pool (6 BG total)</span>` : ''}
     </div>
     <div class="panel-body">
       ${stackWarnings.length ? `<div class="moved-banner" style="border-color:var(--danger);color:var(--danger);">⚠ Stack limit exceeded (§6) — more than 2 ${stackWarnings.join(', ')} Battle Group(s) here. Only non-capital sectors are capped at 2; move one out or resolve the excess.</div>` : ''}
@@ -3644,18 +3648,25 @@ function renderPanel(){
       })() : ''}
 
       ${s.region==='Western Europe' ? (()=>{
+        const hubForDisplay = rotationActive ? s : (adjacentRotationHub || null);
+        const poolCount = hubForDisplay ? lodgementZoneCount(hubForDisplay, 'Allied') : 0;
         if(rotationActive){
           return `<div class="field-group">
             <div class="fg-label rule-link" data-section="sec-11-1">Lodgement Rotation (§11.1.6)</div>
-            <div class="winter-note">Active — this sector acts as a supply source to itself and each directly adjacent sector, up to 6 Allied BGs each; only 2 fight at a time per engagement (your choice when resolving it), the rest rotate and rest, same pattern as a capital. Stays on until you stand it down.</div>
-            <button class="cr-roll-btn" id="rotation_deactivate_btn" style="margin-top:8px;">Stand Down Lodgement Rotation</button>
+            <div class="winter-note">Paid for this turn — ${poolCount}/6 Allied BGs currently in the shared pool (this sector + every directly adjacent one, combined). Only 2 fight at a time per engagement (your choice when resolving it). Requires a fresh 1× AMPH token <b>every turn</b> to keep running — pay again after Advance Turn, or it reverts to the normal 2-BG cap immediately.</div>
+          </div>`;
+        }
+        if(adjacentRotationHub){
+          return `<div class="field-group">
+            <div class="fg-label rule-link" data-section="sec-11-1">Lodgement Rotation (§11.1.6)</div>
+            <div class="winter-note">Sharing ${adjacentRotationHub.name}'s active pool this turn — ${poolCount}/6 Allied BGs across the whole zone. Manage the per-turn AMPH payment from ${adjacentRotationHub.name}'s own panel.</div>
           </div>`;
         }
         return `<div class="field-group">
           <div class="fg-label rule-link" data-section="sec-11-1">Lodgement Rotation (§11.1.6)</div>
-          <div class="winter-note">Spend 1× AMPH token alone — no RC capture needed — to activate persistent rotation here: this sector and each sector directly adjacent to it support up to 6 BGs, only 2 fighting at a time per engagement, letting fresh forces relieve tired ones until breakout is achieved. Without this, the sector reverts to the normal 2-BG cap after the turn of victory. Capturing a nearby RC is a separate, ordinary path — it just operates as a normal RC once secured, no special stacking bonus tied to it.</div>
+          <div class="winter-note">Spend 1× AMPH token — no RC capture needed — to activate a shared pool of 6 BGs total across this sector and every sector directly adjacent to it (not 6 in each), only 2 fighting at a time per engagement, letting fresh forces relieve tired ones until breakout is achieved. This is a <b>per-turn</b> cost — pay again next turn to keep it running, or it reverts to the normal 2-BG cap. Capturing a nearby RC is a separate, ordinary path — it just operates as a normal RC once secured, no special stacking bonus tied to it.</div>
           <select id="rotation_nation">${['USA','UK'].map(n=>`<option>${n}</option>`).join('')}</select>
-          <button class="cr-roll-btn" id="rotation_activate_btn" style="margin-top:8px;">Activate Lodgement Rotation</button>
+          <button class="cr-roll-btn" id="rotation_activate_btn" style="margin-top:8px;">Pay 1× AMPH for This Turn</button>
         </div>`;
       })() : ''}
 
@@ -3939,16 +3950,8 @@ function renderPanel(){
     const inv = (dashboards.Allied.tokens[nation]||{}).AMPH || 0;
     if(inv < 1){ notify(`${nation} has no AMPH tokens available.`); return; }
     dashboards.Allied.tokens[nation].AMPH = inv - 1;
-    s.lodgementRotation = true;
-    logAction('Allied', 'Lodgement Rotation', `${nation} spends 1× AMPH to activate persistent Lodgement Rotation at ${s.name} (§11.1.6)`, [s]);
-    await saveState(true);
-    render();
-    selectSector(s.id);
-  });
-  const rotationDeactivateBtn = document.getElementById('rotation_deactivate_btn');
-  if(rotationDeactivateBtn) rotationDeactivateBtn.addEventListener('click', async ()=>{
-    s.lodgementRotation = false;
-    logAction('Allied', 'Lodgement Rotation', `Lodgement Rotation stood down at ${s.name}`, [s]);
+    s.lodgementRotationTurn = `${clock.season} ${clock.year}`;
+    logAction('Allied', 'Lodgement Rotation', `${nation} spends 1× AMPH to pay for Lodgement Rotation at ${s.name} this turn (§11.1.6)`, [s]);
     await saveState(true);
     render();
     selectSector(s.id);
@@ -4660,31 +4663,46 @@ function desertOutflankApplies(sector, defenderBGs, attackerBGs){
 // Home Capitals: unlimited stacking, but only 2 BGs ever fight (owner's
 // choice — already how the Combat Resolver and manual battle entry work,
 // since both only take up to 2 BGs per side). A fresh Amphibious victory
-// gets one free turn at cap 4 to receive Follow-On Exploitation. Beyond that
-// turn, staying at 4 requires Lodgement Rotation: a paid (1 AMPH token),
-// persistent capability, only available with a Deep-Water Port nearby,
-// modeling the same "up to 4 present, 2 fight, rotate the rest" pattern as
-// a capital — until the player stands it down once breakout is achieved.
-// The effective friendly stacking cap for a sector (§6, §11.1.3, §11.1.6).
+// Lodgement Rotation (§11.1.6): 1 AMPH token spent EVERY turn, checked
+// against the CURRENT turn label — there's no persistent "on" flag anymore,
+// paying is what keeps it alive. While paid up, the hub sector and all of
+// its directly adjacent sectors share ONE pool of 6 BGs total (not 6 each).
+function activeLodgementHub(sector){
+  const thisTurn = `${clock.season} ${clock.year}`;
+  if(sector.lodgementRotationTurn === thisTurn) return sector;
+  const adjHub = (sector.connections||[]).map(cid=>byId[cid]).find(adj=>adj && adj.lodgementRotationTurn===thisTurn);
+  return adjHub || null;
+}
+function lodgementZoneSectors(hub){
+  return [hub, ...(hub.connections||[]).map(cid=>byId[cid]).filter(Boolean)];
+}
+function lodgementZoneCount(hub, faction){
+  const zoneIds = new Set(lodgementZoneSectors(hub).map(s=>s.id));
+  return bgs.filter(b=>zoneIds.has(b.sectorId) && !b.isKampfgruppe && (b.faction||factionForNation(b.nation))===faction).length;
+}
 // Home Capitals: unlimited stacking, only 2 fight. A fresh Amphibious
-// victory gets one free turn at cap 4 for Follow-On Exploitation.
-// Independently, Lodgement Rotation — activated with 1 AMPH token ALONE, no
-// RC capture required — turns the invasion sector into a supply source for
-// itself and its directly adjacent sectors, up to 6 BGs each, until stood
-// down. Capturing a deep-water port RC nearby is a completely separate
-// path: it's just a normal RC once secured, no special stacking bonus tied
-// to it anymore.
+// victory gets one free turn at cap 4 for Follow-On Exploitation (§11.1.3).
+// A Deep-Water Port RC (§11.1.7) is a completely separate path — just a
+// normal RC once secured, no stacking bonus tied to it.
 function effectiveStackCap(sector){
   if(sector.type==='Home Capital') return Infinity;
   const thisTurn = `${clock.season} ${clock.year}`;
   if(sector.lodgementTurn === thisTurn) return 4;
-  if(sector.lodgementRotation) return 6;
-  const adjacentToActiveRotation = (sector.connections||[]).some(cid=>{
-    const adj = byId[cid];
-    return adj && adj.lodgementRotation;
-  });
-  if(adjacentToActiveRotation) return 6;
+  if(activeLodgementHub(sector)) return null; // pooled — see stackWarningFactions
   return 2;
+}
+// Which factions are over their stacking limit at this sector, accounting
+// for the Lodgement Rotation pool spanning multiple sectors at once.
+function stackWarningFactions(sector){
+  if(sector.type==='Home Capital') return [];
+  const factionsPresent = new Set(bgs.filter(b=>b.sectorId===sector.id && !b.isKampfgruppe).map(b=>b.faction||factionForNation(b.nation)));
+  const hub = activeLodgementHub(sector);
+  if(hub){
+    return Array.from(factionsPresent).filter(f=>lodgementZoneCount(hub, f) > 6);
+  }
+  const cap = effectiveStackCap(sector);
+  return Array.from(factionsPresent).filter(f=>
+    bgs.filter(b=>b.sectorId===sector.id && !b.isKampfgruppe && (b.faction||factionForNation(b.nation))===f).length > cap);
 }
 
 async function runInvasionPhase2(state){
@@ -4708,7 +4726,7 @@ async function runInvasionPhase2(state){
         (state.useAirborne ? ' The Airborne BG survives but remains stuck in the pocket.' : '');
     } else if(result.winner==='ATTACKER'){
       outcome = 'victory';
-      note = `Defender retreats — the sector is secured. An Amphibious Lodgement is established: the stacking limit here is temporarily raised to 4 BGs, free, for this strategic turn only (§11.1.3, §11.1.4 Follow-On Exploitation is available manually) — this part is unconditional. To keep elevated capacity past this turn, activate Lodgement Rotation from this sector's panel afterward: 1× AMPH token alone (no RC capture needed) raises this sector and each directly adjacent sector to a 6-BG cap, only 2 fighting at a time per engagement, same pattern as a capital. Without it, reduce back to 2 BGs by the end of next turn's movement phase or the excess takes 20%/turn attrition (§11.1.5) — this isn't auto-enforced, so track it yourself. Capturing a nearby RC is a separate, ordinary path with no special stacking bonus of its own.`;
+      note = `Defender retreats — the sector is secured. An Amphibious Lodgement is established: the stacking limit here is temporarily raised to 4 BGs, free, for this strategic turn only (§11.1.3, §11.1.4 Follow-On Exploitation is available manually) — this part is unconditional. To keep elevated capacity past this turn, activate Lodgement Rotation from this sector's panel afterward: 1× AMPH token, spent again every turn, gives this sector and each directly adjacent sector a SHARED pool of 6 BGs total (not 6 each), only 2 fighting at a time per engagement, same pattern as a capital. Skip a turn's payment and it reverts to 2 immediately. Without it at all, reduce back to 2 BGs by the end of next turn's movement phase or the excess takes 20%/turn attrition (§11.1.5) — this isn't auto-enforced, so track it yourself. Capturing a nearby RC is a separate, ordinary path with no special stacking bonus of its own.`;
     } else {
       outcome = 'defeat';
       note = 'The conventional assault bounces back to its staging area.' +
@@ -6203,6 +6221,12 @@ Object.values(INSET_CONFIGS).forEach(cfg=>{
     });
     window.addEventListener('mouseup', ()=>{ dragging = false; });
   }catch(e){ console.warn('Inset drag setup failed:', e); }
+});
+
+document.getElementById('togglePartisan').addEventListener('click', ()=>{
+  partisanMarkersVisible = !partisanMarkersVisible;
+  document.getElementById('togglePartisan').textContent = 'PARTISAN MARKERS: ' + (partisanMarkersVisible?'ON':'OFF');
+  render();
 });
 
 document.getElementById('resetView').addEventListener('click', ()=>{
