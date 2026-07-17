@@ -2438,6 +2438,7 @@ const NTF_ALLOTMENT = {
   UK:{1941:4,1942:4,1943:5,1944:5,1945:5},
 };
 let dashboards = defaultDashboards();
+let minorStatus = {}; // {countryName: 'Neutral'|'Axis'|'Allied'} — player judgment calls, persisted
 const NUMERIC_FLAGS = new Set(['Free France Legitimacy count (0-3)','Vichy Legitimacy count (0-3)']);
 const DOCTRINE_OPTIONS = {
   Germany:['None','Panzerwaffe Doctrine','Kesselschlacht'], Japan:['None','Kaiten/Kamikaze Tactics','Kantai Kessen'],
@@ -2555,6 +2556,7 @@ async function hydrateFromStorage(){
       battleLog = record.battleLog || battleLog;
       actionLog = record.actionLog || actionLog;
       dashboards = normalizeDashboards(record.dashboards);
+      minorStatus = record.minorStatus || {};
       render();
       if(selectedId) renderPanel();
       return;
@@ -2633,7 +2635,7 @@ let pendingSaveShowNote = false;
 
 async function performSave(showNote){
   try{
-    const payload = {sectors, bgs, clock, battleLog, actionLog, dashboards};
+    const payload = {sectors, bgs, clock, battleLog, actionLog, dashboards, minorStatus};
     await jsonbinWrite(payload);
     bumpRequestCounter();
     if(showNote) flashSaved();
@@ -2673,7 +2675,7 @@ window.addEventListener('beforeunload', ()=>{
   if(!saveDebounceTimer || !JSONBIN_CONFIGURED) return;
   clearTimeout(saveDebounceTimer);
   try{
-    const payload = {sectors, bgs, clock, battleLog, actionLog, dashboards};
+    const payload = {sectors, bgs, clock, battleLog, actionLog, dashboards, minorStatus};
     fetch(JSONBIN_BASE, {
       method:'PUT', headers:{'X-Master-Key':JSONBIN_API_KEY,'Content-Type':'application/json'},
       body: JSON.stringify(payload), keepalive: true,
@@ -5086,15 +5088,16 @@ function minorNationChecklist(){
   const germanInUSSR = sectors.some(s=>s.region==='USSR' && s.occupier==='Germany');
   return [
     {name:'Finland', side:'Axis', auto:true, met:germanInUSSR, text:'Germany invades the USSR → create 2× INF BG'},
-    {name:'Finland', side:'Allied', auto:false, met:null, text:'Allies capture Prussia AND Leningrad → disband all Finnish BGs (check manually)'},
+    {name:'Finland', side:'Allied', auto:false, key:'Finland', met:null, text:'Allies capture Prussia AND Leningrad → disband all Finnish BGs (check manually)'},
     {name:'Iran', side:'Allied', auto:true, met:turnAtLeast('Fall',1941), text:'Automatic Fall 1941'},
     {name:'Iraq', side:'Axis', auto:true, met:turnAtLeast('Summer',1941), text:'Automatic Summer 1941 → create 1× MIL BG; UK -1 Support Token until retaken'},
-    {name:'Portugal', side:'Axis', auto:false, met:heldByFaction('Madrid','Axis'), text:'Spain joins Axis, then Germany defeats an Allied NTF in the Atlantic → Germany +1 NTF (Spain-Axis condition shown; naval battle must be judged manually)'},
-    {name:'Spain', side:'Axis', auto:false, met:heldByFaction('Cairo','Axis'), text:'Axis capture Egypt AND Suez → create 2× INF BG (Egypt/Cairo control shown; Suez not separately modeled)'},
+    {name:'Portugal', side:'Axis', auto:false, key:'Portugal', met:heldByFaction('Madrid','Axis'), text:'Spain joins Axis, then Germany defeats an Allied NTF in the Atlantic → Germany +1 NTF (Spain-Axis condition shown; naval battle must be judged manually)'},
+    {name:'Spain', side:'Axis', auto:false, key:'Spain', met:heldByFaction('Cairo','Axis'), text:'Axis capture Egypt AND Suez → create 2× INF BG (Egypt/Cairo control shown; Suez not separately modeled)'},
+    {name:'Sweden', side:'Neutral', auto:false, key:'Sweden', met: (minorStatus['Sweden']||'Neutral')!=='Allied', text:'Standing +1 RC for Germany while Neutral. Allies liberate Norway AND capture Prussia → Germany loses the +1 RC. Set status to Allied below once that happens — this is the one entry here that actually feeds into the RC total for Germany.'},
     {name:'Turkey', side:'Axis', auto:true, met: heldByFaction('Moscow','Axis') && heldByFaction('Caucasus','Axis'), text:'Axis capture Moscow AND the Caucasus → create 2× INF BG'},
-    {name:'Turkey', side:'Allied', auto:false, met:null, text:'Allies liberate Greece AND hold naval supremacy in the Ionian Sea → create 2× INF BG (check manually)'},
-    {name:'Vichy & Colonies', side:'Axis', auto:false, met:null, text:'Allied invasion of any Vichy sector → +1 RC for Germany (check manually, per-event)'},
-    {name:'Vichy & Colonies', side:'Allied', auto:false, met:null, text:'Allies capture any Vichy sector → +1 Free French BG (check manually, per-event)'},
+    {name:'Turkey', side:'Allied', auto:false, key:'Turkey', met:null, text:'Allies liberate Greece AND hold naval supremacy in the Ionian Sea → create 2× INF BG (check manually)'},
+    {name:'Vichy & Colonies', side:'Axis', auto:false, key:'Vichy & Colonies', met:null, text:'Allied invasion of any Vichy sector → +1 RC for Germany (check manually, per-event)'},
+    {name:'Vichy & Colonies', side:'Allied', auto:false, key:'Vichy & Colonies', met:null, text:'Allies capture any Vichy sector → +1 Free French BG (check manually, per-event)'},
   ];
 }
 
@@ -5256,11 +5259,25 @@ function openMinorNationsModal(){
       <h3>${c.name} <span style="color:var(--ink-faint);font-weight:400;">— ${c.side} activation</span></h3>
       <div class="winter-line">${c.auto ? (c.met ? '<span class="pill-ok">✓ Condition currently met</span>' : '<span style="color:var(--ink-faint);">Not yet met</span>') : '<span style="color:var(--gold-dim);">Manual check needed</span>'}</div>
       <div class="winter-line">${c.text}</div>
+      ${c.key ? `
+      <div class="fg-label" style="margin-top:6px;">Country status (your call)</div>
+      <select class="minor-status-sel" data-key="${c.key}">
+        ${['Neutral','Axis','Allied'].map(v=>`<option value="${v}" ${(minorStatus[c.key]||'Neutral')===v?'selected':''}>${v}</option>`).join('')}
+      </select>` : ''}
     </div>`).join('');
   openModal('Minor Nations Activation Tracker (§13)', `
-    <div class="winter-note">Auto-detected where the trigger is a pure map-state check. A few genuinely need a human judgment call (a specific naval battle, a sea zone not modeled) — those are flagged rather than guessed at.</div>
+    <div class="winter-note">Auto-detected where the trigger is a pure map-state check. A few genuinely need a human judgment call (a specific naval battle, a sea zone not modeled) — those get a status dropdown so your call is recorded and persists, instead of re-deciding it every time you open this. Sweden's is the one that actually feeds back into the economy (Germany's +1 RC); the rest are a record of your decision, not a trigger for automatic BG/RC changes.</div>
     ${rows}
   `);
+  document.querySelectorAll('.minor-status-sel').forEach(el=>{
+    el.addEventListener('change', async ()=>{
+      minorStatus[el.dataset.key] = el.value;
+      logAction('Axis', 'Minor Status', `${el.dataset.key} status set to ${el.value}`, []);
+      await saveState(true, true);
+      render();
+      openMinorNationsModal();
+    });
+  });
 }
 
 function computeEconomy(){
@@ -5279,7 +5296,11 @@ function computeEconomy(){
         tokens: Math.floor((owned+occ)/2)};
       return;
     }
-    const owned = sectors.filter(s=>s.status==='ACTIVE'&&s.owner===nation).reduce((a,s)=>a+s.rc,0);
+    let owned = sectors.filter(s=>s.status==='ACTIVE'&&s.owner===nation).reduce((a,s)=>a+s.rc,0);
+    // §13 Sweden: standing +1 RC for Germany while Sweden's status stays
+    // Neutral. Lost once the player marks Sweden Allied (Norway liberated +
+    // Prussia captured, per the rule's Allied trigger).
+    if(nation==='Germany' && (minorStatus['Sweden']||'Neutral')!=='Allied') owned += 1;
     const occ = sectors.filter(s=>s.status==='ACTIVE'&&s.occupier===nation)
       .reduce((a,s)=>a + s.rc * ((nation==='Germany'&&s.evacuated==='Yes')?0.5:1), 0);
     const ratio = (YEAR_RATIO[nation] && YEAR_RATIO[nation][clock.year]) ?? 1;
@@ -6196,6 +6217,7 @@ document.getElementById('resetData').addEventListener('click', async ()=>{
   battleLog = [];
   actionLog = [];
   dashboards = defaultDashboards();
+  minorStatus = {};
   sectors.forEach(s=>{ if(s.type==='Sea'){ s.ntf = {}; s.ntfLocked = {}; } });
   selectedId = null; selectedBgId = null;
   await saveState(true, true);
@@ -6208,7 +6230,7 @@ document.getElementById('exportBackup').addEventListener('click', ()=>{
   const payload = {
     exportedAt: new Date().toISOString(),
     turn: `${clock.season} ${clock.year}`,
-    sectors, bgs, clock, battleLog, actionLog, dashboards,
+    sectors, bgs, clock, battleLog, actionLog, dashboards, minorStatus,
   };
   const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
   const url = URL.createObjectURL(blob);
@@ -6251,6 +6273,7 @@ document.getElementById('importFileInput').addEventListener('change', async (ev)
   battleLog = data.battleLog || [];
   actionLog = data.actionLog || [];
   dashboards = normalizeDashboards(data.dashboards);
+  minorStatus = data.minorStatus || {};
   selectedId = null; selectedBgId = null;
   await saveState(true, true);
   render();
