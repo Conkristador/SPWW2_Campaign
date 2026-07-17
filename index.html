@@ -141,6 +141,8 @@
     font-family:var(--font-mono);font-size:11px;padding:7px 11px;border-radius:3px;
     cursor:pointer;letter-spacing:.03em;}
   .ctrl-btn:hover{color:var(--ink);border-color:var(--gold-dim);}
+  .ctrl-btn:disabled{opacity:.35;cursor:not-allowed;}
+  .ctrl-btn:disabled:hover{color:var(--ink-dim);border-color:var(--panel-border);}
   .ctrl-btn-gold{color:var(--gold);border-color:var(--gold-dim);}
   .ctrl-btn-gold:hover{background:rgba(201,162,75,.1);}
 
@@ -344,8 +346,8 @@
       </div>
     </div>
     <div id="topRightStack">
-      <button class="ctrl-btn" id="toggleInset">EUROPE DETAIL: ON</button>
-      <button class="ctrl-btn" id="toggleInsetCN">CHINA DETAIL: ON</button>
+      <button class="ctrl-btn" id="toggleInset">EUROPE DETAIL: OFF</button>
+      <button class="ctrl-btn" id="toggleInsetCN">CHINA DETAIL: OFF</button>
       <button class="ctrl-btn" id="resetView">RESET VIEW</button>
     </div>
     <div id="controls">
@@ -354,6 +356,7 @@
         <button class="ctrl-btn ctrl-btn-gold" id="openSequenceBtn">TURN CHECKLIST</button>
         <button class="ctrl-btn ctrl-btn-gold" id="openLog">BATTLE LOG</button>
         <button class="ctrl-btn ctrl-btn-gold" id="openActionLog">ACTION LOG</button>
+        <button class="ctrl-btn" id="undoLastAction" disabled>UNDO LAST ACTION</button>
       </div>
       <div class="ctrl-row" id="controlsAdmin">
         <button class="ctrl-btn ctrl-btn-gold" id="openMinorsBtn">MINOR NATIONS</button>
@@ -369,7 +372,7 @@
       <button class="ctrl-btn ctrl-btn-gold" id="importXlsx">IMPORT SPREADSHEET (XLSX)</button>
       <input type="file" id="importXlsxInput" accept=".xlsx" style="display:none;">
     </div>
-    <div id="euInset" class="region-inset">
+    <div id="euInset" class="region-inset hidden">
       <div id="euInsetHead" class="region-inset-head">
       <div>
         <span class="title">Europe — Detail</span>
@@ -380,7 +383,7 @@
       </div>
       <svg id="euInsetSvg" class="region-inset-svg"></svg>
     </div>
-    <div id="cnInset" class="region-inset">
+    <div id="cnInset" class="region-inset hidden">
       <div id="cnInsetHead" class="region-inset-head">
       <div>
         <span class="title">China — Detail</span>
@@ -2573,6 +2576,7 @@ async function hydrateFromStorage(){
       actionLog = record.actionLog || actionLog;
       dashboards = normalizeDashboards(record.dashboards);
       minorStatus = record.minorStatus || {};
+      preActionSnapshot = snapshotPayload(); // undo baseline: state as loaded
       render();
       if(selectedId) renderPanel();
       return;
@@ -2581,6 +2585,7 @@ async function hydrateFromStorage(){
     saveState(false, true);
   }catch(e){
     console.warn('JSONBin unavailable, or Bin ID/API key not yet filled in — using local scenario data.', e);
+    preActionSnapshot = snapshotPayload(); // still give local-only play an undo baseline
   }
 }
 
@@ -2649,11 +2654,38 @@ function normalizeDashboards(saved){
 let saveDebounceTimer = null;
 let pendingSaveShowNote = false;
 
+let preActionSnapshot = null; // rolling: state as of the last completed save
+let undoSnapshot = null;      // what "Undo Last Action" would restore
+let undoFaction = null;       // who's allowed to use it
+
+function snapshotPayload(){
+  return JSON.parse(JSON.stringify({sectors, bgs, clock, battleLog, actionLog, dashboards, minorStatus}));
+}
+function updateUndoButton(){
+  const btn = document.getElementById('undoLastAction');
+  if(!btn) return;
+  const viewer = playerRole || 'Observer';
+  const usable = !!undoSnapshot && (viewer==='Observer' || viewer===undoFaction);
+  btn.disabled = !usable;
+  btn.textContent = undoFaction ? `UNDO LAST ACTION (${undoFaction})` : 'UNDO LAST ACTION';
+  btn.title = usable ? `Restore the state from just before ${undoFaction}'s last saved action.`
+    : (undoSnapshot ? `Only ${undoFaction} (or an Observer) can undo this.` : 'Nothing to undo yet.');
+}
+
 async function performSave(showNote){
   try{
-    const payload = {sectors, bgs, clock, battleLog, actionLog, dashboards, minorStatus};
+    // Whatever the rolling snapshot currently holds is "the state right
+    // before this action" — that's the undo target. Attribute it to
+    // whichever role this browser is currently playing.
+    if(preActionSnapshot){
+      undoSnapshot = preActionSnapshot;
+      undoFaction = playerRole || 'Observer';
+    }
+    const payload = snapshotPayload();
     await jsonbinWrite(payload);
     bumpRequestCounter();
+    preActionSnapshot = payload; // roll forward for the next action's undo target
+    updateUndoButton();
     if(showNote) flashSaved();
   }catch(e){
     console.warn('Could not save — JSONBin unavailable, or Bin ID/API key not yet filled in.', e);
@@ -2727,6 +2759,7 @@ function buildIndex(){
 function render(){
   buildIndex();
   updateClockBadge();
+  updateUndoButton();
   autoRevealTriggeredEntries();
   const {w,h} = sizeSvg();
 
@@ -2978,6 +3011,7 @@ const TYPE_REQUIREMENTS = {
   CAV: '50% cavalry squads/horse-drawn/motorcycle recon, ≤10% light armor/recon. No medium/heavy tanks or halftracks/APCs.',
   Airborne: 'Airborne/Marine classes + light specialist gear only. May run Airborne Drop / Amphibious templates.',
   Marine: 'Airborne/Marine classes + light specialist gear only. May run Airborne Drop / Amphibious templates.',
+  MIL: '⚠ §3.3 — MIL is never player-built by the rules. It only exists via Spontaneous Defense or Home-Front Conversion, both triggered automatically by game conditions. This tool doesn\'t auto-create those BGs for you, so use this form to manually add the one the rules say should already exist — not to build a MIL BG from scratch.',
 };
 
 const ALL_NATIONS = ['Afghanistan','Argentina','Australia','Austria','Badoglio Italy','Belgium',
@@ -3079,6 +3113,21 @@ function computeNavalControl(seaId){
   if(axisTotal===0 && alliedTotal===0) return {controller:null, margin:0};
   if(axisTotal===alliedTotal) return {controller:'Contested', margin:0};
   return axisTotal>alliedTotal ? {controller:'Axis', margin:axisTotal-alliedTotal} : {controller:'Allied', margin:alliedTotal-axisTotal};
+}
+// §11.4 Sea Control specifically (only one side present) — this is what
+// blocks Strategic Sea Movement outright (§7.5). Naval Superiority (both
+// present, one outnumbered) is a separate, softer case: it doesn't block
+// movement, just costs points per NTF of margin — advisory only here.
+function seaControlBlocks(seaId, faction){
+  const s = byId[seaId];
+  if(!s || s.type!=='Sea') return false;
+  let friendlyNTF = 0, enemyNTF = 0;
+  NTF_NATION_ORDER.forEach(n=>{
+    const val = (s.ntf && s.ntf[n]) || 0;
+    if(factionForNation(n)===faction) friendlyNTF += val; else enemyNTF += val;
+  });
+  if(UK_HOME_WATERS_SECTORS.has(seaId) && ukHomeWatersActive() && faction==='Allied') friendlyNTF += 1;
+  return enemyNTF>0 && friendlyNTF===0;
 }
 
 function ntfDeploymentRange(nation){
@@ -3451,8 +3500,8 @@ const INSET_CONFIGS = {
        partisanClass:'cn-partisan', boundaryClass:'cn-boundary'},
 };
 let insetState = {
-  eu: {visible:true, pos:null, zoom:null},
-  cn: {visible:true, pos:null, zoom:null},
+  eu: {visible:false, pos:null, zoom:null},
+  cn: {visible:false, pos:null, zoom:null},
 };
 let labelsVisible = true;
 let partisanMarkersVisible = true;
@@ -3569,7 +3618,7 @@ function renderInset(cfg){
     .classed('selected', d=>d.id===selectedId);
   gSel.select('circle.body').attr('fill', d=>FACTION_HEX[factionOf(d)] || FACTION_HEX.Neutral);
   gSel.select('circle.ring').attr('opacity', d=>d.type==='Home Capital'?1:0);
-  gSel.select('text').text(d=>d.name);
+  gSel.select('text').text(d=>d.name).attr('opacity', labelsVisible?1:0);
 
   let bgL = zoomG.select('g.'+cfg.bgClass);
   if(bgL.empty()) bgL = zoomG.append('g').attr('class',cfg.bgClass);
@@ -3804,7 +3853,7 @@ function renderPanel(){
           </div>
           <div class="field-row">
             <div><div class="fg-label">Type</div>
-              <select id="nb_type">${['INF','ARM','MECH','CAV','Airborne','Marine'].map(t=>`<option>${t}</option>`).join('')}</select>
+              <select id="nb_type">${['INF','ARM','MECH','CAV','Airborne','Marine','MIL'].map(t=>`<option>${t}</option>`).join('')}</select>
               <div id="nb_type_req" class="winter-note" style="margin-top:4px;"></div>
             </div>
             <div><div class="fg-label">Points</div><input class="txtfield" id="nb_points" type="number" value="2500"></div>
@@ -4141,6 +4190,18 @@ function renderBGPanel(){
             const rm = roadMarchTargets(sector, b.nation);
             return rm.length ? `<optgroup label="Road March (§7.4, 2 sectors)">${rm.map(t=>`<option value="${t.id}">${t.name}</option>`).join('')}</optgroup>` : '';
           })()}
+          ${(()=>{
+            const nav = strategicNavalMovementTargets(sector, b.nation);
+            return nav.length ? `<optgroup label="Strategic Sea Movement (§7.5, RC to RC)">${nav.map(t=>`<option value="${t.id}">${t.name}</option>`).join('')}</optgroup>` : '';
+          })()}
+          ${(()=>{
+            const amph = amphibiousInvasionTargets(sector, b.nation);
+            return amph.length ? `<optgroup label="Amphibious Invasion (§11.1, ≤2 sea sectors)">${amph.map(t=>`<option value="${t.id}">${t.name}</option>`).join('')}</optgroup>` : '';
+          })()}
+          ${b.type==='Airborne' ? (()=>{
+            const abn = airborneInsertionTargets(sector, faction);
+            return abn.length ? `<optgroup label="Airborne Insertion (§11.2, 1-2 sectors, needs ABN token)">${abn.map(t=>`<option value="${t.id}">${t.name}</option>`).join('')}</optgroup>` : '';
+          })() : ''}
         </select>
         ${moved ? `<button class="link-btn" id="f_undo_move">Undo — clear activation flag manually</button>` : ''}
       </div>
@@ -4227,14 +4288,22 @@ function renderBGPanel(){
         // sector then shows mixed factions and offers "Resolve Engagement"
         // as an on-demand option (in the sector panel and here below).
         const originSector = byId[b.sectorId];
+        const isDirectConnection = (originSector.connections||[]).includes(target.id);
         const isAmphib = isAmphibiousLink(originSector.id, target.id);
         const river = riverOnLink(originSector.id, target.id);
         const targetIsEnemy = bgs.some(x=>x.sectorId===target.id && (x.faction||factionForNation(x.nation))!==faction);
         const targetHasFriendlyAlready = bgs.some(x=>x.sectorId===target.id && (x.faction||factionForNation(x.nation))===faction);
+        const isDynamicAmphib = !isDirectConnection && amphibiousInvasionTargets(originSector, b.nation).some(t=>t.id===target.id);
+        const isDynamicAirborne = b.type==='Airborne' && !isDirectConnection && airborneInsertionTargets(originSector, faction).some(t=>t.id===target.id);
+        const isStrategicNaval = !isDirectConnection && !isDynamicAmphib && strategicNavalMovementTargets(originSector, b.nation).some(t=>t.id===target.id);
         b.sectorId = target.id; b.location = target.name; b.movedThisTurn = true;
         logAction(faction, 'Move', `${b.name} (${b.nation}) moved from ${originSector?originSector.name:'?'} to ${target.name}`, [originSector, target], b.id);
-        if(isAmphib && targetIsEnemy){
+        if((isAmphib || isDynamicAmphib) && targetIsEnemy){
           notify(`${originSector.name} → ${target.name} crosses open ocean — this move resolves as an Amphibious Invasion (§11.1), not a plain Engagement Check: Beach Assault first, then Advance/Delay against the same defender. A losing Beach Assault also costs an extra 50% points on top of the normal retreat.`);
+        } else if(isDynamicAirborne && targetIsEnemy){
+          notify(`${originSector.name} → ${target.name} is an Airborne Insertion (§11.2) — one Meeting Engagement. Loss destroys this BG outright; win secures the sector. Requires an ABN token (not enforced here — that's on you to track).`);
+        } else if(isStrategicNaval){
+          notify(`${originSector.name} → ${target.name} is a Strategic Sea Movement (§7.5) — this activation can't also Swap or Road March this turn. No enemy Sea Control blocked the route, but check for enemy Naval Superiority along the way yourself: if the enemy outnumbers you in a contested sea sector on the route (even without full Sea Control), you lose 250 pts per NTF of their margin — not auto-computed here.`);
         } else if(river && targetIsEnemy && !targetHasFriendlyAlready){
           notify(`${originSector.name} → ${target.name} crosses the ${river} — the ${river} must be present in the WinSPWW2 engagement map for this attack. (A friendly BG already holding ${target.name} would mean no river applies — this is a fresh crossing.)`);
         }
@@ -4482,6 +4551,122 @@ function roadMarchTargets(originSector, nation){
       if(!results.some(r=>r.id===dest.id)) results.push(dest);
     });
   });
+  return results;
+}
+
+function isEnemyControlled(sector, faction){
+  const ctrlFaction = factionForNation(sector.occupier||sector.owner);
+  if(faction==='Axis') return ctrlFaction==='Allied';
+  if(faction==='Allied') return ctrlFaction==='Axis';
+  return false;
+}
+
+// §11.2 Airborne Insertion targets: any enemy-controlled LAND sector 1-2
+// plain sector hops away (any terrain in the path — troops fly over it).
+// No restriction here beyond BG type (checked by the caller): any BG type
+// can be offered this by the function, but only Airborne BGs should call it.
+function airborneInsertionTargets(originSector, faction){
+  if(!originSector) return [];
+  const results = [];
+  const visited = new Set([originSector.id]);
+  let frontier = [originSector.id];
+  for(let hop=1; hop<=2; hop++){
+    const next = [];
+    frontier.forEach(curId=>{
+      const cur = byId[curId];
+      (cur.connections||[]).forEach(cid=>{
+        if(visited.has(cid)) return;
+        visited.add(cid);
+        const dest = byId[cid];
+        if(!dest) return;
+        next.push(cid);
+        if(dest.type!=='Sea' && isEnemyControlled(dest, faction) && !results.some(r=>r.id===dest.id)){
+          results.push(dest);
+        }
+      });
+    });
+    frontier = next;
+  }
+  return results;
+}
+
+// §11.1 Amphibious Invasion targets: any enemy-controlled coastal LAND
+// sector within 2 sea-sector hops (via genuine Sea-type sectors), Gibraltar
+// closure aware. Direct land-adjacent amphibious links (isAmphibiousLink)
+// are 0 hops and already offered as plain moves, so they never appear here.
+function amphibiousInvasionTargets(originSector, nation){
+  if(!originSector || !(originSector.rc>0) || originSector.contested) return [];
+  const faction = factionForNation(nation);
+  if(factionForNation(originSector.occupier||originSector.owner) !== faction) return [];
+  const blocked = gibraltarClosedFor(nation);
+  const results = [];
+  const seenSea = new Set();
+  let frontier = (originSector.connections||[]).filter(cid=>{
+    const adj = byId[cid];
+    return adj && adj.type==='Sea' && !(blocked && cid===181);
+  });
+  frontier.forEach(f=>seenSea.add(f));
+  for(let hops=1; hops<=2; hops++){
+    const nextFrontier = [];
+    frontier.forEach(seaId=>{
+      const sea = byId[seaId];
+      (sea.connections||[]).forEach(cid=>{
+        if(blocked && cid===181) return;
+        const adj = byId[cid];
+        if(!adj) return;
+        if(adj.type==='Sea'){
+          if(!seenSea.has(cid)){ seenSea.add(cid); nextFrontier.push(cid); }
+        } else if(adj.id !== originSector.id){
+          if(isEnemyControlled(adj, faction) && !results.some(r=>r.id===adj.id)) results.push(adj);
+        }
+      });
+    });
+    frontier = nextFrontier;
+  }
+  return results;
+}
+
+// §7.5 Strategic Sea Movement: reposition from one uncontested RC sector to
+// another uncontested RC sector via an unbroken sea-sector chain, no hop
+// limit — the only thing that stops the route is enemy Sea Control (a hard
+// block) along the way. This is for empty/friendly territory; landing on an
+// enemy sector is an Amphibious Invasion instead, so enemy-controlled RCs
+// are excluded here. Naval Superiority (softer — costs points, doesn't
+// block) isn't checked here; it's flagged as advisory when you commit.
+function strategicNavalMovementTargets(originSector, nation){
+  if(!originSector || !(originSector.rc>0) || originSector.contested) return [];
+  const faction = factionForNation(nation);
+  const blocked = gibraltarClosedFor(nation);
+  const results = [];
+  const seenSea = new Set();
+  let frontier = (originSector.connections||[]).filter(cid=>{
+    const adj = byId[cid];
+    return adj && adj.type==='Sea' && !(blocked && cid===181) && !seaControlBlocks(cid, faction);
+  });
+  frontier.forEach(f=>seenSea.add(f));
+  let guard = 0;
+  while(frontier.length && guard<40){
+    guard++;
+    const nextFrontier = [];
+    frontier.forEach(seaId=>{
+      const sea = byId[seaId];
+      (sea.connections||[]).forEach(cid=>{
+        if(blocked && cid===181) return;
+        const adj = byId[cid];
+        if(!adj) return;
+        if(adj.type==='Sea'){
+          if(seenSea.has(cid) || seaControlBlocks(cid, faction)) return;
+          seenSea.add(cid);
+          nextFrontier.push(cid);
+        } else if(adj.id !== originSector.id){
+          if(adj.rc>0 && !adj.contested && !isEnemyControlled(adj, faction) && !results.some(r=>r.id===adj.id)){
+            results.push(adj);
+          }
+        }
+      });
+    });
+    frontier = nextFrontier;
+  }
   return results;
 }
 
@@ -5014,6 +5199,71 @@ const MINOR_BG_GATED = {
 // Does `sectorId` trace a contiguous friendly-controlled line back to the
 // nation's capital (§4.1)? Friendly = controlled by the same faction, since
 // allied/minor territory counts as friendly for tracing purposes too.
+// §4 BG Supply Tracing — separate from §4.1's RC-to-capital tracing above.
+// A BG must trace a contiguous line of friendly-controlled sectors back to
+// ANY controlled, active RC (not specifically the capital). Sectors may be
+// Contested and still trace, so long as they're friendly-controlled. Sea
+// tracing is allowed through a sea sector with no opposing NTF present.
+//
+// Scoping note: the rule also allows tracing through a Contested sea sector
+// specifically when it's flanked by friendly land on both sides — that
+// narrow exception isn't checked here (verifying it in a general BFS would
+// need to know the exact path taken, not just reachability). The much more
+// common case — no opposing NTF at all — is what's implemented.
+function seaTraceableForSupply(seaId, faction){
+  const s = byId[seaId];
+  if(!s || s.type!=='Sea') return false;
+  let enemyNTF = 0;
+  NTF_NATION_ORDER.forEach(n=>{
+    if(factionForNation(n)!==faction) enemyNTF += (s.ntf && s.ntf[n]) || 0;
+  });
+  return enemyNTF===0;
+}
+function bgTracesSupply(bg){
+  const faction = bg.faction || factionForNation(bg.nation);
+  const origin = byId[bg.sectorId];
+  if(!origin) return false;
+  const visited = new Set([origin.id]);
+  const queue = [origin.id];
+  while(queue.length){
+    const cur = queue.shift();
+    const curSector = byId[cur];
+    if(!curSector) continue;
+    if(curSector.rc>0 && curSector.status==='ACTIVE' && factionForNation(curSector.occupier||curSector.owner)===faction){
+      return true;
+    }
+    (curSector.connections||[]).forEach(cid=>{
+      if(visited.has(cid)) return;
+      const adj = byId[cid];
+      if(!adj) return;
+      if(adj.type==='Sea'){
+        if(!seaTraceableForSupply(cid, faction)) return;
+      } else {
+        if(factionForNation(adj.occupier||adj.owner) !== faction) return;
+      }
+      visited.add(cid);
+      queue.push(cid);
+    });
+  }
+  return false;
+}
+// Run automatically alongside advancePartisans() on every turn advance.
+// This sets each BG's in_supply flag from the actual trace — which then
+// feeds the EXISTING, already-tested §4 per-engagement -20% penalty inside
+// effectivePoints(). It does NOT apply the separate "-20% permanently per
+// turn out of supply" cumulative reduction — see the note where this is
+// called for why that's deliberately left out for now.
+function advanceSupplyStatus(){
+  const changes = [];
+  bgs.forEach(b=>{
+    const wasIn = b.in_supply !== 'No';
+    const nowIn = bgTracesSupply(b);
+    b.in_supply = nowIn ? 'Yes' : 'No';
+    if(wasIn !== nowIn) changes.push(`${b.name} (${b.nation}) ${nowIn ? 'back in supply' : 'now Out of Supply'} at ${b.location}`);
+  });
+  return changes;
+}
+
 function tracesSupplyToCapital(sectorId, nation){
   const capSector = sectors.find(s=>s.name===HOME_CAPITAL[nation]);
   if(!capSector) return false;
@@ -6121,12 +6371,13 @@ async function applyWinterLogistics(plan, comingYear){
   bgs.forEach(b=>{ b.movedThisTurn = false; });
   sectors.forEach(s=>{ if(s.type==='Sea') s.ntfLocked = {}; });
   advancePartisans();
+  const supplyChanges = advanceSupplyStatus();
   clock = {year: comingYear, season:'Spring'};
   await saveState(true, true);
   updateClockBadge();
   render();
   closeModal();
-  showTurnChangeSummary(beforeSnap, `Spring ${comingYear}`);
+  showTurnChangeSummary(beforeSnap, `Spring ${comingYear}`, supplyChanges);
 }
 
 // "What changed this turn" — snapshot key auto-changing state before the
@@ -6137,8 +6388,8 @@ function snapshotForChangeSummary(){
     rcStatus: Object.fromEntries(sectors.filter(s=>s.rc>0).map(s=>[s.id, s.status])),
   };
 }
-function showTurnChangeSummary(before, newTurnLabel){
-  const lines = [];
+function showTurnChangeSummary(before, newTurnLabel, extraLines){
+  const lines = [...(extraLines||[])];
   sectors.forEach(s=>{
     const was = before.partisan[s.id]||0, now = s.partisan||0;
     if(now > was) lines.push(`Partisan Level at ${s.name}: ${was} → ${now}`);
@@ -6176,11 +6427,12 @@ document.getElementById('advanceTurn').addEventListener('click', async ()=>{
   bgs.forEach(b=>{ b.movedThisTurn = false; });
   sectors.forEach(s=>{ if(s.type==='Sea') s.ntfLocked = {}; });
   advancePartisans();
+  const supplyChanges = advanceSupplyStatus();
   await saveState(true, true);
   updateClockBadge();
   render();
   if(selectedBgId) renderBGPanel();
-  showTurnChangeSummary(beforeSnap, `${next.season} ${next.year}`);
+  showTurnChangeSummary(beforeSnap, `${next.season} ${next.year}`, supplyChanges);
 });
 
 Object.values(INSET_CONFIGS).forEach(cfg=>{
@@ -6233,6 +6485,24 @@ document.getElementById('resetView').addEventListener('click', ()=>{
   svg.transition().duration(400).call(zoom.transform, d3.zoomIdentity);
 });
 
+document.getElementById('undoLastAction').addEventListener('click', async ()=>{
+  const viewer = playerRole || 'Observer';
+  if(!undoSnapshot || (viewer!=='Observer' && viewer!==undoFaction)) return;
+  const ok = await confirmDialog(`Undo ${undoFaction}'s last saved action? This restores the campaign to how it looked just before that action, for everyone. Cannot be undone itself.`);
+  if(!ok) return;
+  const restored = undoSnapshot;
+  sectors = restored.sectors; bgs = restored.bgs; clock = restored.clock;
+  battleLog = restored.battleLog; actionLog = restored.actionLog;
+  dashboards = restored.dashboards; minorStatus = restored.minorStatus || {};
+  undoSnapshot = null; undoFaction = null; // single-use — no undoing the undo
+  preActionSnapshot = snapshotPayload();
+  selectedId = null; selectedBgId = null;
+  await saveState(true, true);
+  render();
+  document.getElementById('emptyState').style.display='block';
+  document.getElementById('panelContent').style.display='none';
+});
+
 document.getElementById('resetData').addEventListener('click', async ()=>{
   if(!(await confirmDialog('Restore all sectors, Battle Groups, and the campaign clock to their Summer 1941 scenario-start values? This overwrites the current shared campaign state.'))) return;
   sectors = JSON.parse(JSON.stringify(SEED));
@@ -6242,9 +6512,11 @@ document.getElementById('resetData').addEventListener('click', async ()=>{
   actionLog = [];
   dashboards = defaultDashboards();
   minorStatus = {};
+  undoSnapshot = null; undoFaction = null; // a full reset shouldn't be undoable back through
   sectors.forEach(s=>{ if(s.type==='Sea'){ s.ntf = {}; s.ntfLocked = {}; } });
   selectedId = null; selectedBgId = null;
   await saveState(true, true);
+  preActionSnapshot = snapshotPayload();
   render();
   document.getElementById('emptyState').style.display='block';
   document.getElementById('panelContent').style.display='none';
