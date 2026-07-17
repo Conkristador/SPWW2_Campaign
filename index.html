@@ -108,7 +108,7 @@
 
   /* ---------- Header ---------- */
   #hdr{position:absolute;top:0;left:0;right:0;padding:16px 20px 10px;
-    display:flex;align-items:baseline;gap:14px;pointer-events:none;z-index:5;
+    display:flex;flex-direction:column;align-items:flex-start;gap:2px;pointer-events:none;z-index:5;
     background:linear-gradient(to bottom, rgba(27,30,20,.95), rgba(27,30,20,0));}
   #hdr h1{font-family:var(--font-display);font-weight:600;font-size:19px;letter-spacing:.06em;
     text-transform:uppercase;margin:0;color:var(--ink);}
@@ -133,7 +133,7 @@
 
   /* ---------- Controls (top-right) ---------- */
   #controls{position:absolute;top:16px;left:50%;transform:translateX(-50%);z-index:5;
-    display:flex;flex-direction:column;gap:8px;align-items:center;max-width:min(900px,70vw);}
+    display:flex;flex-direction:column;gap:8px;align-items:center;max-width:min(760px,58vw);}
   .ctrl-row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;}
   #exportControls{position:absolute;bottom:16px;right:20px;z-index:5;
     display:flex;flex-direction:column;gap:6px;align-items:flex-end;}
@@ -233,7 +233,8 @@
   .log-entry .log-outcome{font-family:var(--font-mono);font-size:11px;margin-top:3px;}
 
   /* ---------- Legend (bottom-left) ---------- */
-  #legend{position:absolute;bottom:16px;left:16px;z-index:5;background:rgba(39,43,29,.9);
+  #legendStack{position:absolute;bottom:16px;left:16px;z-index:5;display:flex;flex-direction:column;gap:8px;align-items:flex-start;}
+  #legend{background:rgba(39,43,29,.9);
     border:1px solid var(--panel-border);border-radius:4px;padding:10px 14px;
     font-family:var(--font-mono);font-size:10.5px;color:var(--ink-dim);}
   #legend .row{display:flex;align-items:center;gap:7px;margin:3px 0;}
@@ -262,8 +263,8 @@
   .eu-toggle-btn{position:absolute;top:96px;right:20px;z-index:4;}
 
   /* ---------- Search ---------- */
-  #turnBox{position:absolute;top:56px;left:20px;z-index:5;}
-  #search{position:absolute;top:90px;left:20px;z-index:5;}
+  #turnBox{position:absolute;top:72px;left:20px;z-index:5;display:flex;flex-direction:column;gap:6px;align-items:flex-start;}
+  #topRightStack{position:absolute;top:16px;right:20px;z-index:5;display:flex;flex-direction:column;gap:8px;align-items:flex-end;}
   #search input{background:var(--panel);border:1px solid var(--panel-border);color:var(--ink);
     font-family:var(--font-mono);font-size:12px;padding:7px 10px;border-radius:3px;
     width:200px;outline:none;}
@@ -329,34 +330,35 @@
     <svg id="map"></svg>
     <div id="hdr">
       <h1>SPWW2 Grand Campaign</h1>
-      <span class="sub" id="sectorCount">— sectors</span>
-      <span class="sub" id="requestCounterBadge" style="margin-left:10px;"></span>
+      <div>
+        <span class="sub" id="sectorCount">— sectors</span>
+        <span class="sub" id="requestCounterBadge" style="margin-left:10px;"></span>
+      </div>
     </div>
     <div id="turnBox">
       <span class="clock-badge" id="clockBadge">Summer 1941</span>
+      <button class="ctrl-btn" id="advanceTurn">ADVANCE TURN →</button>
+      <button class="ctrl-btn ctrl-btn-gold" id="openWinter">WINTER LOGISTICS</button>
+      <div id="search">
+        <input id="searchInput" type="text" placeholder="Find sector or nation…" autocomplete="off">
+      </div>
     </div>
-    <div id="search">
-      <input id="searchInput" type="text" placeholder="Find sector or nation…" autocomplete="off">
+    <div id="topRightStack">
+      <button class="ctrl-btn" id="toggleInset">EUROPE DETAIL: ON</button>
+      <button class="ctrl-btn" id="toggleInsetCN">CHINA DETAIL: ON</button>
+      <button class="ctrl-btn" id="resetView">RESET VIEW</button>
     </div>
     <div id="controls">
       <div class="ctrl-row" id="controlsGameplay">
         <button class="ctrl-btn ctrl-btn-gold" id="openEconomy">ECONOMY</button>
-        <button class="ctrl-btn ctrl-btn-gold" id="openWinter">WINTER LOGISTICS</button>
         <button class="ctrl-btn ctrl-btn-gold" id="openSequenceBtn">TURN CHECKLIST</button>
+        <button class="ctrl-btn ctrl-btn-gold" id="openLog">BATTLE LOG</button>
+        <button class="ctrl-btn ctrl-btn-gold" id="openActionLog">ACTION LOG</button>
+      </div>
+      <div class="ctrl-row" id="controlsAdmin">
         <button class="ctrl-btn ctrl-btn-gold" id="openMinorsBtn">MINOR NATIONS</button>
         <button class="ctrl-btn ctrl-btn-gold" id="openBombingBtn">STRATEGIC BOMBING</button>
         <button class="ctrl-btn ctrl-btn-gold" id="openSubBtn">SUBMARINE WARFARE</button>
-        <button class="ctrl-btn ctrl-btn-gold" id="openLog">BATTLE LOG</button>
-        <button class="ctrl-btn ctrl-btn-gold" id="openActionLog">ACTION LOG</button>
-        <button class="ctrl-btn" id="advanceTurn">ADVANCE TURN →</button>
-      </div>
-      <div class="ctrl-row" id="controlsAdmin">
-        <button class="ctrl-btn ctrl-btn-gold" id="openRulebookBtn">📖 RULEBOOK</button>
-        <button class="ctrl-btn" id="toggleInset">EUROPE DETAIL: ON</button>
-        <button class="ctrl-btn" id="toggleInsetCN">CHINA DETAIL: ON</button>
-        <button class="ctrl-btn" id="togglePartisan">PARTISAN MARKERS: ON</button>
-        <button class="ctrl-btn" id="resetView">RESET VIEW</button>
-        <button class="ctrl-btn" id="resetData">RESTORE SCENARIO START</button>
       </div>
     </div>
     <div id="exportControls">
@@ -396,22 +398,26 @@
         <button class="dash-btn allied" id="openAlliedDash">Allied Dashboard</button>
       </div>
     </div>
-    <div id="legend">
-      <div class="row"><span class="sw" style="background:var(--axis)"></span>Axis control</div>
-      <div class="row"><span class="sw" style="background:var(--allied)"></span>Allied control</div>
-      <div class="row"><span class="sw" style="background:var(--neutral)"></span>Neutral</div>
-      <div class="row"><span class="sw" style="background:var(--gold);border-radius:1px;transform:rotate(45deg)"></span>Resource Centre</div>
-      <div class="row"><span class="sw" style="background:var(--danger);color:#fff;font-size:7px;display:flex;align-items:center;justify-content:center;">4</span>Partisan Level (§12.0)</div>
-      <div class="row"><span class="sw" style="background:var(--allied);border-radius:1px;color:#1B1E14;font-size:7px;display:flex;align-items:center;justify-content:center;">1</span>NTF assigned (§11.4)</div>
-      <div class="row"><span class="sw" style="background:none;border-bottom:2px dotted var(--allied);height:0;width:14px;"></span>Amphibious-only link (§11.1)</div>
-      <div class="row"><span class="sw" style="background:none;border-bottom:2px solid var(--allied);height:0;width:14px;"></span>River crossing</div>
-      <div class="row"><span class="sw" style="background:none;border:1.6px dashed var(--danger);border-radius:50%;"></span>Contested (§8.1)</div>
-      <div class="row"><span class="sw" style="background:none;border:1.6px solid var(--gold);border-radius:50%;"></span>Lodgement Active (§11.1.3)</div>
-      <div class="row"><span class="sw" style="background:var(--allied);border-radius:50%;"></span>Forward Staging Base (§11.6)</div>
-      <div class="row"><span class="sw" style="background:var(--gold);border-radius:50%;"></span>USN Mobile Staging Anchorage (§11.6)</div>
-      <div class="row"><span class="sw" style="background:var(--gold);color:#1B1E14;font-size:8px;display:flex;align-items:center;justify-content:center;">★</span>Elite Battle Group</div>
-      <div class="row"><span class="sw" style="background:var(--danger);border-radius:50%;"></span>Out of Supply</div>
-      <div class="row" style="margin-top:6px;border-top:1px solid var(--panel-border);padding-top:6px;">Press <b style="color:var(--gold);">L</b> to toggle sector labels</div>
+    <div id="legendStack">
+      <button class="ctrl-btn ctrl-btn-gold" id="openRulebookBtn">📖 RULEBOOK</button>
+      <div id="legend">
+        <div class="row"><span class="sw" style="background:var(--axis)"></span>Axis control</div>
+        <div class="row"><span class="sw" style="background:var(--allied)"></span>Allied control</div>
+        <div class="row"><span class="sw" style="background:var(--neutral)"></span>Neutral</div>
+        <div class="row"><span class="sw" style="background:var(--gold);border-radius:1px;transform:rotate(45deg)"></span>Resource Centre</div>
+        <div class="row"><span class="sw" style="background:var(--danger);color:#fff;font-size:7px;display:flex;align-items:center;justify-content:center;">4</span>Partisan Level (§12.0)</div>
+        <div class="row"><span class="sw" style="background:var(--allied);border-radius:1px;color:#1B1E14;font-size:7px;display:flex;align-items:center;justify-content:center;">1</span>NTF assigned (§11.4)</div>
+        <div class="row"><span class="sw" style="background:none;border-bottom:2px dotted var(--allied);height:0;width:14px;"></span>Amphibious-only link (§11.1)</div>
+        <div class="row"><span class="sw" style="background:none;border-bottom:2px solid var(--allied);height:0;width:14px;"></span>River crossing</div>
+        <div class="row"><span class="sw" style="background:none;border:1.6px dashed var(--danger);border-radius:50%;"></span>Contested (§8.1)</div>
+        <div class="row"><span class="sw" style="background:none;border:1.6px solid var(--gold);border-radius:50%;"></span>Lodgement Active (§11.1.3)</div>
+        <div class="row"><span class="sw" style="background:var(--allied);border-radius:50%;"></span>Forward Staging Base (§11.6)</div>
+        <div class="row"><span class="sw" style="background:var(--gold);border-radius:50%;"></span>USN Mobile Staging Anchorage (§11.6)</div>
+        <div class="row"><span class="sw" style="background:var(--gold);color:#1B1E14;font-size:8px;display:flex;align-items:center;justify-content:center;">★</span>Elite Battle Group</div>
+        <div class="row"><span class="sw" style="background:var(--danger);border-radius:50%;"></span>Out of Supply</div>
+        <div class="row" style="margin-top:6px;border-top:1px solid var(--panel-border);padding-top:6px;">Press <b style="color:var(--gold);">L</b> to toggle sector labels, <b style="color:var(--gold);">P</b> to toggle partisan markers</div>
+      </div>
+      <button class="ctrl-btn" id="resetData">RESTORE SCENARIO START</button>
     </div>
   </div>
   <div id="side">
@@ -6223,12 +6229,6 @@ Object.values(INSET_CONFIGS).forEach(cfg=>{
   }catch(e){ console.warn('Inset drag setup failed:', e); }
 });
 
-document.getElementById('togglePartisan').addEventListener('click', ()=>{
-  partisanMarkersVisible = !partisanMarkersVisible;
-  document.getElementById('togglePartisan').textContent = 'PARTISAN MARKERS: ' + (partisanMarkersVisible?'ON':'OFF');
-  render();
-});
-
 document.getElementById('resetView').addEventListener('click', ()=>{
   svg.transition().duration(400).call(zoom.transform, d3.zoomIdentity);
 });
@@ -6407,9 +6407,13 @@ document.addEventListener('keydown', (e)=>{
     labelsVisible = !labelsVisible;
     render();
   }
+  if(e.key==='p' || e.key==='P'){
+    partisanMarkersVisible = !partisanMarkersVisible;
+    render();
+  }
 });
 
-(function init(){
+function startApp(){
   // Always render immediately from the built-in scenario data — never block
   // the first paint on a network/storage call.
   sectors = JSON.parse(JSON.stringify(SEED));
@@ -6424,7 +6428,9 @@ document.addEventListener('keydown', (e)=>{
   // timeout, so a returning player sees the live campaign state instead.
   hydrateFromStorage();
   loadRole();
-})();
+}
+
+startApp();
 </script>
 </body>
 </html>
