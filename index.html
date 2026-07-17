@@ -5338,10 +5338,10 @@ function buildIntelSectionHtml(faction, dash){
     html += `
     <div class="winter-nation">
       <h3 title="Standing intelligence effect (§9.2) — active as long as UK holds Southern England and this token.">ULTRA</h3>
-      <div class="winter-note">Pick up to 3 German Battle Groups to upgrade one FoW Tier this turn (Tier 1→2, Tier 2→3).
-        ${activeTargets.length ? `<br><b>Currently boosted this turn:</b> ${activeTargets.map(id=>{const b=bgs.find(x=>x.id===id); return b?b.name:'?';}).join(', ')}` : ''}</div>
+      <div class="winter-note">Pick up to 3 German Battle Groups to upgrade one FoW Tier this turn (Tier 1→2, Tier 2→3). Location shown only for units you've already targeted — that's the whole point of picking them.
+        ${activeTargets.length ? `<br><b>Currently boosted this turn:</b> ${activeTargets.map(id=>{const b=bgs.find(x=>x.id===id); return b?`${b.name} — ${byId[b.sectorId]?byId[b.sectorId].name:'?'}`:'?';}).join(', ')}` : ''}</div>
       <select id="ultra_targets" multiple size="5" style="width:100%;">
-        ${germanBgs.map(b=>`<option value="${b.id}" ${activeTargets.includes(b.id)?'selected':''}>${b.name} — ${byId[b.sectorId]?byId[b.sectorId].name:'?'}</option>`).join('')}
+        ${germanBgs.map(b=>`<option value="${b.id}" ${activeTargets.includes(b.id)?'selected':''}>${b.name}${activeTargets.includes(b.id)?` — ${byId[b.sectorId]?byId[b.sectorId].name:'?'}`:''}</option>`).join('')}
       </select>
       <button class="cr-roll-btn" id="ultra_apply_btn" style="margin-top:8px;">Apply for ${thisTurn}</button>
 
