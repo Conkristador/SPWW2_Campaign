@@ -5533,6 +5533,7 @@ function wireDashboardInputs(faction){
     el.addEventListener('change', async ()=>{
       dashboards[el.dataset.fac].doctrine[el.dataset.nation].token = el.value;
       await saveState(true);
+      openDashboard(el.dataset.fac);
     });
   });
   document.querySelectorAll('.dash-tok').forEach(el=>{
