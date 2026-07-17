@@ -2606,7 +2606,7 @@ function defaultDashboards(){
       notes:'' },
     Allied: { doctrine:{USA:{active:'None',token:'None',activated:'',expires:''},UK:{active:'None',token:'None',activated:'',expires:''},USSR:{active:'None',token:'None',activated:'',expires:''},China:{active:'None',token:'None',activated:'',expires:''}},
       tokens:{USA:{},UK:{},USSR:{},China:{}}, mobilizationSlack:{USA:0,UK:0,USSR:0,China:0},
-      flags:{'ULTRA active':'No','MAGIC active':'No','Free France Legitimacy count (0-3)':'0','Vichy Legitimacy count (0-3)':'0','Italian Armistice triggered':'No','Flying Tigers active':'No','Burma Road / Hump Lend-Lease active':'No','China Alpha Force unlocked':'No'},
+      flags:{'Free France Legitimacy count (0-3)':'0','Vichy Legitimacy count (0-3)':'0','Italian Armistice triggered':'No','Flying Tigers active':'No','Burma Road / Hump Lend-Lease active':'No','China Alpha Force unlocked':'No'},
       intel:{ultraTurn:'', ultraTargets:[], ultraRevealTurn:'', ultraRevealCount:0, magicRevealTurn:'', magicRevealDone:false},
       notes:'' },
   };
@@ -2621,6 +2621,7 @@ function normalizeDashboards(saved){
     Object.keys(b.tokens).forEach(n=>{ b.tokens[n] = {...b.tokens[n], ...((s.tokens&&s.tokens[n])||{})}; });
     Object.keys(b.mobilizationSlack).forEach(n=>{ b.mobilizationSlack[n] = (s.mobilizationSlack&&s.mobilizationSlack[n]) || 0; });
     b.flags = {...b.flags, ...(s.flags||{})};
+    delete b.flags['ULTRA active']; delete b.flags['MAGIC active']; // superseded by the live National Token state
     if(b.intel) b.intel = {...b.intel, ...(s.intel||{})};
     b.notes = s.notes || '';
   });
@@ -5391,8 +5392,6 @@ function buildDashboardHtml(faction){
     'Italian Armistice triggered': 'sec-12-6',
     'General Winter active': 'sec-12-4',
     'Atlantic Wall triggered': 'sec-12-1',
-    'ULTRA active': 'sec-9-2',
-    'MAGIC active': 'sec-9-2',
     'Free France Legitimacy count (0-3)': 'sec-13-2',
     'Vichy Legitimacy count (0-3)': 'sec-13-2',
     'Flying Tigers active': 'sec-12-3',
