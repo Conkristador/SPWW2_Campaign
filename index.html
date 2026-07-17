@@ -4122,10 +4122,14 @@ function renderBGPanel(){
       </div>
 
       <div class="field-group">
-        <div class="fg-label">Move to Sector ${moved?'— locked (already activated)':''}</div>
+        <div class="fg-label rule-link" data-section="sec-7-4">Move to Sector ${moved?'— locked (already activated)':''}</div>
         <select id="f_move" ${moved?'disabled':''}>
           <option value="">— stay at ${sector?sector.name:'current'} —</option>
           ${(sector?.connections||[]).map(cid=> byId[cid] ? `<option value="${cid}">${byId[cid].name}</option>` : '').join('')}
+          ${(()=>{
+            const rm = roadMarchTargets(sector, b.nation);
+            return rm.length ? `<optgroup label="Road March (§7.4, 2 sectors)">${rm.map(t=>`<option value="${t.id}">${t.name}</option>`).join('')}</optgroup>` : '';
+          })()}
         </select>
         ${moved ? `<button class="link-btn" id="f_undo_move">Undo — clear activation flag manually</button>` : ''}
       </div>
@@ -4201,6 +4205,12 @@ function renderBGPanel(){
     if(moveVal){
       const target = byId[parseInt(moveVal)];
       if(target){
+        // §13.1 Balkan Occupation Duty: a Bulgarian BG may never enter a USSR sector.
+        if(b.nation==='Bulgaria' && target.region==='USSR'){
+          notify(`§13.1 Balkan Occupation Duty: a Bulgarian BG may never enter a USSR sector. Move reverted.`);
+          render(); selectBG(b.id);
+          return;
+        }
         // Moving into an enemy-occupied sector does NOT auto-resolve — battles
         // are played manually in WinSPWW2. It just relocates the BG; the
         // sector then shows mixed factions and offers "Resolve Engagement"
@@ -4216,6 +4226,28 @@ function renderBGPanel(){
           notify(`${originSector.name} → ${target.name} crosses open ocean — this move resolves as an Amphibious Invasion (§11.1), not a plain Engagement Check: Beach Assault first, then Advance/Delay against the same defender. A losing Beach Assault also costs an extra 50% points on top of the normal retreat.`);
         } else if(river && targetIsEnemy && !targetHasFriendlyAlready){
           notify(`${originSector.name} → ${target.name} crosses the ${river} — the ${river} must be present in the WinSPWW2 engagement map for this attack. (A friendly BG already holding ${target.name} would mean no river applies — this is a fresh crossing.)`);
+        }
+        // §13.2 Croix de Lorraine — Rally Without a Fight: a Free French BG
+        // entering an undefended Vichy colonial sector (no Vichy/Axis BG
+        // present, not metropolitan France) flips it to Allied automatically.
+        if(b.nation==='Free France' && target.owner==='Vichy' && target.region!=='Western Europe'){
+          const axisPresent = bgs.some(x=>x.sectorId===target.id && x.id!==b.id && (x.faction||factionForNation(x.nation))==='Axis');
+          if(!axisPresent){
+            target.owner = 'Free France'; target.occupier = 'UK'; target.faction = 'Allied';
+            logAction('Allied', 'Croix de Lorraine', `${b.name} rallies ${target.name} to Free France without a fight (§13.2) — no Vichy or Axis BG present`, [target]);
+            notify(`§13.2 Rally Without a Fight: ${target.name} flips to Free France automatically — no Engagement Check.`);
+          }
+        }
+        // §13.1 Motti Tactics: a Soviet BG ending its move in a Finnish-
+        // controlled sector, adjacent to no other Soviet BG, is
+        // automatically Out of Supply this turn.
+        if(b.nation==='USSR' && (target.occupier==='Finland' || target.owner==='Finland')){
+          const hasAdjacentSoviet = (target.connections||[]).some(cid=>bgs.some(x=>x.sectorId===cid && x.nation==='USSR' && x.id!==b.id));
+          if(!hasAdjacentSoviet){
+            b.in_supply = 'No';
+            logAction('Allied', 'Motti Tactics', `${b.name} isolated in Finnish-controlled ${target.name} (§13.1) — automatically Out of Supply`, [target]);
+            notify(`§13.1 Motti Tactics: ${b.name} is isolated in ${target.name} with no adjacent Soviet BG — automatically Out of Supply this turn.`);
+          }
         }
       }
     }
@@ -4349,15 +4381,32 @@ function engagementBonus(isAttacker, engType){
 
 function effectivePoints(bg, isAttacker, ctx){
   const bonus = engagementBonus(isAttacker, ctx.engagementType);
-  const fatiguePct = bg.fatigue>=3?0.5:bg.fatigue===2?0.3:bg.fatigue===1?0.1:0;
+  // §13.1 Diggers: ANZAC never takes the FP1/FP2 penalty, still takes FP3.
+  const fatiguePct = bg.nation==='ANZAC' ? (bg.fatigue>=3?0.5:0)
+    : (bg.fatigue>=3?0.5:bg.fatigue===2?0.3:bg.fatigue===1?0.1:0);
   const supplyPct = bg.in_supply==='No'?0.2:0;
   const combinedPct = Math.min(0.5, fatiguePct+supplyPct);
   let seasonMult;
-  if(isAttacker) seasonMult = (ctx.generalWinter && bg.nation==='Germany') ? 0.5 : (ctx.season==='Winter'?0.8:1);
-  else seasonMult = (ctx.generalWinter && bg.nation==='Germany') ? 0.8 : 1;
+  if(isAttacker){
+    // §13.1 Motti Tactics: Finland ignores the Winter-weather attack penalty.
+    if(bg.nation==='Finland') seasonMult = 1;
+    else seasonMult = (ctx.generalWinter && bg.nation==='Germany') ? 0.5 : (ctx.season==='Winter'?0.8:1);
+  } else {
+    seasonMult = (ctx.generalWinter && bg.nation==='Germany') ? 0.8 : 1;
+  }
   const terrainMult = (TERRAIN_MULT[bg.type]||{})[ctx.terrain] ?? 1;
   const expMult = 0.85 + (bg.experience/100)*0.3;
-  return (bg.points+bonus) * (1-combinedPct) * seasonMult * terrainMult * expMult;
+  let nationalFlat = 0;
+  const sector = ctx.sector;
+  if(sector){
+    // §13.1 Balkan Occupation Duty: Bulgaria defending a sector that was
+    // originally Greek or Yugoslav territory gets +500.
+    if(!isAttacker && bg.nation==='Bulgaria' && (sector.owner==='Greece' || sector.owner==='Yugoslavia')) nationalFlat += 500;
+    // §13.2 Croix de Lorraine: Free France attacking a Vichy-held (not
+    // German-held) sector gets +500.
+    if(isAttacker && bg.nation==='Free France' && sector.occupier==='Vichy') nationalFlat += 500;
+  }
+  return (bg.points+bonus+nationalFlat) * (1-combinedPct) * seasonMult * terrainMult * expMult;
 }
 
 function sideTotal(bgList, isAttacker, ctx, tokenBonus, nationalBonus, manualPct){
@@ -4396,6 +4445,33 @@ function applyLossToSide(bgList, totalLoss){
     const share = b.points/totalPoints;
     b.points = Math.max(0, Math.round(b.points - totalLoss*share));
   });
+}
+
+// §7.4 Road March: a 2-sector move in one activation, if both the middle and
+// destination sectors are friendly-controlled and not Contested. §13.1 Kra
+// Isthmus Corridor: a Japanese BG may Road March through Thailand even if
+// Thailand is Contested.
+function roadMarchTargets(originSector, nation){
+  if(!originSector) return [];
+  const faction = factionForNation(nation);
+  const results = [];
+  (originSector.connections||[]).forEach(midId=>{
+    const mid = byId[midId];
+    if(!mid || mid.type==='Sea') return;
+    const thailandException = mid.name==='Thailand' && nation==='Japan';
+    if(mid.contested && !thailandException) return;
+    if(factionForNation(mid.occupier||mid.owner) !== faction) return;
+    (mid.connections||[]).forEach(destId=>{
+      if(destId===originSector.id) return;
+      const dest = byId[destId];
+      if(!dest || dest.type==='Sea') return;
+      const destThailandException = dest.name==='Thailand' && nation==='Japan';
+      if(dest.contested && !destThailandException) return;
+      if(factionForNation(dest.occupier||dest.owner) !== faction) return;
+      if(!results.some(r=>r.id===dest.id)) results.push(dest);
+    });
+  });
+  return results;
 }
 
 function bgSummaryRow(bg){
@@ -4458,12 +4534,13 @@ function invasionContextForm(label){
     <div class="inv-phase-result"></div>
   `;
 }
-function readInvasionCtx(){
+function readInvasionCtx(sector){
   return {
     season: document.querySelector('.inv-ctx-season').value,
     terrain: document.querySelector('.inv-ctx-terrain').value,
     engagementType: null, // set per phase below
     generalWinter: false,
+    sector: sector,
   };
 }
 
@@ -4477,7 +4554,7 @@ function runInvasionPhase0(state){
   `;
   openModal('Amphibious Invasion — Phase 0', html);
   document.querySelector('.inv-resolve-btn').addEventListener('click', async ()=>{
-    const ctx = readInvasionCtx();
+    const ctx = readInvasionCtx(state.sector);
     ctx.engagementType = 'Meeting Engagement';
     const result = resolveCombat([state.airborneBg], state.defenderBGs, ctx, 0,0,0, 0,0,0);
     const won = result.winner === 'ATTACKER';
@@ -4518,7 +4595,7 @@ async function runInvasionPhase1(state){
   `;
   openModal('Amphibious Invasion — Phase 1: Beach Assault', html);
   document.querySelector('.inv-resolve-btn').addEventListener('click', async ()=>{
-    const ctx = readInvasionCtx();
+    const ctx = readInvasionCtx(state.sector);
     ctx.engagementType = 'Assault/Defend';
     const ukCombinedOps = state.attackerBGs.some(b=>b.nation==='UK') && dashboards.Allied.doctrine.UK.active==='Combined Operations Doctrine';
     const atkBonus = ukCombinedOps ? 500 : 0;
@@ -4619,7 +4696,7 @@ async function runInvasionPhase2(state){
   `;
   openModal('Amphibious Invasion — Phase 2: Inland Breakout', html);
   document.querySelector('.inv-resolve-btn').addEventListener('click', async ()=>{
-    const ctx = readInvasionCtx();
+    const ctx = readInvasionCtx(state.sector);
     ctx.engagementType = 'Advance/Delay';
     const result = resolveCombat(state.attackerBGs, state.defenderBGs, ctx, 0,0,0, 0,0,0);
     let outcome, note;
@@ -4725,6 +4802,7 @@ function runCombatResolver(){
     engagementType: document.getElementById('cr_engtype').value,
     terrain: document.getElementById('cr_terrain').value,
     generalWinter: document.getElementById('cr_genwinter').value==='Yes',
+    sector: pe.sector,
   };
   const atkTokType = document.getElementById('cr_atk_tok_type').value;
   const atkTokCount = parseInt(document.getElementById('cr_atk_tok_count').value)||0;
@@ -4822,17 +4900,29 @@ async function applyCombatResult(){
     pe.sector.contested = false;
     const loserBGs = r.winner==='ATTACKER' ? pe.defenderBGs : pe.attackerBGs;
     const winnerBGs = r.winner==='ATTACKER' ? pe.attackerBGs : pe.defenderBGs;
+    const inUSSR = pe.sector.region==='USSR';
     const winXP = r.outcome==='Decisive Victory' ? 5 : 3;
-    winnerBGs.forEach(b=>{ b.experience += winXP; });
+    // §13.1 Second Army on the Don: a Hungarian BG winning in a USSR sector
+    // always gets +5 XP, regardless of margin.
+    winnerBGs.forEach(b=>{ b.experience += (inUSSR && b.nation==='Hungary') ? 5 : winXP; });
     const retreatSel = document.getElementById('cr_retreat_select');
     if(r.outcome==='Decisive Victory'){
       loserBGs.forEach(b=>{ b.experience = Math.max(0,b.experience-5); b.shattered = true; });
     }
+    // Same rule, other half: a Shattered Hungarian BG in a USSR sector is
+    // destroyed outright, no retreat, before the normal retreat/removal path.
+    const donRiverDestroyed = inUSSR ? loserBGs.filter(b=>b.nation==='Hungary' && b.shattered) : [];
+    const remainingLosers = loserBGs.filter(b=>!donRiverDestroyed.includes(b));
+    if(donRiverDestroyed.length){
+      const destroyedIds = new Set(donRiverDestroyed.map(b=>b.id));
+      bgs = bgs.filter(b=>!destroyedIds.has(b.id));
+      notify(`§13.1 Second Army on the Don: ${donRiverDestroyed.map(b=>b.name).join(', ')} Shattered in a USSR sector — destroyed outright, no retreat.`);
+    }
     if(retreatSel){
       const dest = byId[parseInt(retreatSel.value)];
-      loserBGs.forEach(b=>{ b.sectorId = dest.id; b.location = dest.name; });
+      remainingLosers.forEach(b=>{ b.sectorId = dest.id; b.location = dest.name; });
     } else {
-      const loserIds = new Set(loserBGs.map(b=>b.id));
+      const loserIds = new Set(remainingLosers.map(b=>b.id));
       bgs = bgs.filter(b=>!loserIds.has(b.id));
     }
   }
