@@ -5236,7 +5236,6 @@ function buildIntelSectionHtml(faction, dash){
   if(faction !== 'Allied') return '';
   const hasUltra = dash.doctrine.UK.token === 'ULTRA';
   const hasMagic = dash.doctrine.USA.token === 'MAGIC';
-  if(!hasUltra && !hasMagic) return '';
   const thisTurn = `${clock.season} ${clock.year}`;
   const intel = dash.intel;
 
@@ -5265,6 +5264,12 @@ function buildIntelSectionHtml(faction, dash){
         ${intel.ultraRevealTurn===thisTurn && intel.ultraRevealCount>=(dash.doctrine.UK.active==='Bletchley Park Expansion'?2:1) ? 'Already used this turn' : `Reveal Entry (${intel.ultraRevealTurn===thisTurn?intel.ultraRevealCount:0}/${dash.doctrine.UK.active==='Bletchley Park Expansion'?2:1} used)`}
       </button>
     </div>`;
+  } else {
+    html += `
+    <div class="winter-nation">
+      <h3 style="color:var(--ink-faint);">ULTRA</h3>
+      <div class="winter-note">UK does not currently hold the ULTRA National Token. Set UK's National Token to ULTRA in the Doctrine &amp; National Token Tracker above to unlock this.</div>
+    </div>`;
   }
 
   if(hasMagic){
@@ -5280,6 +5285,12 @@ function buildIntelSectionHtml(faction, dash){
       <button class="cr-roll-btn" id="magic_reveal_btn" style="margin-top:8px;" ${intel.magicRevealTurn===thisTurn && intel.magicRevealDone?'disabled':''}>
         ${intel.magicRevealTurn===thisTurn && intel.magicRevealDone ? 'Already used this turn' : 'Reveal Entry'}
       </button>
+    </div>`;
+  } else {
+    html += `
+    <div class="winter-nation">
+      <h3 style="color:var(--ink-faint);">MAGIC</h3>
+      <div class="winter-note">USA does not currently hold the MAGIC National Token. Set USA's National Token to MAGIC in the Doctrine &amp; National Token Tracker above to unlock this.</div>
     </div>`;
   }
 
