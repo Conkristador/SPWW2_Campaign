@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SPWW2 Campaign Map</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/topojson-client@3"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   :root{
@@ -349,6 +350,8 @@
       <button class="ctrl-btn" id="toggleInset">EUROPE DETAIL: OFF</button>
       <button class="ctrl-btn" id="toggleInsetCN">CHINA DETAIL: OFF</button>
       <button class="ctrl-btn" id="resetView">RESET VIEW</button>
+      <button class="ctrl-btn" id="toggleEditPositions">EDIT NODE POSITIONS: OFF</button>
+      <button class="ctrl-btn" id="resetNodePositions">RESET ALL POSITIONS TO DEFAULT</button>
     </div>
     <div id="controls">
       <div class="ctrl-row" id="controlsGameplay">
@@ -2535,11 +2538,80 @@ let selectedBgId = null;
 
 const svg = d3.select('#map');
 const zoomLayer = svg.append('g').attr('id','zoomLayer');
+const basemapLayer = zoomLayer.append('g').attr('id','basemapLayer');
 const linkLayer = zoomLayer.append('g').attr('id','linkLayer');
 const nodeLayer = zoomLayer.append('g').attr('id','nodeLayer');
 const bgLayer = zoomLayer.append('g').attr('id','bgLayer');
 const ntfLayer = zoomLayer.append('g').attr('id','ntfLayer');
 const partisanLayer = zoomLayer.append('g').attr('id','partisanLayer');
+
+// ---------- Real-world basemap (Natural Earth land shapes, free public CDN) ----------
+// This map's own px/py coordinates were reverse-engineered against known
+// real-world reference points (London, Tokyo, Moscow, Sydney, Cairo, Paris,
+// Rome, Singapore — fit with near-zero residual error) to a linear
+// equirectangular projection: px = 4.1997*lon + 550.2129, py = -4.7213*lat
+// + 415.4529, seam at lon=-131 (this map's Pacific-centered antimeridian).
+// The basemap uses that exact formula so it aligns with the existing sector
+// layout — no sector position changes, the map just gets a coastline drawn
+// in behind everything that's already there.
+// A point-transform function only — no dependency on d3.geoPath/geoTransform
+// at all, so there's zero chance of D3's spherical pre-clip/resample stage
+// (built for real geographic projections) doing anything unexpected to a
+// simple flat linear transform. This function is directly unit-testable.
+function projectLonLat(lon, lat, prevLon){
+  let adj = lon;
+  if(prevLon !== null && prevLon !== undefined){
+    const candidates = [adj-360, adj, adj+360];
+    adj = candidates.reduce((best,c)=> Math.abs(c-prevLon)<Math.abs(best-prevLon)?c:best);
+  } else {
+    while(adj < -131) adj += 360;
+    while(adj >= 229) adj -= 360;
+  }
+  const px = 4.1997*adj + 550.2129;
+  const py = -4.7213*lat + 415.4529;
+  return [px, py, adj];
+}
+// Walks a GeoJSON Polygon/MultiPolygon geometry directly and builds one SVG
+// path 'd' string by hand — straight line segments between the dataset's own
+// vertices, no curve fitting, no resampling, nothing D3 might add on its own.
+function geometryToSvgPath(geometry){
+  if(!geometry) return '';
+  const polygons = geometry.type==='Polygon' ? [geometry.coordinates]
+    : geometry.type==='MultiPolygon' ? geometry.coordinates
+    : [];
+  let d = '';
+  polygons.forEach(polygon=>{
+    polygon.forEach(ring=>{
+      let prevLon = null;
+      ring.forEach(([lon,lat], i)=>{
+        const [px, py, adj] = projectLonLat(lon, lat, prevLon);
+        prevLon = adj;
+        d += (i===0 ? 'M' : 'L') + px.toFixed(1) + ',' + py.toFixed(1) + ' ';
+      });
+      d += 'Z ';
+    });
+  });
+  return d;
+}
+async function loadBasemap(){
+  try{
+    if(typeof topojson === 'undefined') throw new Error('topojson-client did not load');
+    const res = await withTimeout(fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/land-50m.json'), 15000);
+    if(!res.ok) throw new Error('basemap fetch failed: HTTP ' + res.status);
+    const topo = await res.json();
+    const geo = topojson.feature(topo, topo.objects.land);
+    const features = (geo.features && geo.features.length) ? geo.features : [geo];
+    basemapLayer.selectAll('path').data(features)
+      .join('path')
+      .attr('d', f=>geometryToSvgPath(f.geometry))
+      .attr('fill', 'var(--bg2)')
+      .attr('stroke', 'var(--panel-border)')
+      .attr('stroke-width', 0.5)
+      .attr('opacity', 0.9);
+  }catch(e){
+    console.warn('Basemap unavailable (offline, or the CDN is unreachable) — the map still works fine without it, this is purely decorative.', e);
+  }
+}
 
 let zoom;
 try{
@@ -2663,6 +2735,8 @@ function mergeSectorsWithSeed(saved){
       ntf: prev.ntf || {},
       ntfLocked: prev.ntfLocked || {},
       forwardStagingBase: prev.forwardStagingBase || false,
+      px: prev.px !== undefined ? prev.px : seed.px,
+      py: prev.py !== undefined ? prev.py : seed.py,
       forwardStagingNation: prev.forwardStagingNation || null,
       ukGarrison: prev.ukGarrison!==undefined ? prev.ukGarrison : seed.ukGarrison,
       activeAmphibiousOp: prev.activeAmphibiousOp || false,
@@ -2822,6 +2896,12 @@ function render(){
   // (Pacific-centered projection) and never recalculated — nodes never move.
   const DESIGN_W = 1512, DESIGN_H = 812;
   const scaleX = w / DESIGN_W, scaleY = h / DESIGN_H;
+  // The basemap is built once in raw design-space px/py (see loadBasemap) —
+  // it needs this exact same per-render scale to stay aligned with nodes,
+  // which are individually multiplied by scaleX/scaleY below. Without this,
+  // the two layers only agree when the window happens to be exactly
+  // 1512×812 — any other size and they silently drift apart.
+  basemapLayer.attr('transform', `scale(${scaleX},${scaleY})`);
   const nodes = sectors.map(s => ({...s, x: s.px * scaleX, y: s.py * scaleY}));
   const nodeById = {}; nodes.forEach(n=>nodeById[n.id]=n);
 
@@ -2926,8 +3006,31 @@ function render(){
   nodeSel
     .attr('transform', d=>`translate(${d.x},${d.y})`)
     .classed('selected', d=>d.id===selectedId)
-    .on('click', (ev,d)=>selectSector(d.id))
+    .style('cursor', editPositionsMode ? 'grab' : 'pointer')
+    .on('click', (ev,d)=>{ if(!editPositionsMode) selectSector(d.id); })
     .on('mouseenter', function(){ d3.select(this).raise(); });
+
+  if(editPositionsMode){
+    nodeSel.call(d3.drag()
+      .on('start', function(){ d3.select(this).style('cursor','grabbing').raise(); })
+      .on('drag', function(ev, d){
+        d3.select(this).attr('transform', `translate(${ev.x},${ev.y})`);
+      })
+      .on('end', async function(ev, d){
+        d3.select(this).style('cursor','grab');
+        // ev.x/ev.y come out in this element's local coordinate space, which
+        // is exactly the same scaled space d.x/d.y already live in — so
+        // dividing back out by the current scale recovers true design-space
+        // px/py, the same units the basemap and every other sector uses.
+        const s = sectors.find(x=>x.id===d.id);
+        if(!s) return;
+        s.px = ev.x / scaleX;
+        s.py = ev.y / scaleY;
+        await saveState(true);
+        render();
+      })
+    );
+  }
 
   nodeSel.select('circle.body')
     .attr('r', d=> d.type==='Sea' ? 4.5 : (d.rc>0?7:5.5))
@@ -3576,6 +3679,7 @@ let insetState = {
 };
 let labelsVisible = true;
 let partisanMarkersVisible = true;
+let editPositionsMode = false;
 let sequenceChecklist = {turn:'', naval:false, bombing:false, movement:false, partisan:false};
 
 try{
@@ -6662,6 +6766,24 @@ document.getElementById('resetView').addEventListener('click', ()=>{
   svg.transition().duration(400).call(zoom.transform, d3.zoomIdentity);
 });
 
+document.getElementById('toggleEditPositions').addEventListener('click', ()=>{
+  editPositionsMode = !editPositionsMode;
+  document.getElementById('toggleEditPositions').textContent = 'EDIT NODE POSITIONS: ' + (editPositionsMode?'ON':'OFF');
+  if(editPositionsMode) notify('Edit Node Positions is ON — drag any sector directly on the main map to move it. Each drop saves immediately and syncs to the other player too. Turn this off when you\'re done to go back to normal clicking/selecting.');
+  render();
+});
+
+document.getElementById('resetNodePositions').addEventListener('click', async ()=>{
+  const ok = await confirmDialog('Reset every sector on the map back to its original built-in position? This undoes all manual dragging, for every sector, for both players. Cannot be undone.');
+  if(!ok) return;
+  sectors.forEach(s=>{
+    const seed = SEED.find(x=>x.id===s.id);
+    if(seed){ s.px = seed.px; s.py = seed.py; }
+  });
+  await saveState(true, true);
+  render();
+});
+
 document.getElementById('undoLastAction').addEventListener('click', async ()=>{
   const viewer = playerRole || 'Observer';
   if(!undoSnapshot || (viewer!=='Observer' && viewer!==undoFaction)) return;
@@ -6870,6 +6992,7 @@ function startApp(){
   sectors = JSON.parse(JSON.stringify(SEED));
   bgs = JSON.parse(JSON.stringify(OOB_SEED));
   render();
+  loadBasemap(); // background fetch, purely decorative — never blocks anything else
   try{
     const n = parseInt(localStorage.getItem('jsonbin-request-count')||'0',10) || 0;
     const el = document.getElementById('requestCounterBadge');
