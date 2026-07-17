@@ -250,7 +250,8 @@
     background:rgba(31,35,23,.97);border:1px solid var(--panel-border);border-radius:5px;
     box-shadow:0 8px 24px rgba(0,0,0,.4);display:flex;flex-direction:column;}
   .region-inset.hidden{display:none;}
-  #cnInset{top:96px;right:400px;}
+  #efInset{top:96px;right:400px;}
+  #cnInset{top:96px;right:780px;}
   .region-inset-head{display:flex;justify-content:space-between;align-items:center;cursor:move;
     padding:8px 12px;border-bottom:1px solid var(--panel-border);flex-shrink:0;}
   .region-inset-head .title{font-family:var(--font-display);font-size:12px;letter-spacing:.08em;
@@ -347,10 +348,9 @@
       </div>
     </div>
     <div id="topRightStack">
-      <button class="ctrl-btn" id="toggleInset">EUROPE DETAIL: OFF</button>
-      <button class="ctrl-btn" id="toggleInsetCN">CHINA DETAIL: OFF</button>
       <button class="ctrl-btn" id="resetView">RESET VIEW</button>
-      <button class="ctrl-btn" id="toggleEditPositions">EDIT NODE POSITIONS: OFF</button>
+      <button class="ctrl-btn" id="toggleEditPositions">MAP EDITOR MODE: OFF</button>
+      <button class="ctrl-btn" id="createNewSector">+ CREATE NEW SECTOR</button>
       <button class="ctrl-btn" id="resetNodePositions">RESET ALL POSITIONS TO DEFAULT</button>
     </div>
     <div id="controls">
@@ -366,6 +366,11 @@
         <button class="ctrl-btn ctrl-btn-gold" id="openBombingBtn">STRATEGIC BOMBING</button>
         <button class="ctrl-btn ctrl-btn-gold" id="openSubBtn">SUBMARINE WARFARE</button>
       </div>
+      <div class="ctrl-row" id="controlsInsets">
+        <button class="ctrl-btn" id="toggleInset">WESTERN FRONT DETAIL: OFF</button>
+        <button class="ctrl-btn" id="toggleInsetEF">EASTERN FRONT DETAIL: OFF</button>
+        <button class="ctrl-btn" id="toggleInsetCN">CHINA DETAIL: OFF</button>
+      </div>
     </div>
     <div id="exportControls">
       <button class="ctrl-btn ctrl-btn-gold" id="exportBackup">EXPORT BACKUP (JSON)</button>
@@ -378,13 +383,24 @@
     <div id="euInset" class="region-inset hidden">
       <div id="euInsetHead" class="region-inset-head">
       <div>
-        <span class="title">Europe — Detail</span>
+        <span class="title">Western Front — Detail</span>
         <span class="hint">drag corner to resize · scroll to zoom</span>
       </div>
         <button id="euInsetReset" title="Reset pan/zoom">⤾ Reset View</button>
         <button id="euInsetClose" title="Hide">✕</button>
       </div>
       <svg id="euInsetSvg" class="region-inset-svg"></svg>
+    </div>
+    <div id="efInset" class="region-inset hidden">
+      <div id="efInsetHead" class="region-inset-head">
+      <div>
+        <span class="title">Eastern Front — Detail</span>
+        <span class="hint">drag corner to resize · scroll to zoom</span>
+      </div>
+        <button id="efInsetReset" title="Reset pan/zoom">⤾ Reset View</button>
+        <button id="efInsetClose" title="Hide">✕</button>
+      </div>
+      <svg id="efInsetSvg" class="region-inset-svg"></svg>
     </div>
     <div id="cnInset" class="region-inset hidden">
       <div id="cnInsetHead" class="region-inset-head">
@@ -2574,7 +2590,9 @@ function projectLonLat(lon, lat, prevLon){
 // Walks a GeoJSON Polygon/MultiPolygon geometry directly and builds one SVG
 // path 'd' string by hand — straight line segments between the dataset's own
 // vertices, no curve fitting, no resampling, nothing D3 might add on its own.
-function geometryToSvgPath(geometry){
+// transformFn has the same shape as projectLonLat: (lon, lat, prevLon) =>
+// [x, y, adjustedLon] — insets pass their own region-fit transform here.
+function geometryToSvgPath(geometry, transformFn){
   if(!geometry) return '';
   const polygons = geometry.type==='Polygon' ? [geometry.coordinates]
     : geometry.type==='MultiPolygon' ? geometry.coordinates
@@ -2584,7 +2602,7 @@ function geometryToSvgPath(geometry){
     polygon.forEach(ring=>{
       let prevLon = null;
       ring.forEach(([lon,lat], i)=>{
-        const [px, py, adj] = projectLonLat(lon, lat, prevLon);
+        const [px, py, adj] = transformFn(lon, lat, prevLon);
         prevLon = adj;
         d += (i===0 ? 'M' : 'L') + px.toFixed(1) + ',' + py.toFixed(1) + ' ';
       });
@@ -2593,17 +2611,25 @@ function geometryToSvgPath(geometry){
   });
   return d;
 }
+// Fetched once, reused for the main map AND both insets — no reason to hit
+// the CDN three times for the same coastline data.
+let cachedLandFeatures = null;
+async function fetchLandFeatures(){
+  if(cachedLandFeatures) return cachedLandFeatures;
+  if(typeof topojson === 'undefined') throw new Error('topojson-client did not load');
+  const res = await withTimeout(fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/land-50m.json'), 15000);
+  if(!res.ok) throw new Error('basemap fetch failed: HTTP ' + res.status);
+  const topo = await res.json();
+  const geo = topojson.feature(topo, topo.objects.land);
+  cachedLandFeatures = (geo.features && geo.features.length) ? geo.features : [geo];
+  return cachedLandFeatures;
+}
 async function loadBasemap(){
   try{
-    if(typeof topojson === 'undefined') throw new Error('topojson-client did not load');
-    const res = await withTimeout(fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/land-50m.json'), 15000);
-    if(!res.ok) throw new Error('basemap fetch failed: HTTP ' + res.status);
-    const topo = await res.json();
-    const geo = topojson.feature(topo, topo.objects.land);
-    const features = (geo.features && geo.features.length) ? geo.features : [geo];
+    const features = await fetchLandFeatures();
     basemapLayer.selectAll('path').data(features)
       .join('path')
-      .attr('d', f=>geometryToSvgPath(f.geometry))
+      .attr('d', f=>geometryToSvgPath(f.geometry, projectLonLat))
       .attr('fill', 'var(--bg2)')
       .attr('stroke', 'var(--panel-border)')
       .attr('stroke-width', 0.5)
@@ -2612,11 +2638,107 @@ async function loadBasemap(){
     console.warn('Basemap unavailable (offline, or the CDN is unreachable) — the map still works fine without it, this is purely decorative.', e);
   }
 }
+// Insets declutter node positions to avoid label overlap — there's no clean
+// formula from real lon/lat to an inset's local layout the way there is for
+// the main map. This basemap is a REFERENCE fit to the region's real
+// geographic bounding box, not a pixel-aligned underlay: it'll orient you
+// (which way is the coast, roughly where the sea is) but individual nodes
+// won't sit exactly on it the way they do on the main map, by design — the
+// decluttering that keeps their labels readable is the same thing that
+// breaks pixel alignment with any real coastline.
+function makeInsetTransform(cfg, w, h){
+  const subset = SEED.filter(s=>cfg.ids.has(s.id) && s.type!=='Sea');
+  const lons = subset.map(s=>(s.px-550.2129)/4.1997);
+  const lats = subset.map(s=>(s.py-415.4529)/-4.7213);
+  const padDeg = 3;
+  const lon0 = Math.min(...lons)-padDeg, lon1 = Math.max(...lons)+padDeg;
+  const lat0 = Math.min(...lats)-padDeg, lat1 = Math.max(...lats)+padDeg;
+  const pad = 16;
+  const a = (w-2*pad)/(lon1-lon0 || 1), b = pad - a*lon0;
+  const c = -(h-2*pad)/(lat1-lat0 || 1), d = pad - c*lat1;
+  return function(lon, lat, prevLon){
+    let adj = lon;
+    if(prevLon !== null && prevLon !== undefined){
+      const candidates = [adj-360, adj, adj+360];
+      adj = candidates.reduce((best,x)=> Math.abs(x-prevLon)<Math.abs(best-prevLon)?x:best);
+    }
+    return [a*adj+b, c*lat+d, adj];
+  };
+}
+async function loadInsetBasemap(cfg, layer, w, h){
+  try{
+    const features = await fetchLandFeatures();
+    const transformFn = makeInsetTransform(cfg, w, h);
+    layer.selectAll('path').data(features)
+      .join('path')
+      .attr('d', f=>geometryToSvgPath(f.geometry, transformFn))
+      .attr('fill', 'var(--bg2)')
+      .attr('stroke', 'var(--panel-border)')
+      .attr('stroke-width', 0.5)
+      .attr('opacity', 0.7);
+  }catch(e){
+    console.warn(`Inset basemap unavailable for ${cfg.key} — the inset still works fine without it.`, e);
+  }
+}
 
 let zoom;
+let currentZoomK = 1;
+let currentZoomBand = 0;
+// §Semantic zoom: dense clusters (Western/Eastern Europe, the China group)
+// spread apart as you zoom in, instead of living in a separate floating
+// inset panel. Offsets are computed once, in the same design-space units as
+// px/py, then blended in by zoom band (0 = true position, 1 = partial
+// spread, 2 = full spread) — a few discrete re-layouts on crossing a
+// threshold, not a per-frame animation, so it reuses the same render()
+// pipeline that already correctly repositions links/BGs/labels together.
+let clusterOffsets = {};
+function computeClusterOffsets(){
+  const offsets = {};
+  // radius/strength tuned specifically against Europe's real density (47
+  // nodes packed tightly) — the previous radius=9/strength=0.5/250-tick
+  // settings looked fine for China's sparser 11-node cluster but left ~17
+  // of Europe's 1081 node-pairs still overlapping; more iterations alone
+  // didn't help (the simulation reaches equilibrium fast, it just wasn't
+  // the RIGHT equilibrium) — weakening the pull-back and tightening the
+  // collision radius together is what actually gets to zero overlaps.
+  [EUROPE_IDS, EASTERN_FRONT_IDS, CHINA_IDS].forEach(idSet=>{
+    const subset = sectors.filter(s=>idSet.has(s.id)).map(s=>({...s}));
+    if(!subset.length) return;
+    subset.forEach(s=>{ s.x = s.px; s.y = s.py; });
+    const sim = d3.forceSimulation(subset)
+      .force('x', d3.forceX(d=>d.px).strength(0.3))
+      .force('y', d3.forceY(d=>d.py).strength(0.3))
+      .force('collide', d3.forceCollide(7))
+      .stop();
+    for(let i=0;i<600;i++) sim.tick();
+    subset.forEach(s=>{ offsets[s.id] = {dx: s.x-s.px, dy: s.y-s.py}; });
+  });
+  return offsets;
+}
+function zoomBandFor(k){
+  if(k >= 3.2) return 2;
+  if(k >= 1.8) return 1;
+  return 0;
+}
 try{
+  let bandRenderPending = false;
   zoom = d3.zoom().scaleExtent([0.35, 5]).on('zoom', (ev) => {
     zoomLayer.attr('transform', ev.transform);
+    currentZoomK = ev.transform.k;
+    const band = zoomBandFor(currentZoomK);
+    if(band !== currentZoomBand && !bandRenderPending){
+      bandRenderPending = true;
+      // Deferred a frame so the heavy full render() (rebuilds every node,
+      // link, BG chip, marker) never runs synchronously inside D3's own
+      // zoom-event callback — doing that risked stepping on the gesture's
+      // own in-flight state, which could easily look like "zoom stopped
+      // responding" without ever throwing a visible error.
+      requestAnimationFrame(()=>{
+        currentZoomBand = band;
+        bandRenderPending = false;
+        render();
+      });
+    }
   });
   svg.call(zoom);
 }catch(e){ console.warn('Main map zoom setup failed, continuing without it:', e); zoom = {transform:()=>{}}; }
@@ -2722,7 +2844,7 @@ async function hydrateFromStorage(){
 function mergeSectorsWithSeed(saved){
   const savedById = {};
   (saved||[]).forEach(s=>{ if(s && s.id!=null) savedById[s.id]=s; });
-  return SEED.map(seed=>{
+  const merged = SEED.map(seed=>{
     const prev = savedById[seed.id];
     if(!prev) return {...seed};
     return {...seed,
@@ -2743,8 +2865,21 @@ function mergeSectorsWithSeed(saved){
       lodgementTurn: prev.lodgementTurn || null,
       lodgementRotationTurn: prev.lodgementRotationTurn || null,
       faction: prev.faction!==undefined ? prev.faction : seed.faction,
+      // Map Editor fields — connections/terrain edited by a player must
+      // survive a reload same as everything else, not silently revert to
+      // the built-in scenario's original graph.
+      connections: prev.connections || seed.connections,
+      terrainOverride: prev.terrainOverride || null,
     };
   });
+  // Sectors a player created with the Map Editor don't exist in SEED at all
+  // — mapping only over SEED would silently drop them on every reload. Carry
+  // any such custom sector through as-is.
+  const seedIds = new Set(SEED.map(s=>s.id));
+  (saved||[]).forEach(s=>{
+    if(s && s.id!=null && !seedIds.has(s.id)) merged.push({...s});
+  });
+  return merged;
 }
 
 // Fills in any fields a saved dashboards blob predates (e.g. mobilizationSlack
@@ -2887,6 +3022,16 @@ function buildIndex(){
 
 function render(){
   buildIndex();
+  // A sector created via the Map Editor with a matching region should join
+  // the right inset automatically, same as any built-in one — mutate the
+  // existing Sets in place (not reassign) since INSET_CONFIGS and several
+  // other places hold a direct reference to these exact objects.
+  EUROPE_IDS.clear();
+  sectors.filter(s=>s.region==='Western Europe' || [175,176,179].includes(s.id))
+    .forEach(s=>EUROPE_IDS.add(s.id));
+  EASTERN_FRONT_IDS.clear();
+  sectors.filter(s=>s.region==='Eastern Europe')
+    .forEach(s=>EASTERN_FRONT_IDS.add(s.id));
   updateClockBadge();
   updateUndoButton();
   autoRevealTriggeredEntries();
@@ -2902,7 +3047,12 @@ function render(){
   // the two layers only agree when the window happens to be exactly
   // 1512×812 — any other size and they silently drift apart.
   basemapLayer.attr('transform', `scale(${scaleX},${scaleY})`);
-  const nodes = sectors.map(s => ({...s, x: s.px * scaleX, y: s.py * scaleY}));
+  const nodes = sectors.map(s => {
+    const off = clusterOffsets[s.id];
+    const blend = currentZoomBand===2 ? 1 : currentZoomBand===1 ? 0.45 : 0;
+    const ox = off && blend ? off.dx*blend : 0, oy = off && blend ? off.dy*blend : 0;
+    return {...s, x: (s.px+ox) * scaleX, y: (s.py+oy) * scaleY};
+  });
   const nodeById = {}; nodes.forEach(n=>nodeById[n.id]=n);
 
   const links = [];
@@ -3010,27 +3160,27 @@ function render(){
     .on('click', (ev,d)=>{ if(!editPositionsMode) selectSector(d.id); })
     .on('mouseenter', function(){ d3.select(this).raise(); });
 
-  if(editPositionsMode){
-    nodeSel.call(d3.drag()
-      .on('start', function(){ d3.select(this).style('cursor','grabbing').raise(); })
-      .on('drag', function(ev, d){
-        d3.select(this).attr('transform', `translate(${ev.x},${ev.y})`);
-      })
-      .on('end', async function(ev, d){
-        d3.select(this).style('cursor','grab');
-        // ev.x/ev.y come out in this element's local coordinate space, which
-        // is exactly the same scaled space d.x/d.y already live in — so
-        // dividing back out by the current scale recovers true design-space
-        // px/py, the same units the basemap and every other sector uses.
-        const s = sectors.find(x=>x.id===d.id);
-        if(!s) return;
-        s.px = ev.x / scaleX;
-        s.py = ev.y / scaleY;
-        await saveState(true);
-        render();
-      })
-    );
-  }
+  nodeSel.call(d3.drag()
+    .filter(()=>editPositionsMode) // re-checked live on every drag attempt, not just at attach time — this is what actually turns dragging on/off, not whether .call() ran
+    .on('start', function(){ d3.select(this).style('cursor','grabbing').raise(); })
+    .on('drag', function(ev, d){
+      d3.select(this).attr('transform', `translate(${ev.x},${ev.y})`);
+    })
+    .on('end', async function(ev, d){
+      d3.select(this).style('cursor','grab');
+      // ev.x/ev.y come out in this element's local coordinate space, which
+      // is exactly the same scaled space d.x/d.y already live in — so
+      // dividing back out by the current scale recovers true design-space
+      // px/py, the same units the basemap and every other sector uses.
+      const s = sectors.find(x=>x.id===d.id);
+      if(!s) return;
+      s.px = ev.x / scaleX;
+      s.py = ev.y / scaleY;
+      clusterOffsets = computeClusterOffsets();
+      await saveState(true);
+      render();
+    })
+  );
 
   nodeSel.select('circle.body')
     .attr('r', d=> d.type==='Sea' ? 4.5 : (d.rc>0?7:5.5))
@@ -3046,7 +3196,7 @@ function render(){
 
   nodeSel.select('text.label')
     .text(d=> d.type==='Sea' ? '' : d.name)
-    .attr('opacity', d => (!labelsVisible || d.type==='Sea' || (EUROPE_IDS.has(d.id) && insetState.eu.visible) || (CHINA_IDS.has(d.id) && insetState.cn.visible)) ? 0 : 1);
+    .attr('opacity', d => (!labelsVisible || d.type==='Sea' || (EUROPE_IDS.has(d.id) && insetState.eu.visible) || (EASTERN_FRONT_IDS.has(d.id) && insetState.ef.visible) || (CHINA_IDS.has(d.id) && insetState.cn.visible)) ? 0 : 1);
 
   // Dashed boundary around each detail-inset cluster, pointing at its panel.
   Object.values(INSET_CONFIGS).forEach(cfg=>{
@@ -3203,7 +3353,7 @@ function isCoastalSector(s){
 }
 
 function terrainInfo(sector){
-  const major = SECTOR_TERRAIN[sector.id] || (sector.type==='Sea' ? null : 'Plains');
+  const major = sector.terrainOverride || SECTOR_TERRAIN[sector.id] || (sector.type==='Sea' ? null : 'Plains');
   const modifiers = [];
   if(sector.rc>0) modifiers.push('Urban');
   const hasRiver = (sector.connections||[]).some(cid=>riverOnLink(sector.id,cid));
@@ -3657,17 +3807,24 @@ function autoRevealTriggeredEntries(){
 }
 
 
-// ---------- Europe inset: a decluttered, cached-layout detail view ----------
-const EUROPE_IDS = new Set(SEED.filter(s=>
-  s.region==='Western Europe' || s.region==='Eastern Europe' || [175,176,179].includes(s.id)
+// ---------- Detail insets: decluttered, cached-layout detail views ----------
+let EUROPE_IDS = new Set(SEED.filter(s=>
+  s.region==='Western Europe' || [175,176,179].includes(s.id)
+).map(s=>s.id));
+let EASTERN_FRONT_IDS = new Set(SEED.filter(s=>
+  s.region==='Eastern Europe'
 ).map(s=>s.id));
 const CHINA_IDS = new Set([81,82,83,84,85,86,87,88,89,90,172]); // Manchuria, Korea, Beijing, Shanghai, Nanking, Canton, Chongqing, Yunnan, Sinkiang, Tibet, Mongolia
 
 const INSET_CONFIGS = {
   eu: {key:'eu', ids:EUROPE_IDS, panelId:'euInset', svgId:'euInsetSvg', headId:'euInsetHead',
-       closeId:'euInsetClose', resetId:'euInsetReset', toggleId:'toggleInset', toggleLabel:'EUROPE DETAIL',
+       closeId:'euInsetClose', resetId:'euInsetReset', toggleId:'toggleInset', toggleLabel:'WESTERN FRONT DETAIL',
        nodeClass:'eu-node', zoomClass:'eu-zoom', linksClass:'eu-links', nodesClass:'eu-nodes', bgClass:'eu-bg',
        partisanClass:'eu-partisan', boundaryClass:'eu-boundary'},
+  ef: {key:'ef', ids:EASTERN_FRONT_IDS, panelId:'efInset', svgId:'efInsetSvg', headId:'efInsetHead',
+       closeId:'efInsetClose', resetId:'efInsetReset', toggleId:'toggleInsetEF', toggleLabel:'EASTERN FRONT DETAIL',
+       nodeClass:'ef-node', zoomClass:'ef-zoom', linksClass:'ef-links', nodesClass:'ef-nodes', bgClass:'ef-bg',
+       partisanClass:'ef-partisan', boundaryClass:'ef-boundary'},
   cn: {key:'cn', ids:CHINA_IDS, panelId:'cnInset', svgId:'cnInsetSvg', headId:'cnInsetHead',
        closeId:'cnInsetClose', resetId:'cnInsetReset', toggleId:'toggleInsetCN', toggleLabel:'CHINA DETAIL',
        nodeClass:'cn-node', zoomClass:'cn-zoom', linksClass:'cn-links', nodesClass:'cn-nodes', bgClass:'cn-bg',
@@ -3675,6 +3832,7 @@ const INSET_CONFIGS = {
 };
 let insetState = {
   eu: {visible:false, pos:null, zoom:null},
+  ef: {visible:false, pos:null, zoom:null},
   cn: {visible:false, pos:null, zoom:null},
 };
 let labelsVisible = true;
@@ -3746,6 +3904,14 @@ function renderInset(cfg){
       st.zoom = d3.zoom().scaleExtent([0.5,4]).on('zoom', (ev)=>{ zoomG.attr('transform', ev.transform); });
       svgEl.call(st.zoom);
     }catch(e){ console.warn('Inset zoom setup failed, continuing without it:', e); }
+  }
+
+  let basemapG = zoomG.select('g.'+cfg.key+'-basemap');
+  if(basemapG.empty()) basemapG = zoomG.insert('g', ':first-child').attr('class', cfg.key+'-basemap');
+  const sizeKey = Math.round(w)+'x'+Math.round(h);
+  if(st.basemapSize !== sizeKey){
+    st.basemapSize = sizeKey;
+    loadInsetBasemap(cfg, basemapG, w, h);
   }
 
   if(!st.pos) st.pos = computeInsetLayout(cfg, w, h);
@@ -3872,6 +4038,14 @@ function renderPanel(){
 
       ${s.type!=='Sea' ? (()=>{
         const ti = terrainInfo(s);
+        const TERRAIN_TYPES = ['Plains','Mountain','Coastal','Steppe','Arctic/Tundra','Forest','Desert','Jungle'];
+        if(editPositionsMode){
+          return `<div class="field-group">
+            <div class="fg-label rule-link" data-section="sec-3-1" title="Major terrain type affects the Combat Resolver's terrain multiplier by BG type (§3.1). Urban/River are automatic (RC/river-link), not editable here.">Terrain (Map Editor)</div>
+            <select id="f_terrain">${TERRAIN_TYPES.map(t=>`<option ${ti.major===t?'selected':''}>${t}</option>`).join('')}</select>
+            <div class="stat-line" style="margin-top:4px;"><span>Auto modifiers</span><b>${ti.modifiers.length ? ti.modifiers.join(' · ') : '—'}</b></div>
+          </div>`;
+        }
         return `<div class="field-group">
           <div class="fg-label rule-link" data-section="sec-3-1" title="Major terrain type affects the Combat Resolver's terrain multiplier by BG type (§3.1). Urban/River are informational modifiers for setting up the actual WinSPWW2 battle map.">Terrain</div>
           <div class="stat-line"><span>${ti.major}</span><b>${ti.modifiers.length ? ti.modifiers.join(' · ') : '—'}</b></div>
@@ -3971,6 +4145,13 @@ function renderPanel(){
       </div>
 
       <div class="field-group">
+        <div class="fg-label rule-link" data-section="sec-8-1" title="Normally set automatically by a Stalemate (§8.1) — loser's score was >70% of the winner's, or tied. Set this manually for any other circumstance the automated resolvers don't cover (a WinSPWW2 result you're recording by hand, correcting a mistake, etc.). While Contested: both BGs stay, neither retreats, and — for coastal sectors — this is one of the two triggers for showing the Lodgement Rotation controls.">Contested (§8.1)</div>
+        <select id="f_contested">
+          ${['No','Yes'].map(v=>`<option value="${v}" ${(s.contested?'Yes':'No')===v?'selected':''}>${v}</option>`).join('')}
+        </select>
+      </div>
+
+      <div class="field-group">
         <div class="fg-label rule-link" data-section="sec-7-9">Connections (${(s.connections||[]).length})</div>
         <div class="conn-list">
           ${(s.connections||[]).map(cid=>{
@@ -3979,9 +4160,17 @@ function renderPanel(){
             const amphib = isAmphibiousLink(s.id, cid);
             const tag = river ? ` 🌊 ${river}` : (amphib ? ' 🚢' : '');
             const title = river ? `River crossing (§7.9): ${river}` : (amphib ? 'Amphibious-only link (§11.1)' : '');
-            return `<span class="conn-chip" data-id="${cid}" title="${title}">${byId[cid].name}${tag}</span>`;
+            return `<span class="conn-chip" data-id="${cid}" title="${title}">${byId[cid].name}${tag}${editPositionsMode ? ` <a href="#" class="conn-remove" data-remove-id="${cid}" title="Remove this connection">✕</a>` : ''}</span>`;
           }).join('')}
         </div>
+        ${editPositionsMode ? `
+        <div style="margin-top:8px;display:flex;gap:6px;">
+          <select id="f_add_conn" style="flex:1;">
+            ${sectors.filter(x=>x.id!==s.id && !(s.connections||[]).includes(x.id)).sort((a,z)=>a.name.localeCompare(z.name))
+              .map(x=>`<option value="${x.id}">${x.name}</option>`).join('')}
+          </select>
+          <button class="ctrl-btn" id="f_add_conn_btn">+ Link</button>
+        </div>` : ''}
       </div>
 
       <div class="field-group">
@@ -4132,10 +4321,14 @@ function renderPanel(){
     if(evacEl) s.evacuated = evacEl.value;
     s.partisan = parseInt(document.getElementById('f_partisan').value);
     s.faction = deriveFaction(s.occupier || s.owner);
+    const contestedEl = document.getElementById('f_contested');
+    if(contestedEl) s.contested = contestedEl.value === 'Yes';
     const garrisonEl = document.getElementById('f_gibraltar_garrison');
     if(garrisonEl) s.ukGarrison = garrisonEl.value === 'Yes';
     const activeAmphibEl = document.getElementById('f_active_amphib');
     if(activeAmphibEl) s.activeAmphibiousOp = activeAmphibEl.checked;
+    const terrainEl = document.getElementById('f_terrain');
+    if(terrainEl) s.terrainOverride = terrainEl.value;
     if(s.type==='Sea'){
       s.ntf = s.ntf || {};
       s.ntfLocked = s.ntfLocked || {};
@@ -4174,12 +4367,39 @@ function renderPanel(){
     selectSector(s.id);
   };
 
-  ['f_owner','f_occ','f_evac','f_partisan','f_gibraltar_garrison','f_active_amphib'].forEach(id=>{
+  ['f_owner','f_occ','f_evac','f_partisan','f_gibraltar_garrison','f_active_amphib','f_terrain','f_contested'].forEach(id=>{
     const node = document.getElementById(id);
     if(node) node.addEventListener('change', commit);
   });
   el.querySelectorAll('.f-ntf').forEach(inp=>inp.addEventListener('change', commit));
 
+  const addConnBtn = document.getElementById('f_add_conn_btn');
+  if(addConnBtn) addConnBtn.addEventListener('click', async ()=>{
+    const targetId = parseInt(document.getElementById('f_add_conn').value);
+    const target = byId[targetId];
+    if(!target) return;
+    s.connections = s.connections || [];
+    if(!s.connections.includes(targetId)) s.connections.push(targetId);
+    target.connections = target.connections || [];
+    if(!target.connections.includes(s.id)) target.connections.push(s.id);
+    logAction('Axis', 'Map Editor', `Connection added: ${s.name} ↔ ${target.name}`, []);
+    await saveState(true, true);
+    render();
+    selectSector(s.id);
+  });
+  document.querySelectorAll('.conn-remove').forEach(el=>{
+    el.addEventListener('click', async (ev)=>{
+      ev.preventDefault();
+      const targetId = parseInt(el.dataset.removeId);
+      const target = byId[targetId];
+      s.connections = (s.connections||[]).filter(c=>c!==targetId);
+      if(target) target.connections = (target.connections||[]).filter(c=>c!==s.id);
+      logAction('Axis', 'Map Editor', `Connection removed: ${s.name} ↔ ${target?target.name:'?'}`, []);
+      await saveState(true, true);
+      render();
+      selectSector(s.id);
+    });
+  });
   const rotationActivateBtn = document.getElementById('rotation_activate_btn');
   if(rotationActivateBtn) rotationActivateBtn.addEventListener('click', async ()=>{
     const nation = document.getElementById('rotation_nation').value;
@@ -6383,6 +6603,56 @@ function promptNeutralViolation(invaderFaction, targetName){
     document.getElementById('nv_no').addEventListener('click', ()=>{ closeModal(); resolve({confirmed:false}); });
   });
 }
+function openCreateSectorModal(){
+  const regions = Array.from(new Set(sectors.map(s=>s.region))).sort();
+  openModal('Create New Sector (Map Editor)', `
+    <div class="winter-note">Creates a new sector at the center of the map — switch on Map Editor Mode (if it isn't already) and drag it to where it belongs, then set its Terrain and Connections from its own panel.</div>
+    <div class="fg-label">Name</div>
+    <input type="text" id="ns_name" placeholder="Sector name" style="width:100%;">
+    <div class="fg-label" style="margin-top:8px;">Type</div>
+    <select id="ns_type">${['Land','Sea','Home Capital'].map(t=>`<option>${t}</option>`).join('')}</select>
+    <div class="fg-label" style="margin-top:8px;">Region</div>
+    <input type="text" id="ns_region" list="ns_region_list" placeholder="e.g. Western Europe" style="width:100%;">
+    <datalist id="ns_region_list">${regions.map(r=>`<option value="${r}">`).join('')}</datalist>
+    <div class="fg-label" style="margin-top:8px;">RC Value</div>
+    <select id="ns_rc">${[0,1,2].map(v=>`<option>${v}</option>`).join('')}</select>
+    <div class="fg-label" style="margin-top:8px;">Owner</div>
+    <select id="ns_owner"><option value="">— none —</option>${ALL_NATIONS.map(n=>`<option>${n}</option>`).join('')}</select>
+    <div class="fg-label" style="margin-top:8px;">Occupier</div>
+    <select id="ns_occupier"><option value="">— none —</option>${ALL_NATIONS.map(n=>`<option>${n}</option>`).join('')}</select>
+    <button class="cr-roll-btn" id="ns_create" style="margin-top:12px;">Create</button>
+    <button class="ctrl-btn" id="ns_cancel" style="margin-left:8px;">Cancel</button>
+  `);
+  document.getElementById('ns_cancel').addEventListener('click', closeModal);
+  document.getElementById('ns_create').addEventListener('click', async ()=>{
+    const name = document.getElementById('ns_name').value.trim();
+    if(!name){ notify('Give the new sector a name first.'); return; }
+    if(sectors.some(s=>s.name===name)){ notify(`A sector named "${name}" already exists.`); return; }
+    const type = document.getElementById('ns_type').value;
+    const region = document.getElementById('ns_region').value.trim() || 'Unassigned';
+    const rc = parseInt(document.getElementById('ns_rc').value) || 0;
+    const owner = document.getElementById('ns_owner').value || null;
+    const occupier = document.getElementById('ns_occupier').value || null;
+    const newId = Math.max(...sectors.map(s=>s.id)) + 1;
+    const newSector = {
+      id: newId, name, region, type, rc, status: 'ACTIVE', owner, occupier,
+      evacuated: 'No', partisan: 0, connections: [], faction: deriveFaction(occupier||owner),
+      px: 756, py: 406, // center of the 1512×812 design space — drag it into place
+    };
+    sectors.push(newSector);
+    clusterOffsets = computeClusterOffsets();
+    logAction('Axis', 'Map Editor', `New sector created: ${name} (id ${newId})`, []);
+    if(!editPositionsMode){
+      editPositionsMode = true;
+      document.getElementById('toggleEditPositions').textContent = 'MAP EDITOR MODE: ON';
+    }
+    await saveState(true, true);
+    closeModal();
+    render();
+    selectSector(newId);
+    notify(`${name} created at the center of the map. Map Editor Mode is now on — drag it to where it belongs, then set its Terrain and Connections from its panel.`);
+  });
+}
 function notify(message){
   openModal('Notice', `<div class="winter-note">${message}</div>`);
 }
@@ -6768,10 +7038,12 @@ document.getElementById('resetView').addEventListener('click', ()=>{
 
 document.getElementById('toggleEditPositions').addEventListener('click', ()=>{
   editPositionsMode = !editPositionsMode;
-  document.getElementById('toggleEditPositions').textContent = 'EDIT NODE POSITIONS: ' + (editPositionsMode?'ON':'OFF');
-  if(editPositionsMode) notify('Edit Node Positions is ON — drag any sector directly on the main map to move it. Each drop saves immediately and syncs to the other player too. Turn this off when you\'re done to go back to normal clicking/selecting.');
+  document.getElementById('toggleEditPositions').textContent = 'MAP EDITOR MODE: ' + (editPositionsMode?'ON':'OFF');
+  if(editPositionsMode) notify('Map Editor Mode is ON — drag any sector to move it, edit Terrain and Connections directly in its panel, or use "+ Create New Sector" above. Every change saves immediately and syncs to the other player too. Turn this off when you\'re done to go back to normal clicking/selecting.');
   render();
 });
+
+document.getElementById('createNewSector').addEventListener('click', openCreateSectorModal);
 
 document.getElementById('resetNodePositions').addEventListener('click', async ()=>{
   const ok = await confirmDialog('Reset every sector on the map back to its original built-in position? This undoes all manual dragging, for every sector, for both players. Cannot be undone.');
@@ -6780,6 +7052,7 @@ document.getElementById('resetNodePositions').addEventListener('click', async ()
     const seed = SEED.find(x=>x.id===s.id);
     if(seed){ s.px = seed.px; s.py = seed.py; }
   });
+  clusterOffsets = computeClusterOffsets();
   await saveState(true, true);
   render();
 });
@@ -6992,6 +7265,7 @@ function startApp(){
   sectors = JSON.parse(JSON.stringify(SEED));
   bgs = JSON.parse(JSON.stringify(OOB_SEED));
   render();
+  clusterOffsets = computeClusterOffsets();
   loadBasemap(); // background fetch, purely decorative — never blocks anything else
   try{
     const n = parseInt(localStorage.getItem('jsonbin-request-count')||'0',10) || 0;
