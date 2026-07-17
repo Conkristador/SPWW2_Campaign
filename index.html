@@ -84,8 +84,8 @@
     font-family:var(--font-mono);font-size:8.5px;fill:var(--ink-dim);
     pointer-events:none;paint-order:stroke;stroke:var(--bg);stroke-width:3px;
   }
-  .rc-star{fill:var(--gold);pointer-events:none;}
-  .capital-ring{fill:none;stroke:var(--gold);stroke-width:1.5;pointer-events:none;}
+  .rc-star{fill:var(--gold);stroke:#00000055;stroke-width:0.5;pointer-events:none;}
+  .rc-diamond{fill:var(--gold);opacity:0.85;pointer-events:none;}
 
   .bg-icon{cursor:pointer;}
   .bg-icon rect.chip{stroke:#1B1E14;stroke-width:1;transition:filter .15s;}
@@ -251,6 +251,16 @@
     box-shadow:0 8px 24px rgba(0,0,0,.4);display:flex;flex-direction:column;}
   .region-inset.hidden{display:none;}
   #efInset{top:96px;right:400px;}
+  #insetVisibilityDropdown, #regionVisibilityDropdown{position:absolute;top:100%;left:50%;transform:translateX(-50%);margin-top:6px;
+    background:var(--panel);border:1px solid var(--panel-border);border-radius:4px;padding:8px 12px;
+    z-index:10;display:flex;flex-direction:column;gap:6px;white-space:nowrap;
+    box-shadow:0 8px 20px rgba(0,0,0,.4);max-height:320px;overflow-y:auto;}
+  #insetVisibilityDropdown.hidden, #regionVisibilityDropdown.hidden{display:none;}
+  #insetVisibilityDropdown label, #regionVisibilityDropdown label{display:flex;align-items:center;gap:7px;font-family:var(--font-mono);
+    font-size:11px;color:var(--ink-dim);cursor:pointer;}
+  #insetVisibilityDropdown input, #regionVisibilityDropdown input{cursor:pointer;}
+  .rvd-all-row{display:flex;gap:10px;padding-bottom:6px;margin-bottom:4px;border-bottom:1px solid var(--panel-border);}
+  .rvd-all-row .link-btn{font-size:11px;padding:0;}
   #cnInset{top:96px;right:780px;}
   .region-inset-head{display:flex;justify-content:space-between;align-items:center;cursor:move;
     padding:8px 12px;border-bottom:1px solid var(--panel-border);flex-shrink:0;}
@@ -367,9 +377,18 @@
         <button class="ctrl-btn ctrl-btn-gold" id="openSubBtn">SUBMARINE WARFARE</button>
       </div>
       <div class="ctrl-row" id="controlsInsets">
-        <button class="ctrl-btn" id="toggleInset">WESTERN FRONT DETAIL: OFF</button>
-        <button class="ctrl-btn" id="toggleInsetEF">EASTERN FRONT DETAIL: OFF</button>
-        <button class="ctrl-btn" id="toggleInsetCN">CHINA DETAIL: OFF</button>
+        <div style="position:relative;">
+          <button class="ctrl-btn" id="insetVisibilityDropdownBtn">DETAIL VIEWS ▾</button>
+          <div id="insetVisibilityDropdown" class="hidden">
+            <label><input type="checkbox" id="ivd_eu"> Western Front</label>
+            <label><input type="checkbox" id="ivd_ef"> Eastern Front</label>
+            <label><input type="checkbox" id="ivd_cn"> China</label>
+          </div>
+        </div>
+        <div style="position:relative;">
+          <button class="ctrl-btn" id="regionVisibilityDropdownBtn">REGION VISIBILITY ▾</button>
+          <div id="regionVisibilityDropdown" class="hidden"></div>
+        </div>
       </div>
     </div>
     <div id="exportControls">
@@ -427,12 +446,13 @@
         <div class="row"><span class="sw" style="background:var(--allied)"></span>Allied control</div>
         <div class="row"><span class="sw" style="background:var(--neutral)"></span>Neutral</div>
         <div class="row"><span class="sw" style="background:var(--gold);border-radius:1px;transform:rotate(45deg)"></span>Resource Centre</div>
+        <div class="row"><span class="sw" style="background:var(--gold);color:#1B1E14;font-size:9px;display:flex;align-items:center;justify-content:center;">★</span>Major Capital (Resource Centre)</div>
         <div class="row"><span class="sw" style="background:var(--danger);color:#fff;font-size:7px;display:flex;align-items:center;justify-content:center;">4</span>Partisan Level (§12.0)</div>
         <div class="row"><span class="sw" style="background:var(--allied);border-radius:1px;color:#1B1E14;font-size:7px;display:flex;align-items:center;justify-content:center;">1</span>NTF assigned (§11.4)</div>
         <div class="row"><span class="sw" style="background:none;border-bottom:2px dotted var(--allied);height:0;width:14px;"></span>Amphibious-only link (§11.1)</div>
         <div class="row"><span class="sw" style="background:none;border-bottom:2px solid var(--allied);height:0;width:14px;"></span>River crossing</div>
         <div class="row"><span class="sw" style="background:none;border:1.6px dashed var(--danger);border-radius:50%;"></span>Contested (§8.1)</div>
-        <div class="row"><span class="sw" style="background:none;border:1.6px solid var(--gold);border-radius:50%;"></span>Lodgement Active (§11.1.3)</div>
+        <div class="row"><span class="sw" style="background:none;border:1.6px dashed var(--ok);border-radius:50%;"></span>Lodgement Active (§11.1.3)</div>
         <div class="row"><span class="sw" style="background:var(--allied);border-radius:50%;"></span>Forward Staging Base (§11.6)</div>
         <div class="row"><span class="sw" style="background:var(--gold);border-radius:50%;"></span>USN Mobile Staging Anchorage (§11.6)</div>
         <div class="row"><span class="sw" style="background:var(--gold);color:#1B1E14;font-size:8px;display:flex;align-items:center;justify-content:center;">★</span>Elite Battle Group</div>
@@ -3020,6 +3040,62 @@ function buildIndex(){
   sectors.forEach(s=>byId[s.id]=s);
 }
 
+// Shared by the main map (very long connections like Hawaii↔mainland) and
+// every detail inset (connections that lead OUTSIDE that inset's own
+// cluster) — a short arrow stub pointing away from the view's center,
+// labeled with wherever the link actually goes, instead of a line that
+// can't sensibly reach its destination inside this view. stubsByNode is
+// {nodeId: [{key, node:{x,y}, label, cls}, ...]} — grouped by origin first
+// so a node with several such links fans them across a small arc instead of
+// stacking every stub at the identical angle.
+function renderStubGroup(layer, stubsByNode, centerX, centerY, stubLen){
+  const FAN_SPREAD = 0.5; // radians across the whole fan for a multi-stub node
+  const stubs = [];
+  Object.values(stubsByNode).forEach(group=>{
+    const s = group[0].node;
+    const baseAngle = Math.atan2(s.y-centerY, s.x-centerX); // away from center, toward the nearest edge
+    const n = group.length;
+    group.forEach((item, i)=>{
+      const offset = n>1 ? (i - (n-1)/2) * (FAN_SPREAD/Math.max(1,n-1)) : 0;
+      const len = stubLen + (n>1 ? (i%2)*(stubLen*0.5) : 0); // stagger radially too, so labels don't collide even at a shallow angular spread
+      stubs.push({key:item.key, x:s.x, y:s.y, angle:baseAngle+offset, len, label:item.label, cls:item.cls});
+    });
+  });
+  const stubSel = layer.selectAll('g.link-stub').data(stubs, d=>d.key)
+    .join(enter=>{
+      const g = enter.append('g').attr('class','link-stub');
+      g.append('line');
+      g.append('polygon').attr('class','stub-arrow');
+      g.append('text');
+      return g;
+    });
+  stubSel.attr('class', d=>'link-stub '+d.cls);
+  stubSel.select('line')
+    .attr('x1', d=>d.x).attr('y1', d=>d.y)
+    .attr('x2', d=>d.x+Math.cos(d.angle)*d.len).attr('y2', d=>d.y+Math.sin(d.angle)*d.len);
+  // Tip sits at the far (outward) end of the stub, base corners sit closer to
+  // the node — computed directly in world space so the direction can't get
+  // flipped by a transform/rotation composition mistake.
+  stubSel.select('polygon.stub-arrow')
+    .attr('points', d=>{
+      const cos=Math.cos(d.angle), sin=Math.sin(d.angle);
+      const tipX = d.x+cos*d.len, tipY = d.y+sin*d.len;
+      const baseX = d.x+cos*(d.len-5), baseY = d.y+sin*(d.len-5);
+      const p1x = baseX - sin*3, p1y = baseY + cos*3;
+      const p2x = baseX + sin*3, p2y = baseY - cos*3;
+      return `${tipX},${tipY} ${p1x},${p1y} ${p2x},${p2y}`;
+    });
+  stubSel.select('text')
+    .attr('x', d=>d.x+Math.cos(d.angle)*(d.len+6))
+    .attr('y', d=>d.y+Math.sin(d.angle)*(d.len+6))
+    .attr('text-anchor', d=>Math.cos(d.angle)>=0?'start':'end')
+    .attr('dominant-baseline','central')
+    .attr('font-family','var(--font-mono)').attr('font-size','8px').attr('fill','var(--ink-dim)')
+    .style('paint-order','stroke').attr('stroke','#23271A').attr('stroke-width',3)
+    .text(d=>'→ '+d.label);
+  return stubs;
+}
+
 function render(){
   buildIndex();
   // A sector created via the Map Editor with a matching region should join
@@ -3091,8 +3167,6 @@ function render(){
   // compute the identical "away from center" angle and stack exactly on top
   // of each other — so stubs are grouped by origin node first, and fanned
   // out across a small arc when there's more than one.
-  const STUB_LEN = 30;
-  const centerX = w/2, centerY = h/2;
   const stubsByNode = {};
   longLinks.forEach(l=>{
     const s = nodeById[l.source], t = nodeById[l.target];
@@ -3100,55 +3174,14 @@ function render(){
     (stubsByNode[l.source] = stubsByNode[l.source]||[]).push({key:l.source+'-'+l.target+'-a', node:s, label:t.name, cls});
     (stubsByNode[l.target] = stubsByNode[l.target]||[]).push({key:l.source+'-'+l.target+'-b', node:t, label:s.name, cls});
   });
-  const FAN_SPREAD = 0.5; // radians across the whole fan for a multi-stub node
-  const stubs = [];
-  Object.values(stubsByNode).forEach(group=>{
-    const s = group[0].node;
-    const baseAngle = Math.atan2(s.y-centerY, s.x-centerX); // away from center, toward the nearest edge
-    const n = group.length;
-    group.forEach((item, i)=>{
-      const offset = n>1 ? (i - (n-1)/2) * (FAN_SPREAD/Math.max(1,n-1)) : 0;
-      const len = STUB_LEN + (n>1 ? (i%2)*16 : 0); // stagger radially too, so labels don't collide even at a shallow angular spread
-      stubs.push({key:item.key, x:s.x, y:s.y, angle:baseAngle+offset, len, label:item.label, cls:item.cls});
-    });
-  });
-  const stubSel = linkLayer.selectAll('g.link-stub').data(stubs, d=>d.key)
-    .join(enter=>{
-      const g = enter.append('g').attr('class','link-stub');
-      g.append('line');
-      g.append('polygon').attr('class','stub-arrow');
-      g.append('text');
-      return g;
-    });
-  stubSel.attr('class', d=>'link-stub '+d.cls);
-  stubSel.select('line')
-    .attr('x1', d=>d.x).attr('y1', d=>d.y)
-    .attr('x2', d=>d.x+Math.cos(d.angle)*d.len).attr('y2', d=>d.y+Math.sin(d.angle)*d.len);
-  // Tip sits at the far (outward) end of the stub, base corners sit closer to
-  // the node — computed directly in world space so the direction can't get
-  // flipped by a transform/rotation composition mistake.
-  stubSel.select('polygon.stub-arrow')
-    .attr('points', d=>{
-      const cos=Math.cos(d.angle), sin=Math.sin(d.angle);
-      const tipX = d.x+cos*d.len, tipY = d.y+sin*d.len;
-      const baseX = d.x+cos*(d.len-7), baseY = d.y+sin*(d.len-7);
-      const p1x = baseX - sin*4, p1y = baseY + cos*4;
-      const p2x = baseX + sin*4, p2y = baseY - cos*4;
-      return `${tipX},${tipY} ${p1x},${p1y} ${p2x},${p2y}`;
-    });
-  stubSel.select('text')
-    .attr('x', d=>d.x+Math.cos(d.angle)*(d.len+6))
-    .attr('y', d=>d.y+Math.sin(d.angle)*(d.len+6))
-    .attr('text-anchor', d=>Math.cos(d.angle)>=0?'start':'end')
-    .attr('dominant-baseline','central')
-    .text(d=>'→ '+d.label);
+  renderStubGroup(linkLayer, stubsByNode, w/2, h/2, 30);
 
   const nodeSel = nodeLayer.selectAll('g.sector-node').data(nodes, d=>d.id)
     .join(enter=>{
       const g = enter.append('g').attr('class','sector-node');
       g.append('circle').attr('class','body');
-      g.append('circle').attr('class','capital-ring').attr('r', 10);
       g.append('path').attr('class','rc-star');
+      g.append('path').attr('class','rc-diamond');
       g.append('text').attr('class','label').attr('dy', -11).attr('text-anchor','middle');
       return g;
     });
@@ -3157,7 +3190,8 @@ function render(){
     .attr('transform', d=>`translate(${d.x},${d.y})`)
     .classed('selected', d=>d.id===selectedId)
     .style('cursor', editPositionsMode ? 'grab' : 'pointer')
-    .on('click', (ev,d)=>{ if(!editPositionsMode) selectSector(d.id); })
+    .style('display', d=> hiddenRegions.has(d.region) ? 'none' : null)
+    .on('click', (ev,d)=>{ if(!editPositionsMode && !hiddenRegions.has(d.region)) selectSector(d.id); })
     .on('mouseenter', function(){ d3.select(this).raise(); });
 
   nodeSel.call(d3.drag()
@@ -3187,11 +3221,16 @@ function render(){
     .attr('fill', d=> d.type==='Sea' ? 'var(--sea)' : FACTION_COLOR[factionOf(d)])
     .attr('stroke', d=> d.type==='Sea' ? '#3A4D3E' : '#00000055');
 
-  nodeSel.select('circle.capital-ring')
-    .attr('opacity', d=> d.type==='Home Capital' ? 1 : 0);
-
+  // Major Capital: gold star. Every other RC (including minor-nation
+  // capitals like Iraq/Iran/Saudi Arabia, which are Home Capital type but
+  // not a major power): gold diamond, matching the legend exactly. The old
+  // gold ring around every Home Capital is gone entirely — it was visually
+  // near-identical to the Lodgement marker and crowded the map besides.
   nodeSel.select('path.rc-star')
-    .attr('d', d=> d.rc>0 && d.type!=='Sea' ? starPath(0,0,3.6,1.6,5) : '')
+    .attr('d', d=> isMajorCapital(d) ? starPath(0,0,4.2,1.9,5) : '')
+    .attr('transform', 'translate(0,0)');
+  nodeSel.select('path.rc-diamond')
+    .attr('d', d=> (d.rc>0 && d.type!=='Sea' && !isMajorCapital(d)) ? diamondPath(0,0,3.4) : '')
     .attr('transform', 'translate(0,0)');
 
   nodeSel.select('text.label')
@@ -3243,7 +3282,7 @@ function renderBGs(nodeById, layer, chipSize, idFilter, yOffset){
   const placed = [];
   Object.keys(bySector).forEach(sid=>{
     const node = nodeById[sid];
-    if(!node) return;
+    if(!node || hiddenRegions.has(node.region)) return;
     const group = bySector[sid];
     group.forEach((b,i)=>{
       const n = group.length;
@@ -3589,7 +3628,7 @@ function advancePartisans(){
 }
 
 function renderPartisanMarkers(nodeById, layer){
-  const placed = partisanMarkersVisible ? sectors.filter(s=>(s.partisan||0)>0 && nodeById[s.id]).map(s=>{
+  const placed = partisanMarkersVisible ? sectors.filter(s=>(s.partisan||0)>0 && nodeById[s.id] && !hiddenRegions.has(s.region)).map(s=>{
     const node = nodeById[s.id];
     return {key:s.id, level:s.partisan, cx:node.x-9, cy:node.y+9};
   }) : [];
@@ -3647,11 +3686,21 @@ function renderLodgementMarkers(nodeById, layer){
     const node = nodeById[s.id];
     return {key:'lodge-'+s.id, cx:node.x, cy:node.y};
   });
-  const sel = layer.selectAll('circle.lodgement-ring').data(placed, d=>d.key)
-    .join(enter=>enter.append('circle').attr('class','lodgement-ring')
-      .attr('r',9).attr('fill','none').attr('stroke','var(--gold)')
-      .attr('stroke-width',1.6));
-  sel.attr('cx', d=>d.cx).attr('cy', d=>d.cy);
+  // Deliberately NOT gold/solid like the Home Capital ring (§ capital-ring)
+  // — those two markers mean completely unrelated things (permanent capital
+  // status vs. a one-turn combat-outcome window) and looked close enough to
+  // identical that a real Home Capital was being mistaken for an active
+  // Lodgement. Bright green + dashed now, on purpose, so they can't be
+  // confused at a glance even in a dense cluster.
+  layer.selectAll('circle.lodgement-ring').data(placed, d=>d.key)
+    .join(
+      enter=>enter.append('circle').attr('class','lodgement-ring')
+        .attr('r',12).attr('fill','none').attr('stroke','var(--ok)').attr('stroke-width',2)
+        .attr('stroke-dasharray','3,2')
+        .attr('cx', d=>d.cx).attr('cy', d=>d.cy),
+      update=>update.attr('cx', d=>d.cx).attr('cy', d=>d.cy),
+      exit=>exit.remove()
+    );
 }
 
 // Forward Staging Base (§11.6): an anchor icon — this sector extends USN
@@ -3838,6 +3887,7 @@ let insetState = {
 let labelsVisible = true;
 let partisanMarkersVisible = true;
 let editPositionsMode = false;
+let hiddenRegions = new Set();
 let sequenceChecklist = {turn:'', naval:false, bombing:false, movement:false, partisan:false};
 
 try{
@@ -3889,7 +3939,8 @@ function renderInset(cfg){
   const st = insetState[cfg.key];
   const panel = document.getElementById(cfg.panelId);
   panel.classList.toggle('hidden', !st.visible);
-  document.getElementById(cfg.toggleId).textContent = cfg.toggleLabel + ': ' + (st.visible?'ON':'OFF');
+  const toggleBtn = document.getElementById(cfg.toggleId);
+  if(toggleBtn) toggleBtn.textContent = cfg.toggleLabel + ': ' + (st.visible?'ON':'OFF');
   if(!st.visible) return;
 
   const svgEl = d3.select('#'+cfg.svgId);
@@ -3921,9 +3972,22 @@ function renderInset(cfg){
   const subById = {}; subset.forEach(s=>subById[s.id]=s);
   const links = [];
   const seen = new Set();
+  const externalStubsByNode = {};
   subset.forEach(s=>{
     (s.connections||[]).forEach(cid=>{
-      if(!idSet.has(cid)) return;
+      if(!idSet.has(cid)){
+        // Leads somewhere outside this inset's own cluster (like Hawaii's
+        // links on the main map) — show it as a short outward arrow instead
+        // of just silently dropping it, so the inset doesn't quietly hide
+        // that this sector actually connects onward to something.
+        const dest = byId[cid];
+        if(!dest) return;
+        (externalStubsByNode[s.id] = externalStubsByNode[s.id]||[]).push({
+          key: s.id+'-ext-'+cid, node: s, label: dest.name,
+          cls: 'sector-link' + (dest.type==='Sea'?' sea':'') + (isAmphibiousLink(s.id,cid)?' amphib':''),
+        });
+        return;
+      }
       const key = [s.id,cid].sort().join('-');
       if(seen.has(key)) return;
       seen.add(key);
@@ -3942,13 +4006,18 @@ function renderInset(cfg){
     .attr('x1', d=>subById[d.source].x).attr('y1', d=>subById[d.source].y)
     .attr('x2', d=>subById[d.target].x).attr('y2', d=>subById[d.target].y);
 
+  let stubL = zoomG.select('g.'+cfg.key+'-stubs');
+  if(stubL.empty()) stubL = zoomG.append('g').attr('class',cfg.key+'-stubs');
+  renderStubGroup(stubL, externalStubsByNode, w/2, h/2, 14);
+
   let ng = zoomG.select('g.'+cfg.nodesClass);
   if(ng.empty()) ng = zoomG.append('g').attr('class',cfg.nodesClass);
   const gSel = ng.selectAll('g.'+cfg.nodeClass).data(subset, d=>d.id)
     .join(enter=>{
       const g = enter.append('g').attr('class',cfg.nodeClass).style('cursor','pointer');
       g.append('circle').attr('class','body').attr('r',4.5).attr('stroke','#00000055');
-      g.append('circle').attr('class','ring').attr('r',7).attr('fill','none').attr('stroke','var(--gold)').attr('stroke-width',1.3);
+      g.append('path').attr('class','rc-star');
+      g.append('path').attr('class','rc-diamond');
       g.append('text').attr('dy',-8).attr('text-anchor','middle')
         .attr('font-family','var(--font-mono)').attr('font-size','8px').attr('fill','var(--ink-dim)')
         .style('paint-order','stroke').attr('stroke','#23271A').attr('stroke-width',3);
@@ -3958,7 +4027,8 @@ function renderInset(cfg){
   gSel.attr('transform', d=>`translate(${d.x},${d.y})`)
     .classed('selected', d=>d.id===selectedId);
   gSel.select('circle.body').attr('fill', d=>FACTION_HEX[factionOf(d)] || FACTION_HEX.Neutral);
-  gSel.select('circle.ring').attr('opacity', d=>d.type==='Home Capital'?1:0);
+  gSel.select('path.rc-star').attr('d', d=> isMajorCapital(d) ? starPath(0,0,4.2,1.9,5) : '');
+  gSel.select('path.rc-diamond').attr('d', d=> (d.rc>0 && !isMajorCapital(d)) ? diamondPath(0,0,3.4) : '');
   gSel.select('text').text(d=>d.name).attr('opacity', labelsVisible?1:0);
 
   let bgL = zoomG.select('g.'+cfg.bgClass);
@@ -3980,6 +4050,11 @@ function starPath(cx,cy,rOuter,rInner,points){
     path += (i===0?'M':'L') + x.toFixed(2) + ',' + y.toFixed(2) + ' ';
   }
   return path + 'Z';
+}
+// A square rotated 45° — matches the "Resource Centre" swatch in the legend
+// exactly, used for every RC that isn't a Major Capital.
+function diamondPath(cx,cy,r){
+  return `M${cx},${cy-r} L${cx+r},${cy} L${cx},${cy+r} L${cx-r},${cy} Z`;
 }
 
 function selectSector(id){
@@ -4832,6 +4907,10 @@ function renderBGPanel(){
 
 const AXIS_NATIONS = new Set(['Germany','Japan','Italy','Romania','Bulgaria','Hungary','Finland','Thailand','RSI','Vichy']);
 const MAJOR_NATIONS = { Axis: ['Germany','Japan','Italy'], Allied: ['USA','UK','USSR','China'] };
+const MAJOR_NATIONS_FLAT = new Set([...MAJOR_NATIONS.Axis, ...MAJOR_NATIONS.Allied]);
+function isMajorCapital(sector){
+  return sector.type==='Home Capital' && MAJOR_NATIONS_FLAT.has(sector.owner);
+}
 const MINOR_NATIONS = {
   Axis: ['Romania','Bulgaria','Hungary','Finland','Thailand','RSI','Vichy'],
   Allied: ['Canada','ANZAC','India','Free France','Badoglio Italy','China (Nationalist)','China (Communist)'],
@@ -6641,6 +6720,7 @@ function openCreateSectorModal(){
     };
     sectors.push(newSector);
     clusterOffsets = computeClusterOffsets();
+    populateRegionDropdown();
     logAction('Axis', 'Map Editor', `New sector created: ${name} (id ${newId})`, []);
     if(!editPositionsMode){
       editPositionsMode = true;
@@ -6987,7 +7067,8 @@ document.getElementById('advanceTurn').addEventListener('click', async ()=>{
 });
 
 Object.values(INSET_CONFIGS).forEach(cfg=>{
-  document.getElementById(cfg.toggleId).addEventListener('click', ()=>{
+  const toggleBtnEl = document.getElementById(cfg.toggleId);
+  if(toggleBtnEl) toggleBtnEl.addEventListener('click', ()=>{
     insetState[cfg.key].visible = !insetState[cfg.key].visible;
     render();
   });
@@ -7030,6 +7111,81 @@ Object.values(INSET_CONFIGS).forEach(cfg=>{
     });
     window.addEventListener('mouseup', ()=>{ dragging = false; });
   }catch(e){ console.warn('Inset drag setup failed:', e); }
+});
+
+// Compact dropdown-with-checkboxes alternative to the three buttons above —
+// same underlying state, so checking a box here or clicking its matching
+// button elsewhere never drifts out of sync with the other.
+const insetCheckboxIds = {eu:'ivd_eu', ef:'ivd_ef', cn:'ivd_cn'};
+document.getElementById('insetVisibilityDropdownBtn').addEventListener('click', (ev)=>{
+  ev.stopPropagation();
+  const dd = document.getElementById('insetVisibilityDropdown');
+  const opening = dd.classList.contains('hidden');
+  if(opening){
+    Object.entries(insetCheckboxIds).forEach(([key,id])=>{
+      document.getElementById(id).checked = insetState[key].visible;
+    });
+  }
+  dd.classList.toggle('hidden');
+});
+Object.entries(insetCheckboxIds).forEach(([key,id])=>{
+  document.getElementById(id).addEventListener('change', (ev)=>{
+    insetState[key].visible = ev.target.checked;
+    render();
+  });
+});
+document.addEventListener('click', (ev)=>{
+  const dd = document.getElementById('insetVisibilityDropdown');
+  if(!dd.classList.contains('hidden') && !dd.contains(ev.target) && ev.target.id!=='insetVisibilityDropdownBtn'){
+    dd.classList.add('hidden');
+  }
+});
+
+// Region visibility dropdown — one checkbox per region present on the map
+// (built from live sectors so a Map Editor custom region shows up too),
+// letting nodes for whole regions be hidden from the main map at a glance.
+// Must run AFTER sectors is actually populated by startApp() — it's a plain
+// function called from there, not an IIFE that fires at script-load time
+// (which is what was silently leaving this dropdown empty: `sectors` is []
+// until startApp() runs, so building the checkbox list any earlier than
+// that always produced zero regions, every single time).
+function populateRegionDropdown(){
+  const regions = Array.from(new Set(sectors.filter(s=>s.type!=='Sea').map(s=>s.region))).sort();
+  const dd = document.getElementById('regionVisibilityDropdown');
+  dd.innerHTML = `
+    <div class="rvd-all-row">
+      <button class="link-btn" id="rvd_all_on">Select All</button>
+      <button class="link-btn" id="rvd_all_off">Select None</button>
+    </div>
+    ${regions.map(r=>`<label><input type="checkbox" class="rvd-cb" data-region="${r}" ${hiddenRegions.has(r)?'':'checked'}> ${r}</label>`).join('')}
+  `;
+  document.getElementById('rvd_all_on').addEventListener('click', ()=>{
+    hiddenRegions.clear();
+    populateRegionDropdown();
+    render();
+  });
+  document.getElementById('rvd_all_off').addEventListener('click', ()=>{
+    regions.forEach(r=>hiddenRegions.add(r));
+    populateRegionDropdown();
+    render();
+  });
+}
+document.getElementById('regionVisibilityDropdownBtn').addEventListener('click', (ev)=>{
+  ev.stopPropagation();
+  document.getElementById('regionVisibilityDropdown').classList.toggle('hidden');
+});
+document.getElementById('regionVisibilityDropdown').addEventListener('change', (ev)=>{
+  if(!ev.target.classList.contains('rvd-cb')) return;
+  const region = ev.target.dataset.region;
+  if(ev.target.checked) hiddenRegions.delete(region);
+  else hiddenRegions.add(region);
+  render();
+});
+document.addEventListener('click', (ev)=>{
+  const dd = document.getElementById('regionVisibilityDropdown');
+  if(!dd.classList.contains('hidden') && !dd.contains(ev.target) && ev.target.id!=='regionVisibilityDropdownBtn'){
+    dd.classList.add('hidden');
+  }
 });
 
 document.getElementById('resetView').addEventListener('click', ()=>{
@@ -7266,6 +7422,7 @@ function startApp(){
   bgs = JSON.parse(JSON.stringify(OOB_SEED));
   render();
   clusterOffsets = computeClusterOffsets();
+  populateRegionDropdown();
   loadBasemap(); // background fetch, purely decorative — never blocks anything else
   try{
     const n = parseInt(localStorage.getItem('jsonbin-request-count')||'0',10) || 0;
