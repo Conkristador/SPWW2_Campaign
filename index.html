@@ -3009,7 +3009,11 @@ function bumpRequestCounter(){
     const n = (parseInt(localStorage.getItem('jsonbin-request-count')||'0',10) || 0) + 1;
     localStorage.setItem('jsonbin-request-count', String(n));
     const el = document.getElementById('requestCounterBadge');
-    if(el) el.textContent = `JSONBin requests (this browser, approx.): ${n} / 10,000 free`;
+    if(el){
+      el.textContent = `JSONBin requests (this browser, approx.): ${n} / 10,000 free`;
+      if(n >= 9000) el.style.color = 'var(--danger)';
+      else if(n >= 7000) el.style.color = 'var(--gold)';
+    }
   }catch(e){ /* localStorage unavailable */ }
 }
 
@@ -3227,16 +3231,37 @@ window.addEventListener('beforeunload', ()=>{
   }catch(e){ /* best effort only */ }
 });
 
+let consecutiveSaveFailures = 0;
 function flashSaveFailed(){
+  consecutiveSaveFailures++;
   const n = document.getElementById('saveNote');
-  if(!n) return;
-  n.textContent = '⚠ Not saved — check your JSONBin Bin ID / API key, or your connection';
-  n.style.color = 'var(--danger)';
-  n.classList.add('show');
-  setTimeout(()=>n.classList.remove('show'), 2600);
+  if(n){
+    n.textContent = '⚠ Not saved — check your JSONBin Bin ID / API key, or your connection';
+    n.style.color = 'var(--danger)';
+    n.classList.add('show');
+    setTimeout(()=>n.classList.remove('show'), 2600);
+  }
+  // A single failure could be a network hiccup — the quick flash covers
+  // that. But if saves keep failing back-to-back, that's a much more
+  // serious signal (most likely: JSONBin's free tier is a fixed one-time
+  // 10,000-request budget, not a monthly refill, and it's been used up —
+  // that fails every write silently from then on with no other symptom).
+  // A 2.6-second flash is easy to miss entirely across a whole session;
+  // this doesn't auto-dismiss, so it can't be.
+  if(consecutiveSaveFailures >= 2 && !document.getElementById('persistentSaveWarning')){
+    const banner = document.createElement('div');
+    banner.id = 'persistentSaveWarning';
+    banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:var(--danger);color:#fff;padding:10px 16px;font-family:var(--font-mono);font-size:13px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.4);';
+    banner.innerHTML = `⚠ Changes are NOT saving — ${consecutiveSaveFailures} writes have failed in a row. Most likely cause: JSONBin's free tier is a fixed 10,000-request lifetime budget (not monthly), and it may be exhausted — check the request counter in the header. Reloading right now would lose unsaved work. <button id="dismissSaveWarning" style="margin-left:12px;background:#fff;color:var(--danger);border:none;padding:2px 10px;border-radius:3px;cursor:pointer;font-weight:700;">Dismiss</button>`;
+    document.body.appendChild(banner);
+    document.getElementById('dismissSaveWarning').addEventListener('click', ()=>banner.remove());
+  }
 }
 
 function flashSaved(){
+  consecutiveSaveFailures = 0;
+  const existingWarning = document.getElementById('persistentSaveWarning');
+  if(existingWarning) existingWarning.remove();
   const n = document.getElementById('saveNote');
   if(!n) return;
   n.classList.add('show');
@@ -7968,7 +7993,16 @@ function startApp(){
   try{
     const n = parseInt(localStorage.getItem('jsonbin-request-count')||'0',10) || 0;
     const el = document.getElementById('requestCounterBadge');
-    if(el) el.textContent = `JSONBin requests (this browser, approx.): ${n} / 10,000 free`;
+    if(el){
+      el.textContent = `JSONBin requests (this browser, approx.): ${n} / 10,000 free`;
+      // This is a per-device count, not the shared bin's true total — if
+      // other devices/sessions are also writing to the same bin, the real
+      // usage could be well ahead of what this browser alone shows. Still,
+      // a rising count here is the best early signal available locally
+      // that the free tier's fixed lifetime budget might be getting close.
+      if(n >= 9000) el.style.color = 'var(--danger)';
+      else if(n >= 7000) el.style.color = 'var(--gold)';
+    }
   }catch(e){ /* localStorage unavailable */ }
   // Then try to hydrate from shared storage in the background, with a
   // timeout, so a returning player sees the live campaign state instead.
