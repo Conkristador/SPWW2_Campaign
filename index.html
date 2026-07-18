@@ -979,6 +979,33 @@ turn/activation count it claims.</p></li>
 </ul>
 <p>Any move that starts or ends in Tier 2/3 territory is
 <strong>not</strong> eligible for sealing — announce it.</p>
+<h3 id="sec-5-3">5.3. B-Dienst Intercept (house rule)</h3>
+<p>Reflects the reverse of §9.2’s Allied intelligence advantage: German
+naval codebreaking (B-Dienst) against Allied traffic was real for a
+stretch of the war, but occasional and never a sustained asset — unlike
+ULTRA and MAGIC, this is not a purchasable, repeatable tool, and there
+is no equivalent for Japan.</p>
+<ul>
+<li><p><strong>Automatic, once per strategic turn.</strong> Every
+currently Tier 1 Allied BG gets its own independent chance, computed as
+<code>(100 − experience) / 10000</code> — a Militia-experience BG (40)
+is roughly 0.6% likely per turn, an Elite-experience BG (80+) roughly
+0.2% or less. If more than one BG rolls a success in the same turn,
+exactly one is chosen at random — never more than a single intercept per
+turn.</p></li>
+<li><p><strong>Always partial.</strong> The reveal is either the BG’s
+approximate location and category (the Tier 2 standard, §5.1 — never
+exact points, experience, or fatigue), or, if that BG made a Sealed move
+this turn, exactly one of four fragments about it: the unit’s identity,
+its origin, its destination, or the type of move — never more than one
+at once, and never the same intercept combining two. Which of the two
+overall categories is shown depends on what’s available that turn; if
+the BG has no Sealed move logged, it’s always the location-and-category
+version.</p></li>
+<li><p><strong>No player action required and no token cost.</strong>
+This isn’t a purchase or a standing ability — it simply may or may not
+happen, automatically, as part of advancing the turn.</p></li>
+</ul>
 <h2 id="sec-6">6. Stacking</h2>
 <ul>
 <li><p><strong>Max 2 friendly BGs per sector</strong> at the end of any
@@ -2906,6 +2933,9 @@ attacking a BG that held last turn but not the turn before. See §7.7,
 §7.8.</p>
 <p><strong>Annihilation</strong> — a defeated BG with no valid retreat
 sector is destroyed outright. §8.3.</p>
+<p><strong>B-Dienst Intercept</strong> — a rare, automatic, per-turn
+chance that a low-experience Allied BG’s poor communications security
+leaks a partial reveal to the Axis. §5.3.</p>
 <p><strong>Assault/Defend</strong> — the Engagement Matrix result when
 attacking a Fortified (2+ turn stationary) BG. See §7.7, §7.8.</p>
 <p><strong>BG (Battle Group)</strong> — the game’s core maneuver unit,
@@ -3046,6 +3076,21 @@ just Germany and Japan. An Allied purchase now stays Sealed for the rest
 of the campaign with no reveal path — intentional, reflecting that the
 Axis never broke Allied codes the way the Allies broke German and
 Japanese ones.</td>
+</tr>
+<tr class="odd">
+<td>v19</td>
+<td>Added §5.3 B-Dienst Intercept — a rare, automatic per-turn chance
+(weighted by BG experience) that the Axis gets a partial reveal of a
+hidden Allied BG, mirroring ULTRA/MAGIC’s Allied advantage but
+deliberately weaker: occasional and uncontrollable rather than a
+purchasable, repeatable tool.</td>
+</tr>
+<tr class="even">
+<td>v20</td>
+<td>Refined §5.3’s Sealed-move reveal from a single generic message into
+four distinct fragments — the unit, its origin, its destination, or the
+move type — with exactly one chosen at random per intercept, never
+combining two.</td>
 </tr>
 </tbody>
 </table>
@@ -4618,6 +4663,71 @@ function advancePartisans(){
       s.partisan = Math.min(partisanCapFor(s), (s.partisan||0)+1);
     }
   });
+}
+
+// House rule: "sometimes the Axis got lucky when Allied communications
+// security slipped." A rare, per-turn chance — never a standing tool like
+// ULTRA/MAGIC, which are reliable and repeatable — that a single Allied
+// BG's poor radio discipline leaks something to the Axis. Deliberately
+// weaker and less certain than ULTRA/MAGIC: this reflects how German
+// B-Dienst codebreaking against Allied naval traffic was real for a
+// stretch of the war but occasional, never a sustained asset, and
+// eventually lost entirely once the Allies secured their ciphers.
+//
+// Each currently-hidden (Tier 1) Allied BG gets its own independent roll;
+// a lower-experience BG is more likely to be the one that slips. If any
+// roll succeeds, exactly one becomes this turn's intercept — never more
+// than one, keeping it a rare footnote rather than a repeatable source of
+// intelligence. The reveal itself is always partial: either the BG's
+// rough position and category (never its exact points, experience, or
+// fatigue — the Tier 2 standard, §5.1), or that it made a Sealed move
+// this turn (never the actual origin/destination). Logged as an
+// already-redacted Action Log entry rather than a standing FoW Tier
+// change, so it never becomes lasting exposure.
+function advanceAxisIntercept(){
+  const thisTurn = `${clock.season} ${clock.year}`;
+  const allied = bgs.filter(b=>(b.faction||factionForNation(b.nation))==='Allied' && !b.shattered);
+  const candidates = [];
+  allied.forEach(b=>{
+    if(computeBgTier(b, 'Axis') > 1) return; // already visible to Axis — nothing to leak
+    const exp = b.experience || 60;
+    const chance = (100 - exp) / 10000; // e.g. Militia (40) ≈ 0.6%/turn, Elite (80) ≈ 0.2%/turn
+    if(Math.random() < chance) candidates.push(b);
+  });
+  if(!candidates.length) return null;
+  const b = candidates[Math.floor(Math.random()*candidates.length)];
+  const sector = byId[b.sectorId];
+  const sealedMove = actionLog.find(e=>e.turn===thisTurn && e.faction==='Allied' && e.sealed && !e.revealed && e.bgId===b.id);
+  const doSealedReveal = sealedMove && Math.random() < 0.5;
+  let desc;
+  if(doSealedReveal){
+    // Exactly one of four fragments — never combine two in the same
+    // intercept. Origin/destination are parsed from the move's own log
+    // text, which always follows "... from X to Y" — same source the
+    // player would eventually see themselves once/if this move reveals
+    // normally, just narrowed to a single piece here.
+    const match = sealedMove.description.match(/from (.+) to (.+)$/);
+    const origin = match ? match[1] : null;
+    const destination = match ? match[2] : null;
+    const options = ['unit', 'origin', 'destination', 'moveType'].filter(o=>{
+      if(o==='origin') return !!origin;
+      if(o==='destination') return !!destination;
+      return true;
+    });
+    const pick = options[Math.floor(Math.random()*options.length)];
+    if(pick==='unit') desc = `Radio intercept identifies the unit behind a Sealed move this turn: ${b.name} (${b.nation}) — origin, destination, and move type unknown.`;
+    else if(pick==='origin') desc = `Radio intercept places the origin of a Sealed move this turn at ${origin} — the unit, its destination, and the move type are unknown.`;
+    else if(pick==='destination') desc = `Radio intercept places the destination of a Sealed move this turn at ${destination} — the unit, its origin, and the move type are unknown.`;
+    else desc = `Radio intercept identifies the move type of a Sealed action this turn: ${sealedMove.type} — the unit, its origin, and its destination are unknown.`;
+  } else {
+    desc = `Radio intercept places a ${b.nation} ${b.type} Battle Group near ${sector?sector.name:'an unlocated sector'} — exact strength and status unknown.`;
+  }
+  actionLog.unshift({
+    id: Date.now()+Math.random(), turn: thisTurn, faction:'Allied',
+    type:'Signals Intercept (Axis)', description: desc, sealed:false, revealed:true, bgId:b.id,
+  });
+  if(actionLog.length > ACTION_LOG_CAP) actionLog.length = ACTION_LOG_CAP;
+  return desc;
 }
 
 function renderPartisanMarkers(nodeById, layer){
@@ -8468,6 +8578,8 @@ async function finishWinterLogistics(beforeSnap, comingYear){
   advancePartisans();
   const supplyChanges = advanceSupplyStatus();
   const recoveryChanges = advanceRecovery();
+  const interceptResult = advanceAxisIntercept();
+  if(interceptResult) supplyChanges.push(interceptResult);
   clock = {year: comingYear, season:'Spring'};
   await saveState(true, true);
   updateClockBadge();
@@ -8544,6 +8656,8 @@ document.getElementById('advanceTurn').addEventListener('click', async ()=>{
   advancePartisans();
   const supplyChanges = advanceSupplyStatus();
   const recoveryChanges = advanceRecovery();
+  const interceptResult = advanceAxisIntercept();
+  if(interceptResult) supplyChanges.push(interceptResult);
   await saveState(true, true);
   updateClockBadge();
   render();
