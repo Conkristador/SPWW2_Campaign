@@ -1277,24 +1277,32 @@ sector.</strong></td>
 Invasions.</td>
 </tr>
 <tr class="even">
+<td><strong>Lend-Lease</strong> (USA only)</td>
+<td>+500 points to any <strong>non-US</strong> Allied BG this turn.
+Unlike the other National Tokens in §9.2, this behaves exactly like a
+standard token — purchased and stacked the normal way, not a held “max
+one” special slot — it’s simply restricted to the USA, the only nation
+the rule ever lets hold it.</td>
+</tr>
+<tr class="odd">
 <td><strong>REC</strong></td>
 <td>Specialist recon infantry and vehicles. Also upgrades the FoW Tier
 of one enemy BG it’s used against — see §5.1.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><strong>INL</strong> (200 pts)</td>
 <td>Commandos, partisans, unconventional units. Also usable to upgrade
 the FoW Tier of one enemy BG — see §5.1.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><strong>STRAT</strong> (US/UK)</td>
 <td>Strategic bombers — see §11.3</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><strong>Fighter</strong> (GER/JPN/USA/UK)</td>
 <td>Bombing defense (Axis) or escort (Allies)</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><strong>Submarine</strong></td>
 <td>Submarine warfare — see §11.4</td>
 </tr>
@@ -1365,10 +1373,6 @@ adjacent sectors (respect stack limits). Not a Swap Move (§7.3) — never
 costs Fatigue Points.</td>
 </tr>
 <tr class="odd">
-<td><strong>Lend-Lease</strong> (USA)</td>
-<td>+500 points to any <strong>non-US</strong> Allied BG this turn.</td>
-</tr>
-<tr class="even">
 <td><strong>ULTRA</strong> (UK)</td>
 <td><strong>Standing intelligence effect, not a per-engagement
 token.</strong> Stays active as long as the UK holds Southern England.
@@ -1379,7 +1383,7 @@ Unpicked BGs use their normal Tier. Once per strategic turn, the Allied
 player may also name one German BG and demand its Sealed Order Log entry
 for that turn be revealed.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><strong>MAGIC</strong> (USA)</td>
 <td><strong>Standing intelligence effect.</strong> Requires the USA to
 hold Hawaii. NTF sea-sector assignments are public information (visible
@@ -1946,7 +1950,7 @@ NTF</strong> of the superior side’s margin.</p></li>
 <strong>Convoy Hunting</strong> — in an ocean sector with no enemy NTF
 and adjacent to an enemy RC, that RC becomes Damaged. No effect if
 already Damaged. - <strong>Convoy Raiding</strong> — if the USA assigns
-a Lend-Lease token (§9.2) to a non-US Allied BG this turn, and the
+a Lend-Lease token (§9.1) to a non-US Allied BG this turn, and the
 delivery route (Arctic to USSR, Atlantic to UK) passes through a sea
 sector where Germany holds Naval Superiority or Sea Control (§11.4),
 Germany may spend a Submarine token to sink the convoy, cancelling the
@@ -2612,6 +2616,18 @@ directly in the inventory table if it exceeds that nation’s §9.1 build
 cap for the current year — the only Support Token type with an actual
 rules-defined numeric limit.</li>
 </ul>
+<p><strong>v10 → v11</strong></p>
+<ul>
+<li><strong>Lend-Lease moved from §9.2 (National Tokens) to §9.1
+(Standard Tokens).</strong> This was a real gap between the document and
+the campaign tool, not just a wording tidy-up — the tool has treated
+Lend-Lease as a standard, purchasable, stackable token restricted to the
+USA for a while now, since it behaves nothing like the other National
+Tokens (a one-time “+500 to an ally’s BG” spend, not a held “max one”
+special slot like Schwerpunkt or a standing effect like ULTRA). The
+rulebook still listed it under §9.2 until this pass. Fixed the
+cross-reference in §11.5’s Convoy Raiding rule to match.</li>
+</ul>
 </div>
   </div>
 </div>
@@ -2701,7 +2717,7 @@ let pendingEngagement = null;
 let actionLog = [];
 let playerRole = null; // 'Axis' | 'Allied' | 'Observer' — personal, not shared
 const TOKEN_TYPES = ['AIR','ART','HVY','ENG','AMPH','NAVGUN','ABN','REC','INL','STRAT','Fighter','Submarine'];
-// §9.2's Lend-Lease is unlike every other National Token — it's a
+// Lend-Lease (§9.1) is unlike every other National Token — it's a
 // per-engagement spend ("+500 points to a non-US Allied BG this turn"),
 // exactly the same shape as AIR/ART/etc., not a held "max one" special
 // slot like Schwerpunkt or a standing effect like ULTRA. So it's treated
@@ -6741,7 +6757,7 @@ function buildDashboardHtml(faction){
       const over = cap!=null && count>cap;
       return `<td style="text-align:right;${over?'color:var(--danger);font-weight:700;':''}" ${over?`title="Exceeds the §9.1 build cap for ${n} in ${clock.year} (max ${cap})"`:''}>${count}${over?' ⚠':''}</td>`;
     }).join('')}</tr>`).join('')}
-    ${majors.includes('USA') ? `<tr><td>Lend-Lease <span style="color:var(--ink-faint);font-size:10px;">(USA only, §9.2)</span></td>${majors.map(n=>`<td style="text-align:right;">${n==='USA' ? (dash.tokens.USA['Lend-Lease']||0) : '—'}</td>`).join('')}</tr>` : ''}
+    ${majors.includes('USA') ? `<tr><td>Lend-Lease <span style="color:var(--ink-faint);font-size:10px;">(USA only, §9.1)</span></td>${majors.map(n=>`<td style="text-align:right;">${n==='USA' ? (dash.tokens.USA['Lend-Lease']||0) : '—'}</td>`).join('')}</tr>` : ''}
   </tbody></table>
   <div class="winter-note" style="margin-top:6px;">Collected automatically each Winter (above), or adjust by hand below — e.g. to record a manual correction. ⚠ flags a nation's STRAT holding over its §9.1 build cap for the current year; no other token type has a rules-defined cap, so nothing else is checked.</div>
   <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;">
@@ -7923,6 +7939,8 @@ document.getElementById('undoLastAction').addEventListener('click', async ()=>{
   battleLog = restored.battleLog; actionLog = restored.actionLog;
   trimLogs();
   dashboards = restored.dashboards; minorStatus = restored.minorStatus || {};
+  nationRcBonus = restored.nationRcBonus || {};
+  startingTokensAllocated = restored.startingTokensAllocated || {Axis:false, Allied:false};
   undoSnapshot = null; undoFaction = null; // single-use — no undoing the undo
   preActionSnapshot = snapshotPayload();
   selectedId = null; selectedBgId = null;
