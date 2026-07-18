@@ -3181,6 +3181,40 @@ async function performSave(showNote){
       undoSnapshot = preActionSnapshot;
       undoFaction = playerRole || 'Observer';
     }
+    // Conflict check: this is a shared document, and a save here is a full
+    // overwrite, not a merge. If the opponent's tab (or another device) has
+    // saved changes since THIS browser last knew the state, writing now
+    // would silently erase their work — the exact "my changes disappeared"
+    // symptom, just from their side instead of yours. So before writing,
+    // check whether the remote still matches what this browser last saw.
+    if(JSONBIN_CONFIGURED && preActionSnapshot){
+      let remote = null;
+      try{
+        remote = await jsonbinRead();
+        bumpRequestCounter();
+      }catch(e){ /* the conflict check's own read failed (offline, etc.) — proceed with a normal save attempt rather than blocking on it */ }
+      if(remote && JSON.stringify(remote) !== JSON.stringify(preActionSnapshot)){
+        const reload = await confirmConflictReload();
+        if(reload){
+          sectors = mergeSectorsWithSeed(remote.sectors);
+          bgs = remote.bgs || bgs;
+          clock = remote.clock || clock;
+          battleLog = remote.battleLog || battleLog;
+          actionLog = remote.actionLog || actionLog;
+          dashboards = normalizeDashboards(remote.dashboards);
+          minorStatus = remote.minorStatus || {};
+          nationRcBonus = remote.nationRcBonus || {};
+          startingTokensAllocated = remote.startingTokensAllocated || {Axis:false, Allied:false};
+          preActionSnapshot = remote;
+          render();
+          if(selectedId) renderPanel();
+          if(selectedBgId) renderBGPanel();
+          notify("Loaded your opponent's latest changes. Your own most recent edit was NOT saved — redo it now if it's still needed.");
+          return; // do not overwrite what was just loaded
+        }
+        // "Overwrite anyway" chosen — fall through to the normal save below.
+      }
+    }
     const payload = snapshotPayload();
     await jsonbinWrite(payload);
     bumpRequestCounter();
@@ -3191,6 +3225,20 @@ async function performSave(showNote){
     console.warn('Could not save — JSONBin unavailable, or Bin ID/API key not yet filled in.', e);
     if(showNote) flashSaveFailed();
   }
+}
+// Distinct, unambiguous button labels — a generic Yes/Cancel confirm
+// wouldn't make clear which option is "safe" (see their changes first)
+// versus "risky" (destroy their changes with yours).
+function confirmConflictReload(){
+  return new Promise(resolve=>{
+    openModal('Your opponent has newer changes', `
+      <div class="winter-note" style="color:var(--danger);">The shared campaign has changes you haven't seen yet — likely your opponent's tab saved something while yours was open. Saving your edit now would overwrite theirs entirely; this isn't a merge, it's a full replace.</div>
+      <button class="cr-roll-btn" id="conflict_reload_btn" style="margin-top:10px;width:100%;">Load their changes now (your last edit is lost — redo it after)</button>
+      <button class="ctrl-btn" id="conflict_overwrite_btn" style="margin-top:8px;width:100%;">Overwrite their changes with mine anyway</button>
+    `);
+    document.getElementById('conflict_reload_btn').addEventListener('click', ()=>{ closeModal(); resolve(true); });
+    document.getElementById('conflict_overwrite_btn').addEventListener('click', ()=>{ closeModal(); resolve(false); });
+  });
 }
 
 // Most edits (a dropdown, one BG's fatigue) get debounced ~2.5s so rapid
