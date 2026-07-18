@@ -2972,20 +2972,25 @@ function withTimeout(promise, ms){
 }
 
 // ---------- JSONBin.io persistence (GitHub Pages deployment) ----------
-// Fill these in with your own Bin ID and Master Key before publishing this
+// Fill these in with your own Bin ID and Access Key before publishing this
 // file. The key necessarily lives in this client-side code — JSONBin has no
 // server-side proxy here — so the page URL itself is the access control:
 // don't post the link somewhere public if you'd rather keep it private.
+// This deliberately uses an Access Key (X-Access-Key), not the account's
+// Master Key — JSONBin's own docs recommend against putting a Master Key in
+// frontend code at all, since it grants unrestricted access to every bin on
+// the account, not just this one. The Access Key below is scoped to just
+// this bin's Create/Read/Update/Delete permissions.
 const JSONBIN_BIN_ID = '6a59c1bcf5f4af5e299aed47';
-const JSONBIN_API_KEY = '$2a$10$Prq20pq25mvAb0.vkddRVu/u2J7.KbL.M5Y5fx73R/xQ9z178RX8i';
+const JSONBIN_API_KEY = '$2a$10$BSQt0g7d2MzU7qBJ.hvp2.YiLTPO2HimkDy4o9OXhWFruSdzzkABK';
 const JSONBIN_BASE = 'https://api.jsonbin.io/v3/b/' + JSONBIN_BIN_ID;
-const JSONBIN_CONFIGURED = JSONBIN_BIN_ID !== 'YOUR_BIN_ID_HERE' && JSONBIN_API_KEY !== 'YOUR_MASTER_KEY_HERE';
+const JSONBIN_CONFIGURED = JSONBIN_BIN_ID !== 'YOUR_BIN_ID_HERE' && JSONBIN_API_KEY !== 'YOUR_ACCESS_KEY_HERE';
 
 async function jsonbinRead(){
   if(!JSONBIN_CONFIGURED) throw new Error('JSONBin Bin ID / API key not configured yet.');
   const res = await withTimeout(fetch(JSONBIN_BASE + '/latest', {
     method: 'GET',
-    headers: {'X-Master-Key': JSONBIN_API_KEY},
+    headers: {'X-Access-Key': JSONBIN_API_KEY},
   }), 6000);
   if(!res.ok) throw new Error('JSONBin read failed: HTTP ' + res.status);
   const json = await res.json();
@@ -2995,7 +3000,7 @@ async function jsonbinWrite(payload){
   if(!JSONBIN_CONFIGURED) throw new Error('JSONBin Bin ID / API key not configured yet.');
   const res = await withTimeout(fetch(JSONBIN_BASE, {
     method: 'PUT',
-    headers: {'X-Master-Key': JSONBIN_API_KEY, 'Content-Type':'application/json'},
+    headers: {'X-Access-Key': JSONBIN_API_KEY, 'Content-Type':'application/json'},
     body: JSON.stringify(payload),
   }), 6000);
   if(!res.ok) throw new Error('JSONBin write failed: HTTP ' + res.status);
@@ -3172,6 +3177,36 @@ function updateUndoButton(){
     : (undoSnapshot ? `Only ${undoFaction} (or an Observer) can undo this.` : 'Nothing to undo yet.');
 }
 
+// Plain JSON.stringify() equality is fragile here: `remote` comes back from
+// a real HTTP round-trip through JSONBin's own JSON parser, while
+// `preActionSnapshot` is built directly from live in-memory objects — even
+// when the underlying data is identical, differing key insertion order
+// between the two would make JSON.stringify() disagree and falsely report
+// a conflict on every single save, not just genuine ones. Sorting keys
+// recursively before comparing makes this robust to ordering and actually
+// reflects data equality.
+function canonicalJSON(value){
+  if(Array.isArray(value)) return '[' + value.map(canonicalJSON).join(',') + ']';
+  if(value && typeof value === 'object'){
+    const keys = Object.keys(value).sort();
+    return '{' + keys.map(k => JSON.stringify(k) + ':' + canonicalJSON(value[k])).join(',') + '}';
+  }
+  return JSON.stringify(value);
+}
+
+// TEMPORARY DIAGNOSTIC HELPER — reports which top-level keys actually
+// differ between two save payloads, rather than just "they're different."
+// Makes the console logs below actually actionable instead of a bare
+// true/false.
+function diffTopLevelKeys(a, b){
+  const keys = new Set([...Object.keys(a||{}), ...Object.keys(b||{})]);
+  const diffs = [];
+  keys.forEach(k=>{
+    if(canonicalJSON(a ? a[k] : undefined) !== canonicalJSON(b ? b[k] : undefined)) diffs.push(k);
+  });
+  return diffs;
+}
+
 async function performSave(showNote){
   try{
     // Whatever the rolling snapshot currently holds is "the state right
@@ -3187,41 +3222,58 @@ async function performSave(showNote){
     // would silently erase their work — the exact "my changes disappeared"
     // symptom, just from their side instead of yours. So before writing,
     // check whether the remote still matches what this browser last saw.
+    console.log('[SAVE] performSave starting. JSONBIN_CONFIGURED:', JSONBIN_CONFIGURED, '- have preActionSnapshot:', !!preActionSnapshot);
     if(JSONBIN_CONFIGURED && preActionSnapshot){
       let remote = null;
       try{
+        console.log('[SAVE] Conflict check: reading remote state...');
         remote = await jsonbinRead();
         bumpRequestCounter();
-      }catch(e){ /* the conflict check's own read failed (offline, etc.) — proceed with a normal save attempt rather than blocking on it */ }
-      if(remote && JSON.stringify(remote) !== JSON.stringify(preActionSnapshot)){
-        const reload = await confirmConflictReload();
-        if(reload){
-          sectors = mergeSectorsWithSeed(remote.sectors);
-          bgs = remote.bgs || bgs;
-          clock = remote.clock || clock;
-          battleLog = remote.battleLog || battleLog;
-          actionLog = remote.actionLog || actionLog;
-          dashboards = normalizeDashboards(remote.dashboards);
-          minorStatus = remote.minorStatus || {};
-          nationRcBonus = remote.nationRcBonus || {};
-          startingTokensAllocated = remote.startingTokensAllocated || {Axis:false, Allied:false};
-          preActionSnapshot = remote;
-          render();
-          if(selectedId) renderPanel();
-          if(selectedBgId) renderBGPanel();
-          notify("Loaded your opponent's latest changes. Your own most recent edit was NOT saved — redo it now if it's still needed.");
-          return; // do not overwrite what was just loaded
+        console.log('[SAVE] Conflict check: remote read succeeded.');
+      }catch(e){
+        console.log('[SAVE] Conflict check: remote read FAILED (offline/misconfigured?) — skipping check, proceeding to normal save.', e);
+      }
+      if(remote){
+        const conflict = canonicalJSON(remote) !== canonicalJSON(preActionSnapshot);
+        console.log('[SAVE] Conflict check result — conflict detected:', conflict);
+        if(conflict){
+          const diffKeys = diffTopLevelKeys(remote, preActionSnapshot);
+          console.log('[SAVE] Top-level fields that actually differ:', diffKeys);
+          const reload = await confirmConflictReload();
+          console.log('[SAVE] User chose:', reload ? 'LOAD THEIR CHANGES' : 'OVERWRITE ANYWAY');
+          if(reload){
+            sectors = mergeSectorsWithSeed(remote.sectors);
+            bgs = remote.bgs || bgs;
+            clock = remote.clock || clock;
+            battleLog = remote.battleLog || battleLog;
+            actionLog = remote.actionLog || actionLog;
+            dashboards = normalizeDashboards(remote.dashboards);
+            minorStatus = remote.minorStatus || {};
+            nationRcBonus = remote.nationRcBonus || {};
+            startingTokensAllocated = remote.startingTokensAllocated || {Axis:false, Allied:false};
+            preActionSnapshot = remote;
+            render();
+            if(selectedId) renderPanel();
+            if(selectedBgId) renderBGPanel();
+            notify("Loaded your opponent's latest changes. Your own most recent edit was NOT saved — redo it now if it's still needed.");
+            console.log('[SAVE] Reloaded remote state. Returning WITHOUT writing.');
+            return; // do not overwrite what was just loaded
+          }
+          console.log('[SAVE] Proceeding to write (overwrite chosen).');
+          // "Overwrite anyway" chosen — fall through to the normal save below.
         }
-        // "Overwrite anyway" chosen — fall through to the normal save below.
       }
     }
+    console.log('[SAVE] Writing to JSONBin now...');
     const payload = snapshotPayload();
     await jsonbinWrite(payload);
     bumpRequestCounter();
     preActionSnapshot = payload; // roll forward for the next action's undo target
     updateUndoButton();
+    console.log('[SAVE] Write succeeded.');
     if(showNote) flashSaved();
   }catch(e){
+    console.warn('[SAVE] performSave failed entirely:', e);
     console.warn('Could not save — JSONBin unavailable, or Bin ID/API key not yet filled in.', e);
     if(showNote) flashSaveFailed();
   }
@@ -3273,7 +3325,7 @@ window.addEventListener('beforeunload', ()=>{
   try{
     const payload = {sectors, bgs, clock, battleLog, actionLog, dashboards, minorStatus, nationRcBonus, startingTokensAllocated};
     fetch(JSONBIN_BASE, {
-      method:'PUT', headers:{'X-Master-Key':JSONBIN_API_KEY,'Content-Type':'application/json'},
+      method:'PUT', headers:{'X-Access-Key':JSONBIN_API_KEY,'Content-Type':'application/json'},
       body: JSON.stringify(payload), keepalive: true,
     });
   }catch(e){ /* best effort only */ }
@@ -4179,6 +4231,13 @@ function logAction(faction, type, description, relevantSectors, bgId){
     turn: `${clock.season} ${clock.year}`,
     faction, type, description, sealed, revealed: !sealed, bgId: bgId||null,
   });
+  // JSONBin's free tier caps a single record at 100KB, and this whole
+  // campaign's baseline data (sectors + BGs, before any logging at all) is
+  // already a large fraction of that — an unbounded log array is a real
+  // way to blow the budget on a long campaign. Keep the most recent
+  // entries only; older history is still visible in-session, just not
+  // persisted indefinitely.
+  if(actionLog.length > 50) actionLog.length = 50;
 }
 
 // §5.2 "Reveal on trigger": a Sealed entry auto-reveals the instant its BG
@@ -6048,6 +6107,7 @@ async function applyCombatResult(){
     outcome: r.outcome,
     winner: r.winner,
   });
+  if(battleLog.length > 30) battleLog.length = 30; // see actionLog's cap note — same size-budget reason
 
   await saveState(true, true);
   pendingEngagement = null;
@@ -7445,6 +7505,7 @@ function openBattleLogModal(){
       id: Date.now(), turn: `${clock.season} ${clock.year}`, sector: sec.name,
       attacker: atkDesc, defender: defDesc, outcome, winner, manual: true,
     });
+    if(battleLog.length > 30) battleLog.length = 30; // see actionLog's cap note — same size-budget reason
 
     if(applyToMap){
       const atkSel = document.getElementById('mb_atk_bgs');
