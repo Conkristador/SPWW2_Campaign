@@ -454,6 +454,7 @@
         <div class="row"><span class="sw" style="background:none;border-bottom:1.6px solid var(--allied);height:0;width:11px;"></span>River crossing</div>
         <div class="row"><span class="sw" style="background:none;border:1.6px dashed var(--danger);border-radius:50%;"></span>Contested (§8.1)</div>
         <div class="row"><span class="sw" style="background:none;border:1.6px dashed var(--ok);border-radius:50%;"></span>Lodgement Active (§11.1.3)</div>
+        <div class="row"><span class="sw" style="background:#3D5A73;"></span>Airborne Lodgement (§11.2)</div>
         <div class="row"><span class="sw" style="background:#5B6B7A;border-radius:50%;"></span>Industrial Evacuation (§12.4)</div>
         <div class="row"><span class="sw" style="background:var(--allied);border-radius:50%;"></span>Forward Staging Base (§11.6)</div>
         <div class="row"><span class="sw" style="background:var(--gold);border-radius:50%;"></span>USN Mobile Staging Anchorage (§11.6)</div>
@@ -1770,12 +1771,8 @@ same target sector during the same strategic turn.</p>
 <li><p><strong>Execution Order.</strong> The Phase 0 Airborne Drop is
 resolved first.</p></li>
 <li><p><strong>Airborne Success.</strong> If the Airborne BG wins, an
-Airborne Lodgement is established. The subsequent Beach Assault (Phase
-1) receives: (1) <strong>Artillery Cutoff</strong> — the defender cannot
-assign ART tokens; (2) <strong>Blocked Reserves</strong> — the defender
-cannot activate a Mobile Reserve this turn; (3)
-<strong>Fortifications</strong> stay intact — the defender keeps their
-full Assault/Defend fortifications budget (+750 points).</p></li>
+Airborne Lodgement is established, and the subsequent Beach Assault
+(Phase 1) receives that Lodgement’s benefits (§11.2).</p></li>
 <li><p><strong>Airborne Failure.</strong> If the Airborne BG loses, it
 is Annihilated. The lodgement fails, the beach assault is cancelled, and
 no further BGs may enter the sector.</p></li>
@@ -1875,15 +1872,33 @@ Insertion, Meeting Engagement parameters, attacker may purchase airborne
 units only. <strong>Loss → the BG is destroyed.</strong> <strong>Win →
 the sector is secured</strong> (an Airborne Lodgement is established
 there).</p>
+<p><strong>Lodgement Benefits.</strong> The next immediate combat in
+that sector — whether an ordinary Coordinated Attack (§7.6) from other
+forces or a paired Amphibious Invasion’s Beach Assault (§11.1.2) —
+receives all three of the following, regardless of which triggers
+it:</p>
+<ol type="1">
+<li><strong>Artillery Cutoff</strong> — the defender cannot assign ART
+tokens to that engagement.</li>
+<li><strong>Blocked Reserves</strong> — the defender cannot activate a
+Mobile Reserve (§7.6) for that engagement.</li>
+<li><strong>River Crossing Waived</strong> — if the attack would
+otherwise have required a river crossing (§7.9), it no longer does; the
+airborne foothold on the far bank means no river is present in that
+engagement’s WinSPWW2 map regardless of which named connection it
+crosses.</li>
+</ol>
+<p>Fortifications are unaffected — the defender keeps their full
+Assault/Defend fortifications budget. These benefits apply to exactly
+one following engagement, whichever happens first; they don’t persist
+beyond it.</p>
 <p>This is the entire Airborne Invasion regardless of what happens next
 — the same one engagement, the same two outcomes, whether it’s launched
-standalone, paired with an Amphibious Invasion as a Vanguard (§11.1.2,
-where a win additionally unlocks that operation’s Lodgement Benefits
-going into its own separate Beach Assault), or followed up afterward by
-an ordinary Coordinated Attack (§7.6) from other forces. The Airborne
-engagement itself never gains or loses a second phase depending on
-context — anything that follows is a separate action, not an extension
-of this one.</p>
+standalone, paired with an Amphibious Invasion as a Vanguard (§11.1.2),
+or followed up afterward by an ordinary Coordinated Attack (§7.6) from
+other forces. The Airborne engagement itself never gains or loses a
+second phase depending on context — anything that follows is a separate
+action, not an extension of this one.</p>
 <h3 id="sec-11-3">11.3. Strategic Bombing (USA/UK)</h3>
 <p>Declared before Movement. Allies assign STRAT tokens to Axis RCs;
 Axis may assign Fighter tokens to defend; Allies may assign Fighter
@@ -3092,6 +3107,14 @@ four distinct fragments — the unit, its origin, its destination, or the
 move type — with exactly one chosen at random per intercept, never
 combining two.</td>
 </tr>
+<tr class="odd">
+<td>v21</td>
+<td>Generalized §11.2’s Lodgement Benefits: previously only spelled out
+for a paired Amphibious Beach Assault, now explicitly apply to whichever
+comes first — an ordinary Coordinated Attack or the Beach Assault — and
+added a third benefit, waiving a required river crossing (§7.9)
+entirely.</td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -3872,6 +3895,7 @@ function mergeSectorsWithSeed(saved){
       forwardStagingNation: prev.forwardStagingNation || null,
       ukGarrison: prev.ukGarrison!==undefined ? prev.ukGarrison : seed.ukGarrison,
       activeAmphibiousOp: prev.activeAmphibiousOp || false,
+      airborneLodgement: prev.airborneLodgement || false,
       lodgementTurn: prev.lodgementTurn || null,
       lodgementRotationTurn: prev.lodgementRotationTurn || null,
       faction: prev.faction!==undefined ? prev.faction : seed.faction,
@@ -4288,6 +4312,7 @@ function render(){
   renderEvacuationSummary(scaleX, scaleY);
   renderStackWarnings(nodeById, partisanLayer);
   renderContestedMarkers(nodeById, partisanLayer);
+  renderAirborneLodgementMarkers(nodeById, partisanLayer);
   renderLodgementMarkers(nodeById, partisanLayer);
   renderForwardStagingMarkers(nodeById, partisanLayer);
   renderMobileAnchorageMarkers(nodeById, partisanLayer);
@@ -4823,16 +4848,59 @@ function renderStackWarnings(nodeById, layer){
 
 // Contested (§8.1): a red dashed ring around the whole node — a status
 // affecting the sector as a whole, so it encircles rather than badges.
+// Gated on labelsVisible (the L hotkey) — previously wasn't, unlike every
+// other status badge on the map, which was an inconsistency rather than a
+// deliberate choice (unlike the Lodgement ring below, which stays visible
+// on purpose as a time-sensitive tactical signal).
 function renderContestedMarkers(nodeById, layer){
-  const placed = sectors.filter(s=>s.contested && nodeById[s.id]).map(s=>{
+  const placed = labelsVisible ? sectors.filter(s=>s.contested && nodeById[s.id] && !hiddenRegions.has(s.region)).map(s=>{
     const node = nodeById[s.id];
     return {key:'contested-'+s.id, cx:node.x, cy:node.y};
-  });
+  }) : [];
   const sel = layer.selectAll('circle.contested-ring').data(placed, d=>d.key)
-    .join(enter=>enter.append('circle').attr('class','contested-ring')
-      .attr('r',11).attr('fill','none').attr('stroke','var(--danger)')
-      .attr('stroke-width',1.6).attr('stroke-dasharray','3,2'));
+    .join(
+      enter=>enter.append('circle').attr('class','contested-ring')
+        .attr('r',11).attr('fill','none').attr('stroke','var(--danger)')
+        .attr('stroke-width',1.6).attr('stroke-dasharray','3,2'),
+      update=>update,
+      exit=>exit.remove()
+    );
   sel.attr('cx', d=>d.cx).attr('cy', d=>d.cy);
+}
+
+// Airborne Lodgement (§11.2 house rule addition): a small parachute
+// silhouette, top-right corner of the node — opposite corner from the
+// Evacuation/Stack-Warning pair (both bottom-right) and clear of the
+// Partisan marker (bottom-left). Unlike the transient in-memory flag the
+// combat resolver used to set (lost the moment the modal closed — a real
+// problem once an Airborne Insertion and its linked Beach Assault can now
+// be split across separate file exchanges), this is a persisted, manually
+// toggleable sector flag, so it survives exactly like every other status
+// here. Gated on labelsVisible, same as Partisan/Evacuation.
+function renderAirborneLodgementMarkers(nodeById, layer){
+  const placed = labelsVisible ? sectors.filter(s=>s.airborneLodgement && nodeById[s.id] && !hiddenRegions.has(s.region)).map(s=>{
+    const node = nodeById[s.id];
+    return {key:'abn-lodge-'+s.id, cx:node.x+9, cy:node.y-9};
+  }) : [];
+  layer.selectAll('g.airborne-lodgement-marker').data(placed, d=>d.key)
+    .join(
+      enter=>{
+        const g = enter.append('g').attr('class','airborne-lodgement-marker');
+        g.append('circle').attr('r',6).attr('fill','#3D5A73').attr('stroke','#1B1E14').attr('stroke-width',0.8);
+        // Canopy (dome arc) + three suspension lines converging on a small
+        // payload dot — a simplified parachute silhouette, legible at
+        // marker scale rather than a literal illustration.
+        g.append('path').attr('d','M-3.2,-0.8 A3.2,2.6 0 0 1 3.2,-0.8')
+          .attr('fill','none').attr('stroke','#fff').attr('stroke-width',1).attr('stroke-linecap','round');
+        g.append('path').attr('d','M-3.2,-0.8 L0,2.4 M0,-0.4 L0,2.4 M3.2,-0.8 L0,2.4')
+          .attr('fill','none').attr('stroke','#fff').attr('stroke-width',0.7);
+        g.append('circle').attr('cx',0).attr('cy',2.6).attr('r',0.9).attr('fill','#fff').attr('stroke','none');
+        return g;
+      },
+      update=>update,
+      exit=>exit.remove()
+    )
+    .attr('transform', d=>`translate(${d.cx},${d.cy})`);
 }
 
 // Lodgement Active (§11.1.3): a temporary gold ring, this turn only — the
@@ -5478,6 +5546,20 @@ function renderPanel(){
         </label>
       </div>` : ''}
 
+      <div class="field-group">
+        <label style="display:flex;align-items:center;gap:8px;font-family:var(--font-mono);font-size:12px;color:var(--ink-dim);">
+          <input type="checkbox" id="f_airborne_lodgement" ${s.airborneLodgement?'checked':''}>
+          Airborne Lodgement active (§11.2) — a successful Airborne Insertion here. The next immediate combat in this sector, whether an ordinary Coordinated Attack or a paired Amphibious Beach Assault, blocks the defender's ART tokens and Mobile Reserve and waives a required river crossing. Manually toggled, since this can now span separate file exchanges rather than resolving in one sitting.
+        </label>
+      </div>
+
+      <div class="field-group">
+        <label style="display:flex;align-items:center;gap:8px;font-family:var(--font-mono);font-size:12px;color:var(--ink-dim);">
+          <input type="checkbox" id="f_lodgement_active" ${s.lodgementTurn===`${clock.season} ${clock.year}`?'checked':''}>
+          Amphibious Lodgement active this turn (§11.1.3) — normally set automatically by a winning Beach Assault in the Combat Resolver. Check this to set it manually for the current turn (e.g. recording a WinSPWW2 result by hand); uncheck to clear it. This is "this turn only" by rule — it won't stay checked once the turn advances, same as the automatic version.
+        </label>
+      </div>
+
       <div class="save-note" id="saveNote">✓ Saved to shared campaign state</div>
     </div>
   `;
@@ -5572,6 +5654,10 @@ function renderPanel(){
       if(garrisonEl) s.ukGarrison = garrisonEl.value === 'Yes';
       const activeAmphibEl = document.getElementById('f_active_amphib');
       if(activeAmphibEl) s.activeAmphibiousOp = activeAmphibEl.checked;
+      const airborneLodgementEl = document.getElementById('f_airborne_lodgement');
+      if(airborneLodgementEl) s.airborneLodgement = airborneLodgementEl.checked;
+      const lodgementActiveEl = document.getElementById('f_lodgement_active');
+      if(lodgementActiveEl) s.lodgementTurn = lodgementActiveEl.checked ? `${clock.season} ${clock.year}` : null;
       const terrainEl = document.getElementById('f_terrain');
       if(terrainEl) s.terrainOverride = terrainEl.value;
       if(s.type==='Sea'){
@@ -5620,7 +5706,7 @@ function renderPanel(){
     }
   };
 
-  ['f_owner','f_occ','f_evac','f_partisan','f_gibraltar_garrison','f_active_amphib','f_terrain','f_contested'].forEach(id=>{
+  ['f_owner','f_occ','f_evac','f_partisan','f_gibraltar_garrison','f_active_amphib','f_airborne_lodgement','f_lodgement_active','f_terrain','f_contested'].forEach(id=>{
     const node = document.getElementById(id);
     if(node) node.addEventListener('change', commit);
   });
@@ -6518,7 +6604,7 @@ async function runInvasionPhase1(state){
   const ukCombinedOpsPreview = state.attackerBGs.some(b=>b.nation==='UK') && dashboards.Allied.doctrine.UK.active==='Combined Operations Doctrine';
   const html = `
     <div class="winter-note"><b>Phase 1 — Beach Assault (§11.1.3).</b> Assault/Defend parameters. A defeat here sends the landing force back to their staging sector with an extra 50% points loss — the invasion ends. A win proceeds to Phase 2.
-    ${state.lodgementActive ? '<br><b>Lodgement Benefits active:</b> defender may not use ART tokens or Mobile Reserve.' : ''}
+    ${state.lodgementActive ? '<br><b>Lodgement Benefits active:</b> defender may not use ART tokens or Mobile Reserve, and a required river crossing is waived (§11.2).' : ''}
     ${ukCombinedOpsPreview ? '<br><b>UK Combined Operations Doctrine:</b> +500 pts to the attacker\'s tactical budget this phase.' : ''}</div>
     ${state.attackerBGs.map(bgSummaryRow).join('')}
     <div class="fg-label">vs.</div>
@@ -6717,6 +6803,7 @@ function openCombatResolverModal(attackerBGs, defenderBGs, sector, moverBgId, or
   };
   const html = `
     <div class="winter-note">Engagement at <b>${sector.name}</b>. Review context below, then Roll &amp; Resolve — nothing is written back to the map until you Apply.</div>
+    ${sector.airborneLodgement ? `<div class="winter-note" style="color:var(--gold);">⚠ Airborne Lodgement active here (§11.2) — if this is the next immediate combat in this sector, the defender may not use ART tokens or Mobile Reserve, and a required river crossing is waived. Not auto-enforced below (the resolver doesn't know if this is genuinely the first following engagement) — apply it yourself if it qualifies.</div>` : ''}
     <div class="cr-grid">
       <div class="cr-side">
         <div class="cr-side-title">Attacker</div>
