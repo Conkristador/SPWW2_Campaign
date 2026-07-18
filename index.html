@@ -1620,17 +1620,18 @@ may hold a Doctrine and a National Token at the same time. Only
 <strong>one</strong> of its two possible Doctrines (§9.2.1) may be
 active.</p></li>
 <li><p><strong>Activation.</strong> A Doctrine is declared during the
-Winter Logistics Phase and paid for in the themed tokens below. It takes
-effect the following Spring.</p></li>
+Winter Logistics Phase — no Support Token cost to activate. The only
+cost is the structural one listed in the Doctrine’s own entry (§9.2.1),
+which starts running once it takes effect the following Spring.</p></li>
 <li><p><strong>Lock-in.</strong> Once active, a Doctrine cannot be
 switched or dropped for <strong>1 full year (4 strategic
 turns)</strong>.</p></li>
 <li><p><strong>Switching.</strong> After lock-in expires, changing to
-the nation’s other Doctrine costs the new Doctrine’s <strong>full
-activation cost again</strong>, and that Winter’s <strong>entire Support
-Token collection is forfeited</strong>. The switch takes effect the
-following Spring. A nation can never hold both Doctrines simultaneously
-— activating the second automatically drops the first.</p></li>
+the nation’s other Doctrine is free of any token cost, same as the
+original activation — just that Doctrine’s own structural cost, starting
+fresh. The switch takes effect the following Spring. A nation can never
+hold both Doctrines simultaneously — activating the second automatically
+drops the first.</p></li>
 <li><p><strong>Costs outlive switching.</strong> A Doctrine’s structural
 cost runs its full stated course even after switching away, whether
 phrased as a fixed duration or as permanent/recurring. A Doctrine’s
@@ -1639,53 +1640,6 @@ cost phrased as a standing condition tied to the Doctrine itself
 (e.g. Panzerwaffe’s “if Germany’s fuel trace ever fails”) only applies
 while the Doctrine is active.</p></li>
 </ul>
-<p><strong>Doctrine activation costs:</strong></p>
-<table>
-<thead>
-<tr class="header">
-<th>Nation</th>
-<th>Doctrine Pair</th>
-<th>Activation Cost</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>Germany</td>
-<td>Panzerwaffe / Kesselschlacht</td>
-<td>4× HVY / 3× ART</td>
-</tr>
-<tr class="even">
-<td>Japan</td>
-<td>Kaiten/Kamikaze / Kantai Kessen</td>
-<td>3× Submarine / 4× NAVGUN</td>
-</tr>
-<tr class="odd">
-<td>Italy</td>
-<td>Regio Esercito / Alpini</td>
-<td>3× HVY / 3× ENG</td>
-</tr>
-<tr class="even">
-<td>USA</td>
-<td>Proximity Fuze / Arsenal of Democracy</td>
-<td>3× Fighter / 4× STRAT</td>
-</tr>
-<tr class="odd">
-<td>UK</td>
-<td>Combined Operations / Bletchley Park</td>
-<td>3× AMPH / 4× INL</td>
-</tr>
-<tr class="even">
-<td>USSR</td>
-<td>Deep Battle / Stavka Reserve</td>
-<td>4× ART / 3× ENG</td>
-</tr>
-<tr class="odd">
-<td>China</td>
-<td>People’s War / Nat-Comm Coordination</td>
-<td>3× INL / 3× ENG</td>
-</tr>
-</tbody>
-</table>
 <h2 id="sec-10">10. Winter Logistics Phase</h2>
 <p>End of the Winter turn only. In order:</p>
 <ul>
@@ -2628,6 +2582,19 @@ special slot like Schwerpunkt or a standing effect like ULTRA). The
 rulebook still listed it under §9.2 until this pass. Fixed the
 cross-reference in §11.5’s Convoy Raiding rule to match.</li>
 </ul>
+<p><strong>v11 → v12</strong></p>
+<ul>
+<li><strong>Doctrine activation and switching no longer cost Support
+Tokens.</strong> Previously, activating a Doctrine required paying a
+themed token cost (e.g. Germany’s Panzerwaffe: 4× HVY / 3× ART), and
+switching after lock-in expired cost that same activation fee again plus
+forfeiting the entire Winter’s token collection on top. All of that’s
+removed — a Doctrine’s only cost now is the structural one already
+listed in its own entry (§9.2.1), which still runs its full course
+exactly as before. The 4-turn lock-in on switching is unchanged; that’s
+a time-based constraint, not a token cost, and stays as the check
+against flip-flopping doctrines turn to turn.</li>
+</ul>
 </div>
   </div>
 </div>
@@ -2735,6 +2702,7 @@ let dashboards = defaultDashboards();
 let minorStatus = {}; // {countryName: 'Neutral'|'Axis'|'Allied'} — player judgment calls, persisted
 let nationRcBonus = {}; // {nationName: cumulative +RC from opponents invading neutrals}, persisted
 let startingTokensAllocated = {Axis:false, Allied:false}; // per-faction one-time bootstrap flag, persisted
+let startingDoctrinesPrompted = {Axis:false, Allied:false}; // same pattern, for the Doctrine selection prompt
 const NUMERIC_FLAGS = new Set(['Free France Legitimacy count (0-3)','Vichy Legitimacy count (0-3)']);
 const DOCTRINE_OPTIONS = {
   Germany:['None','Panzerwaffe Doctrine','Kesselschlacht'], Japan:['None','Kaiten/Kamikaze Tactics','Kantai Kessen'],
@@ -2742,6 +2710,158 @@ const DOCTRINE_OPTIONS = {
   UK:['None','Combined Operations Doctrine','Bletchley Park Expansion'], USSR:['None','Deep Battle Doctrine','Stavka Reserve'],
   China:['None',"People's War Doctrine",'Nationalist-Communist Coordination'],
 };
+// §9.2.1 — full effect/cost text per doctrine, plus which parts this tool
+// can actually apply as a number versus which parts happen inside an
+// actual WinSPWW2 battle or a BG purchase and can only ever be a reminder.
+// permCost keys accumulate into dashboards[fac].doctrineCosts[nation] and
+// are NEVER removed once set — §9.5 costs "outlive switching." tempCost is
+// the "for the following year" shape (Arsenal of Democracy / Stavka
+// Reserve) — applied only during the specific year it's set for. benefit
+// keys are looked up live from whichever Doctrine is CURRENTLY active, so
+// they naturally disappear the instant a nation switches away, matching
+// "a Doctrine's benefit ends immediately on switching."
+const DOCTRINE_EFFECTS = {
+  'Panzerwaffe Doctrine': {
+    effectText: 'ARM/MECH purchase ceiling for tanks/TDs +10% (§3.1). Armor Exploitation (§8.3) range extends to 2 sectors.',
+    costText: "Oil War penalties (§12.5) apply at double severity if Germany's fuel trace ever fails, and newly built German ARM BGs use a reduced experience baseline of 70 instead of 80 (§3.5).",
+    permCost: {armExpBaseline: 70},
+    automatedNote: 'Applied: new German ARM BGs will default to experience 70 instead of 80 going forward.',
+    manualNote: "Remember during play: the +10% ARM/MECH ceiling and 2-sector Exploitation range aren't tracked here — apply them yourself in WinSPWW2. The doubled Oil War penalty only matters if Germany's fuel trace fails; watch for that.",
+  },
+  'Kesselschlacht': {
+    effectText: 'A won Assault/Defend immediately resolves a free Coordinated Attack (§7.6) against an adjacent enemy BG.',
+    costText: 'Every German BG in the pooled attacking stack takes +1 extra Fatigue Point.',
+    permCost: {},
+    automatedNote: null,
+    manualNote: "Both the free Coordinated Attack and the extra Fatigue Point happen at the moment of a specific battle — nothing to set now. Remember to apply them when Germany wins an Assault/Defend.",
+  },
+  'Kaiten/Kamikaze Tactics': {
+    effectText: "Permanently reduces the enemy's Naval Superiority margin by 1 NTF (§11.4) wherever Japan is outnumbered.",
+    costText: "Japan's Fighter token allotment is permanently −1.",
+    permCost: {},
+    automatedNote: null,
+    manualNote: "Neither side of this is tracked here — the Naval Superiority margin reduction applies during naval calculations, and there's no hard Fighter-token build cap in this tool to decrement. Keep both in mind manually.",
+  },
+  'Kantai Kessen': {
+    effectText: 'Japanese NTFs get +1 toward Naval Superiority within Home Waters (Home Islands, Formosa, Marianas).',
+    costText: 'An NTF assigned to Home Waters can never stage an Amphibious Invasion (§11.1).',
+    permCost: {},
+    automatedNote: null,
+    manualNote: "Both are situational restrictions applied when you actually assign or use an NTF — nothing to set as a standing number now.",
+  },
+  'Regio Esercito Motorization': {
+    effectText: 'MECH ceiling loosens to ≤30% tanks (from ≤20%, §3.1).',
+    costText: "Italy's Infantry Minimum (§3.2) rises from 60% to 65%.",
+    permCost: {infMin: 0.05},
+    automatedNote: "Applied: Italy's Infantry Minimum now shows as 65% on the dashboard.",
+    manualNote: 'The loosened MECH tank ceiling applies at BG purchase time in WinSPWW2 — not tracked here.',
+  },
+  'Alpini Doctrine': {
+    effectText: 'Italian INF/CAV automatically defend at Assault/Defend fortification level (§7.8) in Mountain terrain (§3.1.1).',
+    costText: "Italy's Infantry Minimum (§3.2) rises from 60% to 70%.",
+    permCost: {infMin: 0.10},
+    automatedNote: "Applied: Italy's Infantry Minimum now shows as 70% on the dashboard.",
+    manualNote: 'The automatic fortification level in Mountain terrain applies during a specific battle — apply it yourself in WinSPWW2.',
+  },
+  'Proximity Fuze & Massed Logistics': {
+    effectText: 'USA Fighter tokens permanently cancel 2 Axis Fighters each (§11.3), instead of 1.',
+    costText: "USA's Elite Formation slot cap (§9.3) is permanently −1.",
+    permCost: {eliteCap: -1},
+    automatedNote: "Applied: USA's Elite Formation cap is now reduced by 1 wherever it's shown.",
+    manualNote: 'Fighter tokens cancelling 2 Axis Fighters instead of 1 applies during Strategic Bombing resolution — not tracked here.',
+  },
+  'Arsenal of Democracy': {
+    effectText: 'Strategic bomber build cap (§9.1) permanently +1 every year going forward.',
+    costText: "USA's BG-per-RC ratio (§2) drops 0.5 for the following year.",
+    permCost: {},
+    tempCost: {key:'ratio', value:-0.5},
+    benefit: {stratCap: 1},
+    automatedNote: "Applied: USA's Strategic bomber build cap is permanently +1, and its BG-per-RC ratio is reduced by 0.5 for the year this takes effect.",
+    manualNote: null,
+  },
+  'Combined Operations Doctrine': {
+    effectText: 'During Phase 1 (Beach Assault) of an Amphibious Invasion (§11.1), the UK receives +500 points to the attacker\'s tactical budget.',
+    costText: "UK's NTF allotment (§11.4) is permanently −1 every year for the rest of the campaign.",
+    permCost: {ntf: -1},
+    automatedNote: "Applied: UK's NTF allotment is now reduced by 1 every year, shown wherever NTF allotment is checked.",
+    manualNote: 'The +500 points to Beach Assault applies at the moment of a specific invasion — apply it yourself in WinSPWW2.',
+  },
+  'Bletchley Park Expansion': {
+    effectText: 'ULTRA (§9.2) reveals up to 2 German BGs\' Sealed Log entries per turn, instead of 1.',
+    costText: 'UK collects 1 fewer Support Token every Winter for the rest of the campaign.',
+    permCost: {tokenRate: -1},
+    automatedNote: "Applied: UK's Support Token collection is now reduced by 1 every Winter Logistics Phase.",
+    manualNote: "The expanded ULTRA reveal (2 BGs instead of 1) isn't enforced as a hard limit in this tool's ULTRA reveal picker — remember you're allowed the second pick.",
+  },
+  'Deep Battle Doctrine': {
+    effectText: 'In a won Coordinated Attack (§7.6), both BGs may execute Armor Exploitation (§8.3) the same turn.',
+    costText: "The second exploiting BG cannot Rest (§3.6) the following turn even if eligible.",
+    permCost: {},
+    automatedNote: null,
+    manualNote: 'Both apply at the moment of a specific Coordinated Attack — nothing to set as a standing number now.',
+  },
+  'Stavka Reserve': {
+    effectText: 'Mobile Reserve (§7.6) can activate any adjacent ARM/MECH/INF BG, not just ARM/MECH.',
+    costText: "USSR's BG-per-RC ratio (§2) drops 0.5 for the following year.",
+    permCost: {},
+    tempCost: {key:'ratio', value:-0.5},
+    automatedNote: "Applied: USSR's BG-per-RC ratio is reduced by 0.5 for the year this takes effect.",
+    manualNote: "Remember Mobile Reserve now accepts an adjacent INF BG too, not just ARM/MECH — that's a battle-time rule, not tracked here.",
+  },
+  "People's War Doctrine": {
+    effectText: 'A Chinese win against active Partisans (§12.0) in an occupied sector automatically adds +1 Partisan Level there too.',
+    costText: 'Chinese BG experience baselines (§3.5) cap 10 points lower.',
+    permCost: {},
+    automatedNote: null,
+    manualNote: "Neither side is tracked here — China's experience baseline cap and the extra Partisan Level both need manual attention (China's baselines aren't in this tool's experience table to begin with, being 'Other Allied').",
+  },
+  'Nationalist-Communist Coordination': {
+    effectText: 'Nationalist and Communist BGs may Swap Move (§7.3) with each other. They still may never stack together (§12.3).',
+    costText: "China's BG Cap (§2) is permanently −1.",
+    permCost: {bgCap: -1},
+    automatedNote: "Applied: China's BG Cap is now reduced by 1 wherever it's shown.",
+    manualNote: 'The Swap Move allowance between Nationalist and Communist BGs is a movement-time rule — this tool still blocks their stacking, but Swap Move itself is manual.',
+  },
+};
+// Reads whichever cost modifiers this nation has accumulated (permanent
+// ones, plus a temp one if this is the year it applies) and returns them
+// as flat numbers, ready to add directly wherever the base value is looked
+// up. Never mutates — pure lookup.
+function doctrineCostFor(nation, key){
+  const fac = factionForNation(nation);
+  const costs = dashboards[fac] && dashboards[fac].doctrineCosts && dashboards[fac].doctrineCosts[nation];
+  if(!costs) return 0;
+  let total = costs[key] || 0;
+  if(costs.tempKey === key && costs.tempYear === clock.year) total += costs.tempValue || 0;
+  return total;
+}
+// Live benefit lookup — always reflects whichever Doctrine is active RIGHT
+// NOW, nothing stored separately, so it disappears the instant the active
+// Doctrine changes (matching §9.5 — benefits end immediately on switching).
+function doctrineBenefitFor(nation, key){
+  const fac = factionForNation(nation);
+  const d = dashboards[fac] && dashboards[fac].doctrine && dashboards[fac].doctrine[nation];
+  const active = d && d.active;
+  const effects = active && DOCTRINE_EFFECTS[active];
+  return (effects && effects.benefit && effects.benefit[key]) || 0;
+}
+// §11.4/§9.2.1 — NTF allotment with Combined Operations' permanent -1
+// folded in. Every place that reads a nation's NTF budget should go
+// through this rather than NTF_ALLOTMENT directly, or the doctrine cost
+// silently wouldn't apply there.
+function ntfAllotmentFor(nation){
+  const base = (NTF_ALLOTMENT[nation] && NTF_ALLOTMENT[nation][clock.year]) || 0;
+  return Math.max(0, base + doctrineCostFor(nation, 'ntf'));
+}
+// §9.1/§9.2.1 — STRAT build cap with Arsenal of Democracy's permanent +1
+// folded in as a live benefit (so it vanishes immediately if switched away
+// from, per §9.5).
+function stratCapFor(nation){
+  if(!STRAT_BUILD_CAP[nation]) return null;
+  const base = STRAT_BUILD_CAP[nation][clock.year];
+  if(base === undefined) return undefined;
+  return base + doctrineBenefitFor(nation, 'stratCap');
+}
 const NATIONAL_TOKEN_OPTIONS = {
   Germany:['None','Schwerpunkt'], Japan:['None','Banzai'], Italy:['None',"Il Volo dell'Airone"],
   USA:['None','MAGIC'], UK:['None','ULTRA'], USSR:['None','Maskirovka'], China:['None'],
@@ -2768,6 +2888,20 @@ function addTurns(season, year, n){
   let idx = SEASON_ORDER.indexOf(season), y = year;
   for(let i=0;i<n;i++){ idx++; if(idx>=4){ idx=0; y++; } }
   return `${SEASON_ORDER[idx]} ${y}`;
+}
+// Negative if labelA is chronologically before labelB, 0 if equal, positive if after.
+function compareTurns(labelA, labelB){
+  const [seasonA, yearAStr] = labelA.split(' ');
+  const [seasonB, yearBStr] = labelB.split(' ');
+  const yearA = parseInt(yearAStr), yearB = parseInt(yearBStr);
+  if(yearA !== yearB) return yearA - yearB;
+  return SEASON_ORDER.indexOf(seasonA) - SEASON_ORDER.indexOf(seasonB);
+}
+// §9.5 — a Doctrine can't be switched or dropped until 4 strategic turns
+// (1 full year) after activation. d.expires is the first turn it's free.
+function doctrineLockedIn(d){
+  if(!d || !d.active || d.active==='None' || !d.expires) return false;
+  return compareTurns(`${clock.season} ${clock.year}`, d.expires) < 0;
 }
 
 let byId = {};
@@ -3080,6 +3214,7 @@ async function hydrateFromStorage(){
       minorStatus = record.minorStatus || {};
       nationRcBonus = record.nationRcBonus || {};
       startingTokensAllocated = record.startingTokensAllocated || {Axis:false, Allied:false};
+      startingDoctrinesPrompted = record.startingDoctrinesPrompted || {Axis:false, Allied:false};
       preActionSnapshot = snapshotPayload(); // undo baseline: state as loaded
       render();
       if(selectedId) renderPanel();
@@ -3108,6 +3243,14 @@ async function hydrateFromStorage(){
 function startingTokensPromptEligible(faction){
   return !startingTokensAllocated[faction];
 }
+// Same one-time-at-game-start pattern as Support Tokens, for the initial
+// Doctrine choice — separate flag, separate banner, but otherwise mirrors
+// it exactly. Recurring per-Winter re-prompting is handled inside Winter
+// Logistics itself (§9.5 — Doctrines are declared at that phase), not here;
+// this only covers the very first choice before any Winter has happened.
+function startingDoctrinesPromptEligible(faction){
+  return !startingDoctrinesPrompted[faction];
+}
 function openStartingTokensPrompt(faction){
   const nationList = MAJOR_NATIONS[faction];
   const econ = computeEconomy();
@@ -3116,6 +3259,93 @@ function openStartingTokensPrompt(faction){
     await saveState(true, true);
     notify(`Starting Support Tokens allocated for ${faction}'s major nations. This only happens once — from here on, new tokens are collected at each Winter Logistics Phase.`);
     openDashboard(faction);
+  });
+}
+
+// §9.5 — walks each nation in turn, offering its two Doctrines or None.
+// Nations still inside their 4-turn lock-in are skipped entirely (nothing
+// to usefully ask if they can't change yet); the modal says so briefly
+// rather than silently omitting them, so it's clear why a nation's absent.
+function openDoctrineSelectionModal(nationList, onAllDone){
+  const remaining = nationList.slice();
+  function next(){
+    if(!remaining.length){ onAllDone(); return; }
+    const nation = remaining.shift();
+    const faction = factionForNation(nation);
+    const d = dashboards[faction].doctrine[nation];
+    if(doctrineLockedIn(d)){
+      next(); // locked in — nothing to offer this nation right now
+      return;
+    }
+    openModal(`Doctrine — ${nation}`, `
+      <div class="winter-note">${nation}'s current Doctrine: <b>${d.active||'None'}</b>. Pick a Doctrine for this Winter, or decline to leave it as-is. No Support Token cost either way (§9.5) — just the structural cost listed with each Doctrine (§9.2.1).</div>
+      <select id="doctrine_pick">${DOCTRINE_OPTIONS[nation].map(o=>`<option ${d.active===o?'selected':''}>${o}</option>`).join('')}</select>
+      <button class="cr-roll-btn" id="doctrine_confirm" style="margin-top:12px;">Confirm</button>
+      <button class="ctrl-btn" id="doctrine_skip" style="margin-left:8px;">Decline — Leave As-Is</button>
+    `);
+    document.getElementById('doctrine_confirm').addEventListener('click', ()=>{
+      const picked = document.getElementById('doctrine_pick').value;
+      if(picked === d.active){ closeModal(); next(); return; } // no actual change — nothing to confirm
+      confirmDoctrineChange(nation, faction, d, picked, next);
+    });
+    document.getElementById('doctrine_skip').addEventListener('click', ()=>{
+      closeModal();
+      next();
+    });
+  }
+  next();
+}
+// Second-step confirmation before actually committing a Doctrine change —
+// shows exactly what's about to happen: the full Effect/Cost text, which
+// parts get applied automatically as real numbers versus which parts are
+// battle-time or build-time reminders the player still has to apply
+// themselves in WinSPWW2.
+function confirmDoctrineChange(nation, faction, d, picked, afterFn){
+  const oldActive = d.active;
+  const oldEffects = oldActive && oldActive!=='None' ? DOCTRINE_EFFECTS[oldActive] : null;
+  const newEffects = picked!=='None' ? DOCTRINE_EFFECTS[picked] : null;
+  let body = `<div class="winter-note">${nation}: <b>${oldActive||'None'}</b> → <b>${picked}</b></div>`;
+  if(oldEffects){
+    body += `<div class="winter-note" style="margin-top:8px;color:var(--danger);">Dropping ${oldActive} ends its benefit immediately: <i>${oldEffects.effectText}</i> ${oldEffects.permCost && Object.keys(oldEffects.permCost).length ? 'Its structural cost already applied stays in effect permanently regardless (§9.5 — costs outlive switching).' : ''}</div>`;
+  }
+  if(newEffects){
+    body += `<div class="winter-note" style="margin-top:8px;"><b>Effect:</b> ${newEffects.effectText}</div>`;
+    body += `<div class="winter-note" style="margin-top:6px;"><b>Structural Cost:</b> ${newEffects.costText}</div>`;
+    if(newEffects.automatedNote) body += `<div class="winter-note" style="margin-top:6px;color:var(--ok);">✓ ${newEffects.automatedNote}</div>`;
+    if(newEffects.manualNote) body += `<div class="winter-note" style="margin-top:6px;color:var(--gold);">⚠ ${newEffects.manualNote}</div>`;
+  } else {
+    body += `<div class="winter-note" style="margin-top:8px;">${nation} will have no active Doctrine.</div>`;
+  }
+  openModal(`Confirm Doctrine Change — ${nation}`, `
+    ${body}
+    <button class="cr-roll-btn" id="doctrine_final_confirm" style="margin-top:14px;width:100%;">Yes, Activate</button>
+    <button class="ctrl-btn" id="doctrine_final_cancel" style="margin-top:8px;width:100%;">Cancel — Go Back</button>
+  `);
+  document.getElementById('doctrine_final_confirm').addEventListener('click', async ()=>{
+    d.active = picked;
+    if(picked==='None'){ d.activated=''; d.expires=''; }
+    else { d.activated = `${clock.season} ${clock.year}`; d.expires = addTurns(clock.season, clock.year, 4); }
+    // Apply automatable cost modifiers — permanent ones accumulate and are
+    // never removed (§9.5: costs outlive switching); the "following year"
+    // temp cost is stamped with whichever year this doctrine takes effect.
+    if(newEffects){
+      const costs = dashboards[faction].doctrineCosts[nation];
+      if(newEffects.permCost) Object.keys(newEffects.permCost).forEach(k=>{ costs[k] = newEffects.permCost[k]; });
+      if(newEffects.tempCost){
+        const effectiveYear = clock.season==='Winter' ? clock.year+1 : clock.year;
+        costs.tempKey = newEffects.tempCost.key;
+        costs.tempValue = newEffects.tempCost.value;
+        costs.tempYear = effectiveYear;
+      }
+    }
+    logAction(faction, 'Doctrine', `${nation} sets Doctrine: ${oldActive||'None'} → ${picked}`, []);
+    await saveState(true, true);
+    closeModal();
+    afterFn();
+  });
+  document.getElementById('doctrine_final_cancel').addEventListener('click', ()=>{
+    closeModal();
+    afterFn(); // treat cancel same as decline — move to the next nation without changing this one
   });
 }
 
@@ -3170,10 +3400,12 @@ function mergeSectorsWithSeed(saved){
 function defaultDashboards(){
   return {
     Axis: { doctrine:{Germany:{active:'None',token:'None',activated:'',expires:''},Japan:{active:'None',token:'None',activated:'',expires:''},Italy:{active:'None',token:'None',activated:'',expires:''}},
+      doctrineCosts:{Germany:{}, Japan:{}, Italy:{}},
       tokens:{Germany:{},Japan:{},Italy:{}}, mobilizationSlack:{Germany:0,Japan:0,Italy:0},
       flags:{'Oil War trace active — Germany':'No','Oil War trace active — Japan':'No','Ketsu-Go declared':'No','Italian Armistice triggered':'No','General Winter active':'No','Atlantic Wall triggered':'No'},
       notes:'' },
     Allied: { doctrine:{USA:{active:'None',token:'None',activated:'',expires:''},UK:{active:'None',token:'None',activated:'',expires:''},USSR:{active:'None',token:'None',activated:'',expires:''},China:{active:'None',token:'None',activated:'',expires:''}},
+      doctrineCosts:{USA:{}, UK:{}, USSR:{}, China:{}},
       tokens:{USA:{},UK:{},USSR:{},China:{}}, mobilizationSlack:{USA:0,UK:0,USSR:0,China:0},
       flags:{'Free France Legitimacy count (0-3)':'0','Vichy Legitimacy count (0-3)':'0','Italian Armistice triggered':'No','Flying Tigers active':'No','Burma Road / Hump Lend-Lease active':'No','China Alpha Force unlocked':'No'},
       intel:{ultraTurn:'', ultraTargets:[], ultraRevealTurn:'', ultraRevealCount:0, magicRevealTurn:'', magicRevealDone:false},
@@ -3187,6 +3419,7 @@ function normalizeDashboards(saved){
     const s = saved[fac] || {};
     const b = base[fac];
     Object.keys(b.doctrine).forEach(n=>{ b.doctrine[n] = {...b.doctrine[n], ...((s.doctrine&&s.doctrine[n])||{})}; });
+    Object.keys(b.doctrineCosts).forEach(n=>{ b.doctrineCosts[n] = {...b.doctrineCosts[n], ...((s.doctrineCosts&&s.doctrineCosts[n])||{})}; });
     Object.keys(b.tokens).forEach(n=>{ b.tokens[n] = {...b.tokens[n], ...((s.tokens&&s.tokens[n])||{})}; });
     Object.keys(b.mobilizationSlack).forEach(n=>{ b.mobilizationSlack[n] = (s.mobilizationSlack&&s.mobilizationSlack[n]) || 0; });
     b.flags = {...b.flags, ...(s.flags||{})};
@@ -3205,7 +3438,7 @@ let undoSnapshot = null;      // what "Undo Last Action" would restore
 let undoFaction = null;       // who's allowed to use it
 
 function snapshotPayload(){
-  return JSON.parse(JSON.stringify({sectors, bgs, clock, battleLog, actionLog, dashboards, minorStatus, nationRcBonus, startingTokensAllocated}));
+  return JSON.parse(JSON.stringify({sectors, bgs, clock, battleLog, actionLog, dashboards, minorStatus, nationRcBonus, startingTokensAllocated, startingDoctrinesPrompted}));
 }
 function updateUndoButton(){
   const btn = document.getElementById('undoLastAction');
@@ -3282,7 +3515,7 @@ window.addEventListener('beforeunload', ()=>{
   if(!saveDebounceTimer || !JSONBIN_CONFIGURED) return;
   clearTimeout(saveDebounceTimer);
   try{
-    const payload = {sectors, bgs, clock, battleLog, actionLog, dashboards, minorStatus, nationRcBonus, startingTokensAllocated};
+    const payload = {sectors, bgs, clock, battleLog, actionLog, dashboards, minorStatus, nationRcBonus, startingTokensAllocated, startingDoctrinesPrompted};
     fetch(JSONBIN_BASE, {
       method:'PUT', headers:{'X-Access-Key':JSONBIN_API_KEY,'Content-Type':'application/json'},
       body: JSON.stringify(payload), keepalive: true,
@@ -3653,6 +3886,11 @@ const EXP_BASELINE = {
 const OTHER_AXIS_EXP =   {ARM:60, MECH:60, INF:60, CAV:60, Airborne:60, Marine:60, MIL:40};
 const OTHER_ALLIED_EXP = {ARM:60, MECH:60, INF:50, CAV:50, Airborne:60, Marine:60, MIL:40};
 function experienceBaseline(nation, type){
+  // §9.2.1 Panzerwaffe Doctrine cost: German ARM BGs built while it's
+  // active (and forever after — costs outlive switching) use a reduced
+  // baseline of 70 instead of the normal 80.
+  const armOverride = type==='ARM' ? doctrineCostFor(nation, 'armExpBaseline') : 0;
+  if(armOverride) return armOverride;
   if(EXP_BASELINE[nation]) return EXP_BASELINE[nation][type] ?? 60;
   const fac = factionForNation(nation);
   return (fac==='Axis' ? OTHER_AXIS_EXP : OTHER_ALLIED_EXP)[type] ?? 50;
@@ -4551,7 +4789,7 @@ function renderPanel(){
         ${control.controller ? `<div class="stat-line"><span>Current control</span><b class="${control.controller==='Contested'?'':'pill-ok'}">${control.controller}${control.margin?` (+${control.margin})`:''}</b></div>` : ''}
         ${['Germany','Japan','Italy','USA','UK'].map(n=>{
           const locked = s.ntfLocked && s.ntfLocked[n];
-          const allotted = (NTF_ALLOTMENT[n] && NTF_ALLOTMENT[n][clock.year]) || 0;
+          const allotted = ntfAllotmentFor(n);
           const usedElsewhere = ntfAssignedFor(n) - ((s.ntf&&s.ntf[n])||0);
           const remaining = allotted - usedElsewhere;
           return `
@@ -4774,7 +5012,7 @@ function renderPanel(){
             notify('Gibraltar is held by the UK garrison — the strait is closed to Axis navy (§11.1). Reverted.');
             return;
           }
-          const allotted = (NTF_ALLOTMENT[n] && NTF_ALLOTMENT[n][clock.year]) || 0;
+          const allotted = ntfAllotmentFor(n);
           const usedElsewhere = ntfAssignedFor(n) - oldVal;
           if(usedElsewhere + newVal > allotted){
             notify(`${n} only has ${Math.max(0,allotted-usedElsewhere)} NTF(s) left to assign this year (§11.4) — reverted.`);
@@ -6534,11 +6772,13 @@ function computeEconomy(){
     owned += nationRcBonus[nation] || 0;
     const occ = sectors.filter(s=>s.status==='ACTIVE'&&s.occupier===nation)
       .reduce((a,s)=>a + s.rc * ((nation==='Germany'&&s.evacuated==='Yes')?0.5:1), 0);
-    const ratio = (YEAR_RATIO[nation] && YEAR_RATIO[nation][clock.year]) ?? 1;
+    // §9.2.1 Doctrine costs can adjust the ratio (Arsenal of Democracy /
+    // Stavka Reserve: -0.5 for the specific year it takes effect).
+    const ratio = ((YEAR_RATIO[nation] && YEAR_RATIO[nation][clock.year]) ?? 1) + doctrineCostFor(nation, 'ratio');
     const rcMinors = minorsFor(nation).filter(m=>isMinorActivated(nation,m));
     const minorRC = sectors.filter(s=>s.status==='ACTIVE' && rcMinors.includes(s.owner)).reduce((a,s)=>a+s.rc,0);
     const bgMinors = minorBgNationsFor(nation);
-    const bgCap = owned*ratio + occ;
+    const bgCap = owned*ratio + occ + doctrineCostFor(nation, 'bgCap');
     const majorCap = bgCap - minorRC;
     const nationSet = new Set([nation, ...bgMinors]);
     const fielded = bgs.filter(b=>nationSet.has(b.nation)).length;
@@ -6546,10 +6786,10 @@ function computeEconomy(){
     const majorFielded = fielded - minorFielded;
     const infCount = bgs.filter(b=>nationSet.has(b.nation)&&b.type==='INF').length;
     out[nation] = {nation, ownedRC:owned, occupiedRC:occ, minorRC, ratio, bgCap, majorCap,
-      fielded, minorFielded, majorFielded, infPct: fielded?infCount/fielded:0, infMin: INF_MIN[nation],
-      eliteCap: Math.min(3,Math.floor((owned+occ)/6)),
+      fielded, minorFielded, majorFielded, infPct: fielded?infCount/fielded:0, infMin: INF_MIN[nation] + doctrineCostFor(nation, 'infMin'),
+      eliteCap: Math.max(0, Math.min(3,Math.floor((owned+occ)/6)) + doctrineCostFor(nation, 'eliteCap')),
       eliteFielded: bgs.filter(b=>nationSet.has(b.nation)&&b.elite).length,
-      tokens: Math.floor((owned+occ)/2)};
+      tokens: Math.max(0, Math.floor((owned+occ)/2) + doctrineCostFor(nation, 'tokenRate'))};
   });
   return out;
 }
@@ -6664,6 +6904,11 @@ function buildDashboardHtml(faction){
       <button class="cr-roll-btn" id="starting_tokens_btn" style="margin-top:8px;width:100%;">Choose ${faction}'s Starting Tokens</button>
     </div>` : '';
 
+  const startingDoctrinesBanner = startingDoctrinesPromptEligible(faction) ? `
+    <div class="moved-banner" style="border-color:var(--gold);color:var(--gold);">★ ${faction}'s major nations haven't been offered a starting Doctrine yet (§9.5) — entirely optional, no cost to decline, but worth deciding once up front rather than leaving it for the first Winter.
+      <button class="cr-roll-btn" id="starting_doctrines_btn" style="margin-top:8px;width:100%;">Choose ${faction}'s Starting Doctrines</button>
+    </div>` : '';
+
   const warnRows = majors.filter(n=>(dash.mobilizationSlack[n]||0)>0).map(n=>{
     const eligible = eligibleMobilizationSectors(n);
     return `
@@ -6731,7 +6976,7 @@ function buildDashboardHtml(faction){
     return `
     <div class="winter-nation"><h3>${n}</h3>
       <div class="field-row">
-        <div><div class="fg-label rule-link" data-section="sec-9-2-1" title="Max one of the nation's two Doctrines active at a time. Locks in for 4 turns (1 year, §9.5) — switching after that costs full re-activation plus that Winter's entire token collection. Structural costs keep running even after you switch away.">Active Doctrine (§9.2.1)</div>
+        <div><div class="fg-label rule-link" data-section="sec-9-2-1" title="Max one of the nation's two Doctrines active at a time. Locks in for 4 turns (1 year, §9.5) once activated. No Support Token cost to activate or switch — just the structural cost listed in the Doctrine's own entry, which starts fresh each time.">Active Doctrine (§9.2.1)</div>
           <select class="dash-doctrine-sel" data-fac="${faction}" data-nation="${n}">
             ${DOCTRINE_OPTIONS[n].map(o=>`<option ${d.active===o?'selected':''}>${o}</option>`).join('')}
           </select>
@@ -6753,7 +6998,7 @@ function buildDashboardHtml(faction){
   const tokenGrid = `<table class="econ-table"><thead><tr><th>Token</th>${majors.map(n=>`<th>${n}</th>`).join('')}</tr></thead><tbody>
     ${TOKEN_TYPES.map(tt=>`<tr><td>${tt}</td>${majors.map(n=>{
       const count = dash.tokens[n][tt]||0;
-      const cap = tt==='STRAT' && STRAT_BUILD_CAP[n] ? STRAT_BUILD_CAP[n][clock.year] : null;
+      const cap = tt==='STRAT' ? stratCapFor(n) : null;
       const over = cap!=null && count>cap;
       return `<td style="text-align:right;${over?'color:var(--danger);font-weight:700;':''}" ${over?`title="Exceeds the §9.1 build cap for ${n} in ${clock.year} (max ${cap})"`:''}>${count}${over?' ⚠':''}</td>`;
     }).join('')}</tr>`).join('')}
@@ -6768,7 +7013,7 @@ function buildDashboardHtml(faction){
   </div>`;
   const ntfMajors = majors.filter(n=>NTF_ALLOTMENT[n]);
   const ntfRows = ntfMajors.map(n=>{
-    const allotted = NTF_ALLOTMENT[n][clock.year] ?? 0;
+    const allotted = ntfAllotmentFor(n);
     const assigned = ntfAssignedFor(n);
     return `<tr><td>${n}</td><td>${allotted}</td><td class="${assigned>allotted?'pill-over':'pill-ok'}">${assigned}</td></tr>`;
   }).join('');
@@ -6805,6 +7050,7 @@ function buildDashboardHtml(faction){
   return `
     <div class="winter-note">Grey figures are computed live from the map. Yellow-bordered fields are manual — this is the same information the Economy tab and the Axis/Allied Dashboard tabs tracked, now sourced from one place.</div>
     ${startingTokensBanner}
+    ${startingDoctrinesBanner}
     ${armisticeBanner}
     ${alphaForceBanner}
     ${warnRows}
@@ -6865,6 +7111,15 @@ function wireDashboardInputs(faction){
   });
   const startingTokensBtn = document.getElementById('starting_tokens_btn');
   if(startingTokensBtn) startingTokensBtn.addEventListener('click', ()=>openStartingTokensPrompt(faction));
+  const startingDoctrinesBtn = document.getElementById('starting_doctrines_btn');
+  if(startingDoctrinesBtn) startingDoctrinesBtn.addEventListener('click', ()=>{
+    openDoctrineSelectionModal(MAJOR_NATIONS[faction], async ()=>{
+      startingDoctrinesPrompted[faction] = true;
+      await saveState(true, true);
+      notify(`Starting Doctrine choices done for ${faction}'s major nations. From here, Doctrines are offered again at each Winter Logistics Phase.`);
+      openDashboard(faction);
+    });
+  });
   const tokAdjNationSel = document.getElementById('tok_adj_nation');
   if(tokAdjNationSel) tokAdjNationSel.addEventListener('change', ()=>{
     const typeSel = document.getElementById('tok_adj_type');
@@ -6884,7 +7139,7 @@ function wireDashboardInputs(faction){
       d.tokens[nation] = d.tokens[nation] || {};
       d.tokens[nation][type] = (d.tokens[nation][type]||0) + 1;
       if(type==='STRAT' && STRAT_BUILD_CAP[nation]){
-        const cap = STRAT_BUILD_CAP[nation][clock.year];
+        const cap = stratCapFor(nation);
         if(d.tokens[nation][type] > cap){
           notify(`${nation} now holds ${d.tokens[nation][type]}× STRAT — over the §9.1 build cap for ${clock.year} (max ${cap}). Added anyway since this is a manual override; flagged in the table.`);
         }
@@ -6970,15 +7225,15 @@ function wireDashboardInputs(faction){
     });
   });
   document.querySelectorAll('.dash-doctrine-sel').forEach(el=>{
-    el.addEventListener('change', async ()=>{
-      const d = dashboards[el.dataset.fac].doctrine[el.dataset.nation];
-      const oldActive = d.active;
-      d.active = el.value;
-      if(el.value==='None'){ d.activated=''; d.expires=''; }
-      else { d.activated = `${clock.season} ${clock.year}`; d.expires = addTurns(clock.season, clock.year, 4); }
-      logAction(el.dataset.fac, 'Doctrine', `${el.dataset.nation} switches Doctrine: ${oldActive} → ${el.value}`, []);
-      await saveState(true, true);
-      openDashboard(el.dataset.fac);
+    el.addEventListener('change', ()=>{
+      const nation = el.dataset.nation, faction = el.dataset.fac;
+      const d = dashboards[faction].doctrine[nation];
+      const picked = el.value;
+      if(picked === d.active) return; // no actual change
+      // Re-render after either outcome — on cancel this resets the
+      // dropdown back to the actual current value instead of leaving it
+      // showing a pick that was never applied.
+      confirmDoctrineChange(nation, faction, d, picked, ()=>openDashboard(faction));
     });
   });
   document.querySelectorAll('.nt-purchase-btn').forEach(el=>{
@@ -7671,7 +7926,13 @@ async function applyWinterLogistics(plan, comingYear){
     // modal before the rest of Winter Logistics (Refit, Partisan advance,
     // Supply status, Recovery, clock advance) finishes up.
     const econForTokens = computeEconomy();
-    openTokenAllocationModal(MAJORS, n=>econForTokens[n].tokens, ()=>finishWinterLogistics(beforeSnap, comingYear));
+    openTokenAllocationModal(MAJORS, n=>econForTokens[n].tokens, ()=>{
+      // §9.5 — Doctrines are declared at Winter Logistics, so every major
+      // gets offered a pick-or-decline here too, right after tokens.
+      // Nations still locked in from a prior activation are silently
+      // skipped inside the modal itself — nothing useful to ask them yet.
+      openDoctrineSelectionModal(MAJORS, ()=>finishWinterLogistics(beforeSnap, comingYear));
+    });
   };
   if(clearedSummary.length){
     openModal('Unspent Tokens Cleared (house rule)', `
@@ -7941,6 +8202,7 @@ document.getElementById('undoLastAction').addEventListener('click', async ()=>{
   dashboards = restored.dashboards; minorStatus = restored.minorStatus || {};
   nationRcBonus = restored.nationRcBonus || {};
   startingTokensAllocated = restored.startingTokensAllocated || {Axis:false, Allied:false};
+  startingDoctrinesPrompted = restored.startingDoctrinesPrompted || {Axis:false, Allied:false};
   undoSnapshot = null; undoFaction = null; // single-use — no undoing the undo
   preActionSnapshot = snapshotPayload();
   selectedId = null; selectedBgId = null;
@@ -7961,6 +8223,7 @@ document.getElementById('resetData').addEventListener('click', async ()=>{
   minorStatus = {};
   nationRcBonus = {};
   startingTokensAllocated = {Axis:false, Allied:false};
+  startingDoctrinesPrompted = {Axis:false, Allied:false};
   undoSnapshot = null; undoFaction = null; // a full reset shouldn't be undoable back through
   sectors.forEach(s=>{ if(s.type==='Sea'){ s.ntf = {}; s.ntfLocked = {}; } });
   selectedId = null; selectedBgId = null;
@@ -7975,7 +8238,7 @@ document.getElementById('exportBackup').addEventListener('click', ()=>{
   const payload = {
     exportedAt: new Date().toISOString(),
     turn: `${clock.season} ${clock.year}`,
-    sectors, bgs, clock, battleLog, actionLog, dashboards, minorStatus, nationRcBonus, startingTokensAllocated,
+    sectors, bgs, clock, battleLog, actionLog, dashboards, minorStatus, nationRcBonus, startingTokensAllocated, startingDoctrinesPrompted,
   };
   const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
   const url = URL.createObjectURL(blob);
@@ -8022,6 +8285,7 @@ document.getElementById('importFileInput').addEventListener('change', async (ev)
   minorStatus = data.minorStatus || {};
   nationRcBonus = data.nationRcBonus || {};
   startingTokensAllocated = data.startingTokensAllocated || {Axis:false, Allied:false};
+  startingDoctrinesPrompted = data.startingDoctrinesPrompted || {Axis:false, Allied:false};
   selectedId = null; selectedBgId = null;
   await saveState(true, true);
   render();
