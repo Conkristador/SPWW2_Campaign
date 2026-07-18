@@ -236,12 +236,13 @@
   .log-entry .log-outcome{font-family:var(--font-mono);font-size:11px;margin-top:3px;}
 
   /* ---------- Legend (bottom-left) ---------- */
-  #legendStack{position:absolute;bottom:16px;left:16px;z-index:5;display:flex;flex-direction:column;gap:8px;align-items:flex-start;}
+  #legendStack{position:absolute;bottom:16px;left:16px;z-index:5;display:flex;flex-direction:column;gap:6px;align-items:flex-start;}
   #legend{background:rgba(39,43,29,.9);
-    border:1px solid var(--panel-border);border-radius:4px;padding:10px 14px;
-    font-family:var(--font-mono);font-size:10.5px;color:var(--ink-dim);}
-  #legend .row{display:flex;align-items:center;gap:7px;margin:3px 0;}
-  #legend .sw{width:9px;height:9px;border-radius:50%;display:inline-block;}
+    border:1px solid var(--panel-border);border-radius:4px;padding:7px 10px;
+    font-family:var(--font-mono);font-size:9px;color:var(--ink-dim);
+    max-height:min(60vh, 480px);overflow-y:auto;}
+  #legend .row{display:flex;align-items:center;gap:5px;margin:1.5px 0;}
+  #legend .sw{width:7px;height:7px;border-radius:50%;display:inline-block;flex-shrink:0;}
 
   /* ---------- Regional insets (Europe, China) ---------- */
   .region-inset{position:absolute;top:96px;right:20px;z-index:5;width:360px;height:340px;
@@ -446,17 +447,17 @@
         <div class="row"><span class="sw" style="background:var(--allied)"></span>Allied control</div>
         <div class="row"><span class="sw" style="background:var(--neutral)"></span>Neutral</div>
         <div class="row"><span class="sw" style="background:var(--gold);border-radius:1px;transform:rotate(45deg)"></span>Resource Centre</div>
-        <div class="row"><span class="sw" style="background:var(--gold);color:#1B1E14;font-size:9px;display:flex;align-items:center;justify-content:center;">★</span>Major Capital (Resource Centre)</div>
-        <div class="row"><span class="sw" style="background:var(--danger);color:#fff;font-size:7px;display:flex;align-items:center;justify-content:center;">4</span>Partisan Level (§12.0)</div>
-        <div class="row"><span class="sw" style="background:var(--allied);border-radius:1px;color:#1B1E14;font-size:7px;display:flex;align-items:center;justify-content:center;">1</span>NTF assigned (§11.4)</div>
-        <div class="row"><span class="sw" style="background:none;border-bottom:2px dotted var(--allied);height:0;width:14px;"></span>Amphibious-only link (§11.1)</div>
-        <div class="row"><span class="sw" style="background:none;border-bottom:2px solid var(--allied);height:0;width:14px;"></span>River crossing</div>
+        <div class="row"><span class="sw" style="background:var(--gold);color:#1B1E14;font-size:6px;display:flex;align-items:center;justify-content:center;">★</span>Major Capital (Resource Centre)</div>
+        <div class="row"><span class="sw" style="background:var(--danger);color:#fff;font-size:5.5px;display:flex;align-items:center;justify-content:center;">4</span>Partisan Level (§12.0)</div>
+        <div class="row"><span class="sw" style="background:var(--allied);border-radius:1px;color:#1B1E14;font-size:5.5px;display:flex;align-items:center;justify-content:center;">1</span>NTF assigned (§11.4)</div>
+        <div class="row"><span class="sw" style="background:none;border-bottom:1.6px dotted var(--allied);height:0;width:11px;"></span>Amphibious-only link (§11.1)</div>
+        <div class="row"><span class="sw" style="background:none;border-bottom:1.6px solid var(--allied);height:0;width:11px;"></span>River crossing</div>
         <div class="row"><span class="sw" style="background:none;border:1.6px dashed var(--danger);border-radius:50%;"></span>Contested (§8.1)</div>
         <div class="row"><span class="sw" style="background:none;border:1.6px dashed var(--ok);border-radius:50%;"></span>Lodgement Active (§11.1.3)</div>
         <div class="row"><span class="sw" style="background:#5B6B7A;border-radius:50%;"></span>Industrial Evacuation (§12.4)</div>
         <div class="row"><span class="sw" style="background:var(--allied);border-radius:50%;"></span>Forward Staging Base (§11.6)</div>
         <div class="row"><span class="sw" style="background:var(--gold);border-radius:50%;"></span>USN Mobile Staging Anchorage (§11.6)</div>
-        <div class="row"><span class="sw" style="background:var(--gold);color:#1B1E14;font-size:8px;display:flex;align-items:center;justify-content:center;">★</span>Elite Battle Group</div>
+        <div class="row"><span class="sw" style="background:var(--gold);color:#1B1E14;font-size:6px;display:flex;align-items:center;justify-content:center;">★</span>Elite Battle Group</div>
         <div class="row"><span class="sw" style="background:var(--danger);border-radius:50%;"></span>Out of Supply</div>
         <div class="row" style="margin-top:6px;border-top:1px solid var(--panel-border);padding-top:6px;">Press <b style="color:var(--gold);">L</b> to toggle sector labels, Partisan Level markers, and Industrial Evacuation icons together</div>
       </div>
@@ -3202,28 +3203,6 @@ function updateUndoButton(){
 // a conflict on every single save, not just genuine ones. Sorting keys
 // recursively before comparing makes this robust to ordering and actually
 // reflects data equality.
-function canonicalJSON(value){
-  if(Array.isArray(value)) return '[' + value.map(canonicalJSON).join(',') + ']';
-  if(value && typeof value === 'object'){
-    const keys = Object.keys(value).sort();
-    return '{' + keys.map(k => JSON.stringify(k) + ':' + canonicalJSON(value[k])).join(',') + '}';
-  }
-  return JSON.stringify(value);
-}
-
-// TEMPORARY DIAGNOSTIC HELPER — reports which top-level keys actually
-// differ between two save payloads, rather than just "they're different."
-// Makes the console logs below actually actionable instead of a bare
-// true/false.
-function diffTopLevelKeys(a, b){
-  const keys = new Set([...Object.keys(a||{}), ...Object.keys(b||{})]);
-  const diffs = [];
-  keys.forEach(k=>{
-    if(canonicalJSON(a ? a[k] : undefined) !== canonicalJSON(b ? b[k] : undefined)) diffs.push(k);
-  });
-  return diffs;
-}
-
 async function performSave(showNote){
   try{
     // Whatever the rolling snapshot currently holds is "the state right
@@ -3233,69 +3212,10 @@ async function performSave(showNote){
       undoSnapshot = preActionSnapshot;
       undoFaction = playerRole || 'Observer';
     }
-    // Conflict check: this is a shared document, and a save here is a full
-    // overwrite, not a merge. If the opponent's tab (or another device) has
-    // saved changes since THIS browser last knew the state, writing now
-    // would silently erase their work — the exact "my changes disappeared"
-    // symptom, just from their side instead of yours. So before writing,
-    // check whether the remote still matches what this browser last saw.
-    console.log('[SAVE] performSave starting. JSONBIN_CONFIGURED:', JSONBIN_CONFIGURED, '- have preActionSnapshot:', !!preActionSnapshot);
-    if(JSONBIN_CONFIGURED && preActionSnapshot){
-      let remote = null;
-      try{
-        console.log('[SAVE] Conflict check: reading remote state...');
-        remote = await jsonbinRead();
-        bumpRequestCounter();
-        console.log('[SAVE] Conflict check: remote read succeeded.');
-      }catch(e){
-        console.log('[SAVE] Conflict check: remote read FAILED (offline/misconfigured?) — skipping check, proceeding to normal save.', e);
-      }
-      if(remote){
-        const conflict = canonicalJSON(remote) !== canonicalJSON(preActionSnapshot);
-        console.log('[SAVE] Conflict check result — conflict detected:', conflict);
-        if(conflict){
-          const diffKeys = diffTopLevelKeys(remote, preActionSnapshot);
-          console.log('[SAVE] Top-level fields that actually differ:', diffKeys);
-          const reload = await confirmConflictReload();
-          console.log('[SAVE] User chose:', reload ? 'LOAD THEIR CHANGES' : 'OVERWRITE ANYWAY');
-          if(reload){
-            sectors = mergeSectorsWithSeed(remote.sectors);
-            bgs = remote.bgs || bgs;
-            clock = remote.clock || clock;
-            battleLog = remote.battleLog || battleLog;
-            actionLog = remote.actionLog || actionLog;
-            dashboards = normalizeDashboards(remote.dashboards);
-            minorStatus = remote.minorStatus || {};
-            nationRcBonus = remote.nationRcBonus || {};
-            startingTokensAllocated = remote.startingTokensAllocated || {Axis:false, Allied:false};
-            preActionSnapshot = remote;
-            render();
-            if(selectedId) renderPanel();
-            if(selectedBgId) renderBGPanel();
-            notify("Loaded your opponent's latest changes. Your own most recent edit was NOT saved — redo it now if it's still needed.");
-            console.log('[SAVE] Reloaded remote state. Returning WITHOUT writing.');
-            return; // do not overwrite what was just loaded
-          }
-          console.log('[SAVE] Proceeding to write (overwrite chosen).');
-          // "Overwrite anyway" chosen — fall through to the normal save below.
-        }
-      }
-    }
-    trimLogs(); // catch anything appended since the last trim, right before building the payload
+    console.log('[SAVE] performSave starting. JSONBIN_CONFIGURED:', JSONBIN_CONFIGURED);
+    trimLogs(); // keep the payload lean regardless of plan tier — cheap and harmless either way
     let payload = snapshotPayload();
-    let payloadSize = new Blob([JSON.stringify(payload)]).size;
-    console.log('[SAVE] Payload size:', payloadSize.toLocaleString(), 'bytes (JSONBin free-tier limit: 102,400)');
-    if(payloadSize > 100000){
-      // Confirmed by direct testing: JSONBin's free tier hard-rejects any
-      // update over 100KB with a 403 and an explicit "cannot update a
-      // record over 100kb" message. trimLogs() already ran, so if it's
-      // still over, the logs are already at their floor (30/20 entries) —
-      // this is the sectors+BGs baseline itself being too large, which no
-      // amount of log trimming can fix. Surface that plainly rather than
-      // send a doomed request and report a confusing 403.
-      console.warn('[SAVE] Payload still over 100KB after trimming logs to their floor. This save will likely be rejected by JSONBin.');
-      notify(`⚠ This save is ${(payloadSize/1024).toFixed(1)}KB — over JSONBin's 100KB free-tier limit even with logs trimmed to their minimum. The campaign's own data (sectors + Battle Groups) has grown too large on its own. This attempt may fail; if it does, the practical fix is upgrading the JSONBin plan (mentioned in their own rejection message) rather than anything trimmable here.`);
-    }
+    console.log('[SAVE] Payload size:', new Blob([JSON.stringify(payload)]).size.toLocaleString(), 'bytes');
     console.log('[SAVE] Writing to JSONBin now...');
     await jsonbinWrite(payload);
     bumpRequestCounter();
@@ -3309,21 +3229,6 @@ async function performSave(showNote){
     if(showNote) flashSaveFailed();
   }
 }
-// Distinct, unambiguous button labels — a generic Yes/Cancel confirm
-// wouldn't make clear which option is "safe" (see their changes first)
-// versus "risky" (destroy their changes with yours).
-function confirmConflictReload(){
-  return new Promise(resolve=>{
-    openModal('Your opponent has newer changes', `
-      <div class="winter-note" style="color:var(--danger);">The shared campaign has changes you haven't seen yet — likely your opponent's tab saved something while yours was open. Saving your edit now would overwrite theirs entirely; this isn't a merge, it's a full replace.</div>
-      <button class="cr-roll-btn" id="conflict_reload_btn" style="margin-top:10px;width:100%;">Load their changes now (your last edit is lost — redo it after)</button>
-      <button class="ctrl-btn" id="conflict_overwrite_btn" style="margin-top:8px;width:100%;">Overwrite their changes with mine anyway</button>
-    `);
-    document.getElementById('conflict_reload_btn').addEventListener('click', ()=>{ closeModal(); resolve(true); });
-    document.getElementById('conflict_overwrite_btn').addEventListener('click', ()=>{ closeModal(); resolve(false); });
-  });
-}
-
 // Most edits (a dropdown, one BG's fatigue) get debounced ~2.5s so rapid
 // small changes collapse into a single write — the free tier is a fixed
 // 10,000-request budget, not a monthly refill, so batching meaningfully
@@ -3374,16 +3279,14 @@ function flashSaveFailed(){
   }
   // A single failure could be a network hiccup — the quick flash covers
   // that. But if saves keep failing back-to-back, that's a much more
-  // serious signal (most likely: JSONBin's free tier is a fixed one-time
-  // 10,000-request budget, not a monthly refill, and it's been used up —
-  // that fails every write silently from then on with no other symptom).
-  // A 2.6-second flash is easy to miss entirely across a whole session;
-  // this doesn't auto-dismiss, so it can't be.
+  // serious signal worth surfacing clearly rather than letting a
+  // 2.6-second flash go unnoticed across a whole session — so this one
+  // doesn't auto-dismiss.
   if(consecutiveSaveFailures >= 2 && !document.getElementById('persistentSaveWarning')){
     const banner = document.createElement('div');
     banner.id = 'persistentSaveWarning';
     banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:var(--danger);color:#fff;padding:10px 16px;font-family:var(--font-mono);font-size:13px;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.4);';
-    banner.innerHTML = `⚠ Changes are NOT saving — ${consecutiveSaveFailures} writes have failed in a row. Most likely cause: JSONBin's free tier is a fixed 10,000-request lifetime budget (not monthly), and it may be exhausted — check the request counter in the header. Reloading right now would lose unsaved work. <button id="dismissSaveWarning" style="margin-left:12px;background:#fff;color:var(--danger);border:none;padding:2px 10px;border-radius:3px;cursor:pointer;font-weight:700;">Dismiss</button>`;
+    banner.innerHTML = `⚠ Changes are NOT saving — ${consecutiveSaveFailures} writes have failed in a row. Check your JSONBin key/bin configuration or network connection. Reloading right now would lose unsaved work. <button id="dismissSaveWarning" style="margin-left:12px;background:#fff;color:var(--danger);border:none;padding:2px 10px;border-radius:3px;cursor:pointer;font-weight:700;">Dismiss</button>`;
     document.body.appendChild(banner);
     document.getElementById('dismissSaveWarning').addEventListener('click', ()=>banner.remove());
   }
