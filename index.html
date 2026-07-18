@@ -2983,9 +2983,16 @@ function withTimeout(promise, ms){
 // real campaign's actual BG count (grown via mobilization, Kampfgruppe
 // detachments, minor-nation activations) evidently eats more of the 100KB
 // budget than the starting OOB alone suggested.
+// Now on a Pro plan (up to 1MB per record, not 100KB) — the tight 30/20
+// caps from the free-tier crunch aren't necessary anymore. Still keeping
+// a real ceiling rather than truly unbounded growth: even generously-long
+// campaigns won't approach these, but an actual bound means the log view
+// itself (and the eventual payload) never grows without limit either.
+const ACTION_LOG_CAP = 500;
+const BATTLE_LOG_CAP = 300;
 function trimLogs(){
-  if(actionLog && actionLog.length > 30) actionLog.length = 30;
-  if(battleLog && battleLog.length > 20) battleLog.length = 20;
+  if(actionLog && actionLog.length > ACTION_LOG_CAP) actionLog.length = ACTION_LOG_CAP;
+  if(battleLog && battleLog.length > BATTLE_LOG_CAP) battleLog.length = BATTLE_LOG_CAP;
 }
 
 // ---------- JSONBin.io persistence (GitHub Pages deployment) ----------
@@ -4171,7 +4178,7 @@ function logAction(faction, type, description, relevantSectors, bgId){
   // way to blow the budget on a long campaign. Keep the most recent
   // entries only; older history is still visible in-session, just not
   // persisted indefinitely.
-  if(actionLog.length > 30) actionLog.length = 30;
+  if(actionLog.length > ACTION_LOG_CAP) actionLog.length = ACTION_LOG_CAP;
 }
 
 // §5.2 "Reveal on trigger": a Sealed entry auto-reveals the instant its BG
@@ -6041,7 +6048,7 @@ async function applyCombatResult(){
     outcome: r.outcome,
     winner: r.winner,
   });
-  if(battleLog.length > 20) battleLog.length = 20; // see actionLog's cap note — same size-budget reason
+  if(battleLog.length > BATTLE_LOG_CAP) battleLog.length = BATTLE_LOG_CAP; // see trimLogs() cap note
 
   await saveState(true, true);
   pendingEngagement = null;
@@ -7349,6 +7356,61 @@ document.getElementById('openEconomy').addEventListener('click', ()=>{
   `);
 });
 
+// Generic "download this text as a file" trigger — used by both log
+// archive-export buttons below. No server involved; just a Blob and a
+// throwaway anchor click, same pattern used for every other export in
+// this tool (xlsx, etc.) but for a plain .txt this time.
+function downloadTextFile(filename, text){
+  const blob = new Blob([text], {type:'text/plain;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+function exportBattleLogText(){
+  const lines = [
+    `SPWW2 Campaign — Battle Log Archive`,
+    `Exported: ${new Date().toISOString()}`,
+    `Current turn: ${clock.season} ${clock.year}`,
+    `Entries: ${battleLog.length}`,
+    ''.padEnd(60,'='),
+    '',
+  ];
+  // Oldest first reads like a chronological after-action report — the live
+  // view shows newest-first for at-a-glance use, but an archive is for
+  // reading through start to finish.
+  battleLog.slice().reverse().forEach(e=>{
+    lines.push(`[${e.turn}]${e.manual?' (manual entry)':''} — ${e.sector}`);
+    lines.push(`  Attacker: ${e.attacker}`);
+    lines.push(`  Defender: ${e.defender}`);
+    lines.push(`  Outcome: ${e.outcome} — winner: ${e.winner==='TIE'?'neither (stalemate)':e.winner.toLowerCase()}`);
+    lines.push('');
+  });
+  downloadTextFile(`SPWW2_BattleLog_${clock.season}${clock.year}.txt`, lines.join('\n'));
+}
+function exportActionLogText(){
+  const viewer = playerRole || 'Observer';
+  const lines = [
+    `SPWW2 Campaign — Action Log Archive`,
+    `Exported: ${new Date().toISOString()}`,
+    `Current turn: ${clock.season} ${clock.year}`,
+    `Viewing as: ${viewer}`,
+    `Entries: ${actionLog.length}`,
+    ''.padEnd(60,'='),
+    '',
+  ];
+  actionLog.slice().reverse().forEach(e=>{
+    const canSeeFull = viewer==='Observer' || e.faction===viewer || e.revealed;
+    const desc = canSeeFull ? e.description : `[Sealed §5.2 — content hidden from ${viewer}]`;
+    const typeLabel = canSeeFull ? e.type : 'Sealed';
+    lines.push(`[${e.turn}] ${e.faction} — ${typeLabel}`);
+    lines.push(`  ${desc}`);
+    lines.push('');
+  });
+  downloadTextFile(`SPWW2_ActionLog_${clock.season}${clock.year}_${viewer}.txt`, lines.join('\n'));
+}
+
 function openBattleLogModal(){
   const rows = battleLog.length ? battleLog.map(e=>`
     <div class="log-entry">
@@ -7362,8 +7424,11 @@ function openBattleLogModal(){
   const sectorOptions = sectors.filter(s=>s.type!=='Sea').slice().sort((a,b)=>a.name.localeCompare(b.name))
     .map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
 
-  openModal(`Battle Log (${battleLog.length})`, `
-    <button class="cr-roll-btn" id="openManualBattleForm" style="margin-bottom:14px;">+ Add Manual Battle Result</button>
+  openModal(`Battle Log (${battleLog.length} / ${BATTLE_LOG_CAP} cap)`, `
+    <div style="display:flex;gap:8px;margin-bottom:10px;">
+      <button class="cr-roll-btn" id="openManualBattleForm" style="flex:1;">+ Add Manual Battle Result</button>
+      <button class="ctrl-btn" id="exportBattleLogBtn" style="flex:1;">⬇ Export as Text (Archive)</button>
+    </div>
     <div id="manualBattleForm" style="display:none;margin-bottom:18px;padding:14px;border:1px solid var(--panel-border);border-radius:4px;">
       <div class="winter-note">For a battle actually played out in WinSPWW2. Describe both sides, enter the real result, and optionally apply it straight to the map.</div>
       <div class="fg-label">Sector</div>
@@ -7402,6 +7467,7 @@ function openBattleLogModal(){
     const f = document.getElementById('manualBattleForm');
     f.style.display = f.style.display==='none' ? 'block' : 'none';
   });
+  document.getElementById('exportBattleLogBtn').addEventListener('click', exportBattleLogText);
 
   const sectorSel = document.getElementById('mb_sector');
   const renderSectorDependent = ()=>{
@@ -7439,7 +7505,7 @@ function openBattleLogModal(){
       id: Date.now(), turn: `${clock.season} ${clock.year}`, sector: sec.name,
       attacker: atkDesc, defender: defDesc, outcome, winner, manual: true,
     });
-    if(battleLog.length > 20) battleLog.length = 20; // see actionLog's cap note — same size-budget reason
+    if(battleLog.length > BATTLE_LOG_CAP) battleLog.length = BATTLE_LOG_CAP; // see trimLogs() cap note
 
     if(applyToMap){
       const atkSel = document.getElementById('mb_atk_bgs');
@@ -7503,10 +7569,12 @@ document.getElementById('openActionLog').addEventListener('click', ()=>{
       <div class="log-sides">${desc}</div>
     </div>`;
   }).join('');
-  openModal(`Action Log (${actionLog.length}) — viewing as ${viewer}`, `
+  openModal(`Action Log (${actionLog.length} / ${ACTION_LOG_CAP} cap) — viewing as ${viewer}`, `
     <div class="winter-note">Sealed entries (§5.2) show only to their own faction and Observers until they'd stop qualifying for Tier 1 on the real map. Change your role via the badge in the header to see how it looks from the other side.</div>
+    <button class="ctrl-btn" id="exportActionLogBtn" style="width:100%;margin:10px 0;">⬇ Export as Text (Archive)</button>
     ${rows}
   `);
+  document.getElementById('exportActionLogBtn').addEventListener('click', exportActionLogText);
 });
 
 function openWinterLogisticsModal(){
