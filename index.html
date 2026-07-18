@@ -453,11 +453,12 @@
         <div class="row"><span class="sw" style="background:none;border-bottom:2px solid var(--allied);height:0;width:14px;"></span>River crossing</div>
         <div class="row"><span class="sw" style="background:none;border:1.6px dashed var(--danger);border-radius:50%;"></span>Contested (§8.1)</div>
         <div class="row"><span class="sw" style="background:none;border:1.6px dashed var(--ok);border-radius:50%;"></span>Lodgement Active (§11.1.3)</div>
+        <div class="row"><span class="sw" style="background:#5B6B7A;border-radius:50%;"></span>Industrial Evacuation (§12.4)</div>
         <div class="row"><span class="sw" style="background:var(--allied);border-radius:50%;"></span>Forward Staging Base (§11.6)</div>
         <div class="row"><span class="sw" style="background:var(--gold);border-radius:50%;"></span>USN Mobile Staging Anchorage (§11.6)</div>
         <div class="row"><span class="sw" style="background:var(--gold);color:#1B1E14;font-size:8px;display:flex;align-items:center;justify-content:center;">★</span>Elite Battle Group</div>
         <div class="row"><span class="sw" style="background:var(--danger);border-radius:50%;"></span>Out of Supply</div>
-        <div class="row" style="margin-top:6px;border-top:1px solid var(--panel-border);padding-top:6px;">Press <b style="color:var(--gold);">L</b> to toggle sector labels, <b style="color:var(--gold);">P</b> to toggle partisan markers</div>
+        <div class="row" style="margin-top:6px;border-top:1px solid var(--panel-border);padding-top:6px;">Press <b style="color:var(--gold);">L</b> to toggle sector labels, Partisan Level markers, and Industrial Evacuation icons together</div>
       </div>
       <button class="ctrl-btn" id="resetData">RESTORE SCENARIO START</button>
     </div>
@@ -2252,8 +2253,8 @@ to <strong>2,000 points</strong> - Elite Formations get only
 of one of each type)</p>
 <h3 id="sec-12-6">12.6. Italy</h3>
 <p><strong>Italian Armistice.</strong> Triggers the first time the
-Allies control Sicily and any 2 of {Naples, Rome, Milan}. Italy
-splits:</p>
+Allies control Sicily plus at least one Italian-owned Resource Centre
+(Rome, Milan, or Naples). Italy splits:</p>
 <ul>
 <li>Italian BGs in Allied-controlled or Allied-adjacent sectors flip to
 Allied control — Badoglio Italy, a new Minor Nation under UK
@@ -2438,13 +2439,18 @@ BG, is automatically Out of Supply (§4) that turn.</td>
 </tr>
 <tr class="odd">
 <td><strong>Vichy</strong></td>
-<td>Compiègne Armistice</td>
+<td>Case Anton</td>
 <td>Strategic Layer (one-time trigger)</td>
-<td>If the Allies conduct an Amphibious Invasion of a Vichy North
-African sector (Vichy, Tunis), Germany may immediately occupy all
-remaining Vichy sectors without a fight — set their Occupier to Germany.
-Once annexed this way, those RCs are ordinary German-flagged capacity,
-not Minor-restricted (§2.1 no longer applies).</td>
+<td>If the Allies conduct an Amphibious Invasion of Vichy-controlled
+North Africa (Morocco or Algiers), Germany may immediately occupy
+Vichy’s remaining <strong>metropolitan</strong> sectors (Vichy,
+Marseille) without a fight — set their Occupier to Germany. This does
+<strong>not</strong> touch Vichy’s colonial territory — that stays a
+live, ongoing contest for Free France to Rally or the Allies to capture,
+exactly as it did historically (occupying the homeland didn’t hand
+Germany the empire). Once annexed this way, those RCs are ordinary
+German-flagged capacity, not Minor-restricted (§2.1 no longer
+applies).</td>
 </tr>
 <tr class="even">
 <td><strong>Free France</strong></td>
@@ -2467,15 +2473,17 @@ first activates:</p>
 <li><strong>+1 toward Free France</strong> each time a Vichy sector
 Rallies (§13.1) or is captured outright by the Allies.</li>
 <li><strong>+1 toward Vichy</strong> each time Germany annexes a Vichy
-sector via Compiègne Armistice (§13.1).</li>
+sector via Case Anton, or captures a Vichy sector through ordinary
+combat.</li>
 <li><strong>At 3 Free France:</strong> De Gaulle is recognized as the
 legitimate government. Free France stops being RC-restricted under §2.1
 and may draw directly on any UK-controlled RC like a full sponsor
 nation; Free French BGs also become Elite-eligible (§9.3).</li>
-<li><strong>At 3 Vichy:</strong> Vichy collapses into full
-collaboration. Compiègne Armistice triggers automatically for any Vichy
-sectors Germany doesn’t already hold, and Vichy territory can never
-Rally to Free France again.</li>
+<li><strong>At 3 Vichy:</strong> Vichy collapses into full collaboration
+— the political trajectory Case Anton only started is now complete.
+Every remaining Vichy sector (including any colonial territory Case
+Anton never touched) is annexed to Germany without a fight, and Vichy
+territory can never Rally to Free France again.</li>
 </ul>
 <h3 id="sec-13-3">13.3. Neutrality Violation (house rule)</h3>
 <p>Most of the map’s 18 Neutral countries — Afghanistan, Argentina,
@@ -2541,6 +2549,45 @@ than its own. The rule text now says so explicitly.</li>
 to their headers, so the Core/Advanced split declared in the
 introduction is usable while reading through the document, not just
 stated once at the top and then forgotten.</li>
+</ul>
+<p><strong>v7 → v8</strong></p>
+<ul>
+<li><strong>Italian Armistice trigger simplified (§12.6).</strong> Was
+Sicily plus any 2 of {Naples, Rome, Milan}; now Sicily plus just 1 of
+those 3. The campaign tool now also prompts the Allied player directly —
+not the Axis player — once the condition is met, since the Allies are
+the ones taking the action that triggers it.</li>
+</ul>
+<p><strong>v8 → v9</strong></p>
+<ul>
+<li><strong>§13.1 Vichy trigger renamed and fixed.</strong> “Compiègne
+Armistice” is now “Case Anton,” matching the actual historical operation
+(Germany’s occupation of Vichy France following Operation Torch —
+Compiègne refers to the 1940 armistice that <em>created</em> Vichy
+France, a different event entirely).</li>
+<li><strong>Corrected the trigger sectors.</strong> The old text named
+“(Vichy, Tunis)” as the North African trigger — but the sector literally
+named “Vichy” is in metropolitan France, not North Africa, and Tunis was
+already German-occupied, not Vichy-controlled. Neither was a sector an
+Allied invasion could actually target under the rule’s own intent. Now
+correctly reads Morocco or Algiers — the two sectors that are genuinely
+both North African and still under direct Vichy control.</li>
+<li><strong>Narrowed what Case Anton actually annexes.</strong>
+Previously “all remaining Vichy sectors” at once — meaning a single
+invasion of French North Africa could instantly flip the entire Vichy
+colonial empire to Germany, which both wasn’t historically accurate (the
+real Case Anton took metropolitan France only; the colonies kept
+fracturing on their own for years after) and made the ongoing Free
+France vs. Vichy contest largely pointless the moment it fired. Case
+Anton now annexes only Vichy’s 2 metropolitan sectors (Vichy,
+Marseille); colonial territory stays a live contest for Free France to
+Rally or the Allies to capture.</li>
+<li><strong>§13.2’s “full collaboration” endgame (3 Vichy Legitimacy)
+now does the job the old version of Case Anton used to do</strong> —
+it’s the point where whatever colonial remnant is left finally gets
+absorbed too. Added a second path to reach it (ordinary Axis combat
+capture of a Vichy sector, not just Case Anton), since Case Anton alone
+can now only ever contribute +2 toward the 3-point threshold.</li>
 </ul>
 </div>
   </div>
@@ -2631,6 +2678,7 @@ const NTF_ALLOTMENT = {
 let dashboards = defaultDashboards();
 let minorStatus = {}; // {countryName: 'Neutral'|'Axis'|'Allied'} — player judgment calls, persisted
 let nationRcBonus = {}; // {nationName: cumulative +RC from opponents invading neutrals}, persisted
+let startingTokensAllocated = {Axis:false, Allied:false}; // per-faction one-time bootstrap flag, persisted
 const NUMERIC_FLAGS = new Set(['Free France Legitimacy count (0-3)','Vichy Legitimacy count (0-3)']);
 const DOCTRINE_OPTIONS = {
   Germany:['None','Panzerwaffe Doctrine','Kesselschlacht'], Japan:['None','Kaiten/Kamikaze Tactics','Kantai Kessen'],
@@ -2925,6 +2973,7 @@ async function hydrateFromStorage(){
       dashboards = normalizeDashboards(record.dashboards);
       minorStatus = record.minorStatus || {};
       nationRcBonus = record.nationRcBonus || {};
+      startingTokensAllocated = record.startingTokensAllocated || {Axis:false, Allied:false};
       preActionSnapshot = snapshotPayload(); // undo baseline: state as loaded
       render();
       if(selectedId) renderPanel();
@@ -2936,6 +2985,32 @@ async function hydrateFromStorage(){
     console.warn('JSONBin unavailable, or Bin ID/API key not yet filled in — using local scenario data.', e);
     preActionSnapshot = snapshotPayload(); // still give local-only play an undo baseline
   }
+}
+// A brand-new campaign starts with zero Support Tokens for every nation,
+// and the rules only generate more at Winter Logistics — there'd be no way
+// to ever acquire a first token otherwise. One-time only (the flag is
+// persisted): if this fires for a campaign that's already got some tokens
+// banked some other way, it just adds the starting allotment on top, same
+// as the very first Winter Logistics collection would have.
+// A brand-new campaign starts with zero Support Tokens for every nation,
+// and the rules only generate more at Winter Logistics — there'd be no way
+// to ever acquire a first token otherwise. Scoped per faction and triggered
+// from that faction's own dashboard (not an automatic popup at page load,
+// which would've hit whoever happened to open the page first regardless of
+// which side they're actually playing) — the Axis player handles Germany/
+// Japan/Italy's starting tokens, the Allied player handles their own four.
+function startingTokensPromptEligible(faction){
+  return !startingTokensAllocated[faction];
+}
+function openStartingTokensPrompt(faction){
+  const nationList = MAJOR_NATIONS[faction];
+  const econ = computeEconomy();
+  openTokenAllocationModal(nationList, n=>econ[n].tokens, async ()=>{
+    startingTokensAllocated[faction] = true;
+    await saveState(true, true);
+    notify(`Starting Support Tokens allocated for ${faction}'s major nations. This only happens once — from here on, new tokens are collected at each Winter Logistics Phase.`);
+    openDashboard(faction);
+  });
 }
 
 // Structural fields (name, region, type, rc, connections, px/py) always come
@@ -3024,7 +3099,7 @@ let undoSnapshot = null;      // what "Undo Last Action" would restore
 let undoFaction = null;       // who's allowed to use it
 
 function snapshotPayload(){
-  return JSON.parse(JSON.stringify({sectors, bgs, clock, battleLog, actionLog, dashboards, minorStatus, nationRcBonus}));
+  return JSON.parse(JSON.stringify({sectors, bgs, clock, battleLog, actionLog, dashboards, minorStatus, nationRcBonus, startingTokensAllocated}));
 }
 function updateUndoButton(){
   const btn = document.getElementById('undoLastAction');
@@ -3088,7 +3163,7 @@ window.addEventListener('beforeunload', ()=>{
   if(!saveDebounceTimer || !JSONBIN_CONFIGURED) return;
   clearTimeout(saveDebounceTimer);
   try{
-    const payload = {sectors, bgs, clock, battleLog, actionLog, dashboards, minorStatus, nationRcBonus};
+    const payload = {sectors, bgs, clock, battleLog, actionLog, dashboards, minorStatus, nationRcBonus, startingTokensAllocated};
     fetch(JSONBIN_BASE, {
       method:'PUT', headers:{'X-Master-Key':JSONBIN_API_KEY,'Content-Type':'application/json'},
       body: JSON.stringify(payload), keepalive: true,
@@ -3340,6 +3415,8 @@ function render(){
   renderBGs(nodeById, bgLayer, 6, null, -12);
   renderNTFMarkers(nodeById, ntfLayer);
   renderPartisanMarkers(nodeById, partisanLayer);
+  renderEvacuationMarkers(nodeById, partisanLayer);
+  renderEvacuationSummary(scaleX, scaleY);
   renderStackWarnings(nodeById, partisanLayer);
   renderContestedMarkers(nodeById, partisanLayer);
   renderLodgementMarkers(nodeById, partisanLayer);
@@ -3709,7 +3786,7 @@ function advancePartisans(){
 }
 
 function renderPartisanMarkers(nodeById, layer){
-  const placed = partisanMarkersVisible ? sectors.filter(s=>(s.partisan||0)>0 && nodeById[s.id] && !hiddenRegions.has(s.region)).map(s=>{
+  const placed = labelsVisible ? sectors.filter(s=>(s.partisan||0)>0 && nodeById[s.id] && !hiddenRegions.has(s.region)).map(s=>{
     const node = nodeById[s.id];
     return {key:s.id, level:s.partisan, cx:node.x-9, cy:node.y+9};
   }) : [];
@@ -3723,6 +3800,60 @@ function renderPartisanMarkers(nodeById, layer){
     });
   sel.attr('transform', d=>`translate(${d.cx},${d.cy})`);
   sel.select('text').text(d=>d.level);
+}
+
+function renderEvacuationMarkers(nodeById, layer){
+  // Industrial Evacuation (§12.4) — a Soviet RC sector that's relocated its
+  // industry inland. Previously invisible on the map entirely; only showed
+  // up if you opened the sector's own panel. Positioned at the opposite
+  // bottom corner from the Partisan marker (-9,+9) and outside the
+  // Lodgement ring's radius (12) so none of the three ever overlap.
+  // Tied to labelsVisible (the L hotkey) — same on/off switch as sector
+  // names, since this icon sits right next to a node's label the same way.
+  const placed = labelsVisible ? sectors.filter(s=>s.evacuated==='Yes' && nodeById[s.id] && !hiddenRegions.has(s.region)).map(s=>{
+    const node = nodeById[s.id];
+    return {key:'evac-'+s.id, cx:node.x+9, cy:node.y+9};
+  }) : [];
+  layer.selectAll('g.evacuation-marker').data(placed, d=>d.key)
+    .join(
+      enter=>{
+        const g = enter.append('g').attr('class','evacuation-marker');
+        g.append('circle').attr('r',5).attr('fill','#5B6B7A').attr('stroke','#1B1E14').attr('stroke-width',0.8);
+        // A small factory silhouette (building base + two chimney stacks)
+        // with a red diagonal strike through it — "industry no longer here."
+        g.append('path').attr('d','M-2.2,1.6 L-2.2,-0.6 L-1.2,-0.6 L-1.2,-1.6 L-0.5,-1.6 L-0.5,-0.6 L0.5,-0.6 L0.5,-1.3 L1.2,-1.3 L1.2,-0.6 L2.2,-0.6 L2.2,1.6 Z')
+          .attr('fill','#fff').attr('stroke','none');
+        g.append('line').attr('x1',-2.4).attr('y1',2).attr('x2',2.4).attr('y2',-2)
+          .attr('stroke','var(--danger)').attr('stroke-width',1.1);
+        return g;
+      },
+      update=>update,
+      exit=>exit.remove()
+    )
+    .attr('transform', d=>`translate(${d.cx},${d.cy})`);
+}
+
+function renderEvacuationSummary(scaleX, scaleY){
+  // A small static table, not tied to any sector — sits in the open space
+  // between Moscow and Urals, above their connecting line, and just
+  // reports the running total. Moved above Archangel entirely (rather than
+  // squeezed beside it) once shrunk — verified clearance below.
+  const count = sectors.filter(s=>s.evacuated==='Yes').length;
+  const anchorX = 785 * scaleX, anchorY = 95 * scaleY;
+  let g = partisanLayer.select('g.evac-summary');
+  if(g.empty()){
+    g = partisanLayer.append('g').attr('class','evac-summary');
+    g.append('rect').attr('rx',3).attr('fill','#1B1E14').attr('stroke','#5B6B7A').attr('stroke-width',1).attr('opacity',0.92);
+    g.append('text').attr('class','evac-summary-title').attr('font-family','var(--font-mono)').attr('font-size',6)
+      .attr('fill','var(--ink-dim)').attr('text-anchor','middle');
+    g.append('text').attr('class','evac-summary-count').attr('font-family','var(--font-mono)').attr('font-size',7.5)
+      .attr('font-weight',700).attr('fill','#fff').attr('text-anchor','middle');
+  }
+  const w = 76, h = 20;
+  g.attr('transform', `translate(${anchorX-w/2},${anchorY-h/2})`);
+  g.select('rect').attr('width',w).attr('height',h);
+  g.select('text.evac-summary-title').attr('x',w/2).attr('y',8).text('Industrial Evacuation (§12.4)');
+  g.select('text.evac-summary-count').attr('x',w/2).attr('y',16).text(`${count} RC${count===1?'':'s'} evacuated`);
 }
 
 function renderStackWarnings(nodeById, layer){
@@ -3966,7 +4097,6 @@ let insetState = {
   cn: {visible:false, pos:null, zoom:null},
 };
 let labelsVisible = true;
-let partisanMarkersVisible = true;
 let editPositionsMode = false;
 let hiddenRegions = new Set();
 let sequenceChecklist = {turn:'', naval:false, bombing:false, movement:false, partisan:false};
@@ -4652,6 +4782,7 @@ function renderBGPanel(){
         <div class="eyebrow">Partial Info (§5.1)</div>
         <h2>Unidentified ${b.type} BG</h2>
         <span class="faction-badge ${faction}">${faction}</span>
+        <div class="winter-note rule-link" data-section="sec-3-1" style="margin-top:4px;" title="§3.1 — the composition requirement this BG type must meet to be legally purchased/built.">${TYPE_REQUIREMENTS[b.type] || ''}</div>
       </div>
       <div class="panel-body">
         <div class="winter-note">You're viewing this as ${viewerFaction}. This is an enemy Battle Group — Tier ${tier} Fog of War means you can see only its sector and category, not its exact strength, experience, fatigue, or tokens. It reveals more automatically if it fights, sits in a Contested sector, or is targeted by REC/INL/ULTRA.</div>
@@ -4674,6 +4805,7 @@ function renderBGPanel(){
       <div class="eyebrow">${b.nation} · ${b.type}${b.elite?' · Elite':''}</div>
       <h2>${b.name}</h2>
       <span class="faction-badge ${faction}">${faction}</span>
+      <div class="winter-note rule-link" data-section="sec-3-1" style="margin-top:4px;" title="§3.1 — the composition requirement this BG type must meet to be legally purchased/built. Informational only; the tool doesn't check actual unit composition.">${TYPE_REQUIREMENTS[b.type] || ''}</div>
     </div>
     <div class="panel-body">
       ${moved ? `<div class="moved-banner">⬤ Activated this turn (§7.2) — moved already. No further activation (Swap/Strategic Movement/Sealift) until Advance Turn.</div>` : ''}
@@ -5430,7 +5562,7 @@ async function runInvasionPhase1(state){
       applyLossToSide(state.defenderBGs, result.defLoss);
       if(!won){
         applyLossToSide(state.attackerBGs, state.attackerBGs.reduce((s,b)=>s+b.points,0)*0.5);
-        [...state.attackerBGs, ...state.defenderBGs].forEach(b=>{ b.fatigue=(b.fatigue||0)+1; });
+        [...state.attackerBGs, ...state.defenderBGs].forEach(b=>{ b.fatigue=(b.fatigue||0)+1; b.engagedThisTurn=true; });
         logAction(state.attackerBGs[0].faction||factionForNation(state.attackerBGs[0].nation), 'Amphibious Invasion',
           `Beach Assault repulsed at ${state.sector.name} — invasion force retreats with extra losses`, [state.sector]);
         await saveState(true, true);
@@ -5562,7 +5694,7 @@ async function runInvasionPhase2(state){
     document.getElementById('inv_finish_btn').addEventListener('click', async ()=>{
       applyLossToSide(state.attackerBGs, result.atkLoss);
       applyLossToSide(state.defenderBGs, result.defLoss);
-      [...state.attackerBGs, ...state.defenderBGs].forEach(b=>{ b.fatigue=(b.fatigue||0)+1; });
+      [...state.attackerBGs, ...state.defenderBGs].forEach(b=>{ b.fatigue=(b.fatigue||0)+1; b.engagedThisTurn=true; });
       if(outcome==='stalemate'){
         state.sector.contested = true;
       } else if(outcome==='victory'){
@@ -5720,7 +5852,7 @@ async function applyCombatResult(){
 
   applyLossToSide(pe.attackerBGs, r.atkLoss);
   applyLossToSide(pe.defenderBGs, r.defLoss);
-  [...pe.attackerBGs, ...pe.defenderBGs].forEach(b=>{ b.fatigue = (b.fatigue||0)+1; });
+  [...pe.attackerBGs, ...pe.defenderBGs].forEach(b=>{ b.fatigue = (b.fatigue||0)+1; b.engagedThisTurn = true; });
 
   if(r.outcome==='Stalemate'){
     pe.sector.contested = true;
@@ -5890,6 +6022,44 @@ function advanceSupplyStatus(){
   return changes;
 }
 
+// §3.7 Recovery: a BG not engaged this turn regains 500 points, or 1,000 if
+// sitting in its own nation's home province — never past its maximum.
+// Maximum is normally 2,500, but drops to 2,000 for Germany/Japan ARM/MECH
+// specifically once their Oil War trace has failed (§12.5, 1943+). That
+// trace status is tracked as a manual dashboard flag elsewhere in this tool
+// (nothing currently computes it automatically), so this reads the same
+// flag rather than re-deciding the question a second way.
+function isHomeProvince(sector, nation){
+  return !!(sector && sector.owner===nation);
+}
+function oilWarCapApplies(bg){
+  if(clock.year < 1943) return false;
+  if(bg.type!=='ARM' && bg.type!=='MECH') return false;
+  if(bg.nation!=='Germany' && bg.nation!=='Japan') return false;
+  const faction = factionForNation(bg.nation);
+  const flagKey = 'Oil War trace active — ' + bg.nation;
+  return dashboards[faction].flags[flagKey] !== 'Yes';
+}
+function advanceRecovery(){
+  const changes = [];
+  bgs.forEach(b=>{
+    if(b.engagedThisTurn) return; // §3.7 — only a BG that didn't fight this turn recovers
+    if(b.shattered) return; // a Shattered BG refits via §10, not ordinary Recovery
+    const sector = byId[b.sectorId];
+    const home = isHomeProvince(sector, b.nation);
+    const gain = home ? 1000 : 500;
+    const cap = oilWarCapApplies(b) ? 2000 : 2500;
+    const before = b.points;
+    b.points = Math.min(cap, b.points + gain);
+    const actualGain = b.points - before;
+    if(actualGain > 0){
+      changes.push({bg:b, home, actualGain, before, after:b.points, cap});
+    }
+  });
+  bgs.forEach(b=>{ b.engagedThisTurn = false; }); // reset for the new turn about to start
+  return changes;
+}
+
 function tracesSupplyToCapital(sectorId, nation){
   const capSector = sectors.find(s=>s.name===HOME_CAPITAL[nation]);
   if(!capSector) return false;
@@ -5927,7 +6097,6 @@ function minorBgNationsFor(nation){
   return [...always, ...gated];
 }
 
-// §12.6 Italian Armistice: Allies hold Sicily + at least 2 of {Naples, Rome, Milan}.
 // §12.3 China Late-War Modernization — Alpha Force Trigger: Allies control
 // both Burma and Chongqing during the 1944 or 1945 Winter Logistics Phase.
 function chinaAlphaForceEligible(){
@@ -5938,14 +6107,13 @@ function chinaAlphaForceEligible(){
   return alliedHolds(burma) && alliedHolds(chongqing);
 }
 
+// §12.6 Italian Armistice: Allies hold Sicily + at least 1 Italian-owned RC.
 function italianArmisticeEligible(){
   const sicily = sectors.find(s=>s.name==='Sicily');
-  const naples = sectors.find(s=>s.name==='Naples');
-  const rome = sectors.find(s=>s.name==='Rome');
-  const milan = sectors.find(s=>s.name==='Milan');
   const alliedHolds = (s)=> s && factionForNation(s.occupier||s.owner)==='Allied';
   if(!alliedHolds(sicily)) return false;
-  return [naples,rome,milan].filter(alliedHolds).length >= 2;
+  const italianRCs = sectors.filter(s=>s.owner==='Italy' && s.rc>0);
+  return italianRCs.some(alliedHolds);
 }
 async function executeItalianArmistice(){
   const italianSectors = sectors.filter(s=>s.owner==='Italy');
@@ -5967,7 +6135,7 @@ async function executeItalianArmistice(){
     b.nation = isBadoglio ? 'Badoglio Italy' : 'RSI';
     b.faction = isBadoglio ? 'Allied' : 'Axis';
   });
-  logAction('Axis', 'Armistice', 'Italian Armistice executed — Italy splits into Badoglio Italy (Allied) and RSI (Axis)', []);
+  logAction('Allied', 'Armistice', 'Italian Armistice executed — Italy splits into Badoglio Italy (Allied) and RSI (Axis)', []);
   await saveState(true, true);
   render();
 }
@@ -6319,14 +6487,19 @@ function buildDashboardHtml(faction){
   const fs = forceSummary(faction);
   const minors = majors.flatMap(n => minorBgNationsFor(n).map(m => ({minor:m, sponsor:n})));
 
-  const armisticeBanner = (faction==='Axis' && italianArmisticeEligible()) ? `
-    <div class="moved-banner" style="border-color:var(--danger);color:var(--danger);">⚠ Italian Armistice triggered (§12.6) — Allies hold Sicily plus 2 of Naples/Rome/Milan. Italy splits into Badoglio Italy (Allied) and RSI (Axis).
+  const armisticeBanner = (faction==='Allied' && italianArmisticeEligible()) ? `
+    <div class="moved-banner" style="border-color:var(--danger);color:var(--danger);">⚠ Italian Armistice triggered (§12.6) — Allies hold Sicily plus at least one Italian-owned RC (Rome, Milan, or Naples). Italy splits into Badoglio Italy (Allied) and RSI (Axis).
       <button class="cr-roll-btn" id="execute_armistice_btn" style="margin-top:8px;width:100%;">Execute Italian Armistice</button>
     </div>` : '';
 
   const alphaForceBanner = (faction==='Allied' && dash.flags['China Alpha Force unlocked']==='No' && chinaAlphaForceEligible()) ? `
     <div class="moved-banner" style="border-color:var(--gold);color:var(--gold);">★ China Alpha Force Trigger met (§12.3) — Allies hold both Burma and Chongqing during a 1944/45 Winter Logistics Phase. China's INF-only restriction lifts; up to 1× ARM and 1× MECH become buildable at China's national experience baseline.
       <button class="cr-roll-btn" id="unlock_alpha_force_btn" style="margin-top:8px;width:100%;">Unlock Alpha Force Modernization</button>
+    </div>` : '';
+
+  const startingTokensBanner = startingTokensPromptEligible(faction) ? `
+    <div class="moved-banner" style="border-color:var(--gold);color:var(--gold);">★ ${faction}'s major nations haven't picked their starting Support Tokens yet (§2) — every nation begins the campaign at zero otherwise, with no way to acquire a first token until the next Winter Logistics Phase.
+      <button class="cr-roll-btn" id="starting_tokens_btn" style="margin-top:8px;width:100%;">Choose ${faction}'s Starting Tokens</button>
     </div>` : '';
 
   const warnRows = majors.filter(n=>(dash.mobilizationSlack[n]||0)>0).map(n=>{
@@ -6370,6 +6543,7 @@ function buildDashboardHtml(faction){
 
   const doctrineRows = majors.map(n=>{
     const d = dash.doctrine[n];
+    const hasToken = d.token && d.token !== 'None';
     return `
     <div class="winter-nation"><h3>${n}</h3>
       <div class="field-row">
@@ -6378,10 +6552,12 @@ function buildDashboardHtml(faction){
             ${DOCTRINE_OPTIONS[n].map(o=>`<option ${d.active===o?'selected':''}>${o}</option>`).join('')}
           </select>
         </div>
-        <div><div class="fg-label rule-link" data-section="sec-9-2" title="Max one National Token per nation. Separate from Doctrines — a nation can hold both a Doctrine and a National Token at once (§9.5).">National Token (§9.2)</div>
-          <select class="dash-token-sel" data-fac="${faction}" data-nation="${n}">
-            ${NATIONAL_TOKEN_OPTIONS[n].map(o=>`<option ${d.token===o?'selected':''}>${o}</option>`).join('')}
-          </select>
+        <div><div class="fg-label rule-link" data-section="sec-9-2" title="Max one National Token per nation. Separate from Doctrines — a nation can hold both a Doctrine and a National Token at once (§9.5). Bought like any other token (§9.2) — spends one currently-banked Support Token of your choice.">National Token (§9.2)</div>
+          <div class="stat-line" style="padding-top:9px;"><b>${d.token || 'None'}</b></div>
+          <div style="display:flex;gap:6px;margin-top:6px;">
+            ${NATIONAL_TOKEN_OPTIONS[n].filter(o=>o!=='None').length ? `<button class="ctrl-btn nt-purchase-btn" data-fac="${faction}" data-nation="${n}" style="flex:1;">Purchase</button>` : ''}
+            ${hasToken ? `<button class="ctrl-btn nt-drop-btn" data-fac="${faction}" data-nation="${n}" style="flex:1;">Drop</button>` : ''}
+          </div>
         </div>
       </div>
       <div class="stat-line"><span>Activated</span><b>${d.activated||'—'}</b></div>
@@ -6389,7 +6565,7 @@ function buildDashboardHtml(faction){
     </div>`;}).join('');
 
   const tokenGrid = `<table class="econ-table"><thead><tr><th>Token</th>${majors.map(n=>`<th>${n}</th>`).join('')}</tr></thead><tbody>
-    ${TOKEN_TYPES.map(tt=>`<tr><td>${tt}</td>${majors.map(n=>`<td><input class="txtfield dash-tok" style="width:60px;text-align:right;" data-nation="${n}" data-token="${tt}" type="number" value="${dash.tokens[n][tt]||0}"></td>`).join('')}</tr>`).join('')}
+    ${TOKEN_TYPES.map(tt=>`<tr><td>${tt}</td>${majors.map(n=>`<td style="text-align:right;">${dash.tokens[n][tt]||0}</td>`).join('')}</tr>`).join('')}
   </tbody></table>`;
 
   const ntfMajors = majors.filter(n=>NTF_ALLOTMENT[n]);
@@ -6430,6 +6606,7 @@ function buildDashboardHtml(faction){
 
   return `
     <div class="winter-note">Grey figures are computed live from the map. Yellow-bordered fields are manual — this is the same information the Economy tab and the Axis/Allied Dashboard tabs tracked, now sourced from one place.</div>
+    ${startingTokensBanner}
     ${armisticeBanner}
     ${alphaForceBanner}
     ${warnRows}
@@ -6454,7 +6631,8 @@ function buildDashboardHtml(faction){
 
     ${buildIntelSectionHtml(faction, dash)}
 
-    <div class="cr-side-title" style="margin-top:18px;">Support Token Inventory (manual)</div>
+    <div class="cr-side-title" style="margin-top:18px;">Support Token Inventory</div>
+    <div class="winter-note">Collected automatically at each Winter Logistics Phase (§2, §10) — 1 token per 2 RCs, type chosen at collection. Spent by Combat Resolver assignments and National Token purchases elsewhere in this tool.</div>
     ${tokenGrid}
 
     <div class="cr-side-title rule-link" data-section="sec-11-4" style="margin-top:18px;cursor:pointer;" title="Fixed yearly allotment (§11.4) — NTFs cannot be built. Assign them to sea sectors from that sector's panel on the map; this total sums automatically.">Naval Task Forces</div>
@@ -6487,6 +6665,8 @@ function wireDashboardInputs(faction){
     await saveState(true);
     openDashboard(faction);
   });
+  const startingTokensBtn = document.getElementById('starting_tokens_btn');
+  if(startingTokensBtn) startingTokensBtn.addEventListener('click', ()=>openStartingTokensPrompt(faction));
   const thisTurn = `${clock.season} ${clock.year}`;
 
   const ultraApplyBtn = document.getElementById('ultra_apply_btn');
@@ -6553,18 +6733,19 @@ function wireDashboardInputs(faction){
       openDashboard(el.dataset.fac);
     });
   });
-  document.querySelectorAll('.dash-token-sel').forEach(el=>{
-    el.addEventListener('change', async ()=>{
-      dashboards[el.dataset.fac].doctrine[el.dataset.nation].token = el.value;
-      await saveState(true, true);
-      openDashboard(el.dataset.fac);
-    });
+  document.querySelectorAll('.nt-purchase-btn').forEach(el=>{
+    el.addEventListener('click', ()=>openNationalTokenPurchaseModal(el.dataset.fac, el.dataset.nation));
   });
-  document.querySelectorAll('.dash-tok').forEach(el=>{
-    el.addEventListener('change', async ()=>{
-      dashboards[faction].tokens[el.dataset.nation][el.dataset.token] = parseFloat(el.value)||0;
-      await saveState(true);
-      openDashboard(faction);
+  document.querySelectorAll('.nt-drop-btn').forEach(el=>{
+    el.addEventListener('click', async ()=>{
+      const fac = el.dataset.fac, nation = el.dataset.nation;
+      const d = dashboards[fac].doctrine[nation];
+      const ok = await confirmDialog(`Drop ${nation}'s current National Token (${d.token})? No refund — this just clears it back to None.`);
+      if(!ok) return;
+      logAction(fac, 'National Token', `${nation} drops National Token: ${d.token} → None`, []);
+      d.token = 'None';
+      await saveState(true, true);
+      openDashboard(fac);
     });
   });
   document.querySelectorAll('.dash-flag').forEach(el=>{
@@ -6763,6 +6944,85 @@ function promptNeutralViolation(invaderFaction, targetName){
     document.getElementById('nv_no').addEventListener('click', ()=>{ closeModal(); resolve({confirmed:false}); });
   });
 }
+// National Token purchase (§9.2 — "bought like any other token"): spends
+// one currently-banked Support Token of the player's choice to acquire it.
+// The spend dropdown only ever lists types the nation actually holds
+// (count > 0) — that's the real "max available" constraint here, since a
+// National Token itself is always just one unit (max one per nation, §9.2).
+// Support Token allocation — walks a list of nations one at a time, each
+// getting a modal to choose a type for every token they're due (§2: 1 per
+// 2 RCs, type chosen at collection). Reused for both the scenario-start
+// bootstrap (every nation starts at zero tokens otherwise, with no way to
+// acquire any until the first Winter) and the ordinary Winter Logistics
+// collection step — same flow either way, just a different moment and a
+// different token count per nation.
+function openTokenAllocationModal(nationList, getCount, onAllDone){
+  const remaining = nationList.slice();
+  function next(){
+    if(!remaining.length){ onAllDone(); return; }
+    const nation = remaining.shift();
+    const faction = factionForNation(nation);
+    const count = getCount(nation);
+    if(count <= 0){ next(); return; }
+    openModal(`Support Tokens — ${nation}`, `
+      <div class="winter-note">${nation} collects ${count} Support Token${count===1?'':'s'} this turn (§2 — 1 per 2 RCs). Choose a type for each.</div>
+      ${Array.from({length:count}).map((_,i)=>`
+        <div class="fg-label" style="margin-top:${i?8:8}px;">Token ${i+1} of ${count}</div>
+        <select class="tok-alloc-sel">${TOKEN_TYPES.map(t=>`<option>${t}</option>`).join('')}</select>
+      `).join('')}
+      <button class="cr-roll-btn" id="tok_alloc_confirm" style="margin-top:12px;">Confirm ${nation}'s Tokens</button>
+    `);
+    document.getElementById('tok_alloc_confirm').addEventListener('click', async ()=>{
+      const picks = Array.from(document.querySelectorAll('.tok-alloc-sel')).map(el=>el.value);
+      dashboards[faction].tokens[nation] = dashboards[faction].tokens[nation] || {};
+      picks.forEach(t=>{
+        dashboards[faction].tokens[nation][t] = (dashboards[faction].tokens[nation][t]||0) + 1;
+      });
+      logAction(faction, 'Support Tokens', `${nation} collects ${count} Support Token(s): ${picks.join(', ')}`, []);
+      await saveState(true, true);
+      closeModal();
+      next();
+    });
+  }
+  next();
+}
+
+function openNationalTokenPurchaseModal(faction, nation){
+  const dash = dashboards[faction];
+  const d = dash.doctrine[nation];
+  const choices = NATIONAL_TOKEN_OPTIONS[nation].filter(o=>o!=='None' && o!==d.token);
+  if(!choices.length){
+    notify(`${nation} has no other National Token available to purchase.`);
+    return;
+  }
+  const available = TOKEN_TYPES.filter(t=>(dash.tokens[nation][t]||0) > 0);
+  if(!available.length){
+    notify(`${nation} has no banked Support Tokens to spend right now — collect some at the next Winter Logistics Phase first.`);
+    return;
+  }
+  openModal(`Purchase National Token — ${nation}`, `
+    <div class="winter-note">Spends one currently-banked Support Token to acquire a National Token (§9.2, max one held at a time).${d.token && d.token!=='None' ? ` Replaces the current ${d.token}.` : ''}</div>
+    <div class="fg-label">National Token</div>
+    <select id="nt_choice">${choices.map(c=>`<option>${c}</option>`).join('')}</select>
+    <div class="fg-label" style="margin-top:8px;">Spend which Support Token (only types currently held are listed)</div>
+    <select id="nt_spend">${available.map(t=>`<option>${t} — ${dash.tokens[nation][t]} available</option>`).join('')}</select>
+    <button class="cr-roll-btn" id="nt_confirm" style="margin-top:12px;">Confirm Purchase</button>
+    <button class="ctrl-btn" id="nt_cancel" style="margin-left:8px;">Cancel</button>
+  `);
+  document.getElementById('nt_cancel').addEventListener('click', closeModal);
+  document.getElementById('nt_confirm').addEventListener('click', async ()=>{
+    const chosenToken = document.getElementById('nt_choice').value;
+    const spendType = document.getElementById('nt_spend').value.split(' — ')[0];
+    dash.tokens[nation][spendType] = (dash.tokens[nation][spendType]||0) - 1;
+    const oldToken = d.token;
+    d.token = chosenToken;
+    logAction(faction, 'National Token', `${nation} purchases National Token: ${oldToken||'None'} → ${chosenToken} (spent 1× ${spendType})`, []);
+    await saveState(true, true);
+    closeModal();
+    openDashboard(faction);
+  });
+}
+
 function openCreateSectorModal(){
   const regions = Array.from(new Set(sectors.map(s=>s.region))).sort();
   openModal('Create New Sector (Map Editor)', `
@@ -6950,7 +7210,7 @@ function openBattleLogModal(){
       const defBgs = defSel ? Array.from(defSel.selectedOptions).map(o=>bgs.find(b=>b.id===parseInt(o.value))).filter(Boolean) : [];
       if(atkLoss>0 && atkBgs.length) applyLossToSide(atkBgs, atkLoss);
       if(defLoss>0 && defBgs.length) applyLossToSide(defBgs, defLoss);
-      [...atkBgs, ...defBgs].forEach(b=>{ b.fatigue = (b.fatigue||0)+1; });
+      [...atkBgs, ...defBgs].forEach(b=>{ b.fatigue = (b.fatigue||0)+1; b.engagedThisTurn = true; });
       if(outcome==='Stalemate'){
         sec.contested = true;
         if(atkBgs.length && defBgs.length && desertOutflankApplies(sec, defBgs, atkBgs)){
@@ -7071,6 +7331,14 @@ async function applyWinterLogistics(plan, comingYear){
     dashboards[fac].mobilizationSlack = dashboards[fac].mobilizationSlack || {};
     dashboards[fac].mobilizationSlack[n] = slack>0 ? slack : 0;
   });
+  // §10 Tokens: 1 per 2 RCs, type chosen at collection — walks each major
+  // nation through a short "pick a type for each token you just earned"
+  // modal before the rest of Winter Logistics (Refit, Partisan advance,
+  // Supply status, Recovery, clock advance) finishes up.
+  const econForTokens = computeEconomy();
+  openTokenAllocationModal(MAJORS, n=>econForTokens[n].tokens, ()=>finishWinterLogistics(beforeSnap, comingYear));
+}
+async function finishWinterLogistics(beforeSnap, comingYear){
   // Refit: any Shattered BG resets if it's sitting on a friendly-controlled RC sector (§10)
   bgs.forEach(b=>{
     if(b.shattered){
@@ -7084,12 +7352,13 @@ async function applyWinterLogistics(plan, comingYear){
   sectors.forEach(s=>{ if(s.type==='Sea') s.ntfLocked = {}; });
   advancePartisans();
   const supplyChanges = advanceSupplyStatus();
+  const recoveryChanges = advanceRecovery();
   clock = {year: comingYear, season:'Spring'};
   await saveState(true, true);
   updateClockBadge();
   render();
   closeModal();
-  showTurnChangeSummary(beforeSnap, `Spring ${comingYear}`, supplyChanges);
+  showTurnChangeSummary(beforeSnap, `Spring ${comingYear}`, supplyChanges, recoveryChanges);
 }
 
 // "What changed this turn" — snapshot key auto-changing state before the
@@ -7100,7 +7369,7 @@ function snapshotForChangeSummary(){
     rcStatus: Object.fromEntries(sectors.filter(s=>s.rc>0).map(s=>[s.id, s.status])),
   };
 }
-function showTurnChangeSummary(before, newTurnLabel, extraLines){
+function showTurnChangeSummary(before, newTurnLabel, extraLines, recoveryChanges){
   const lines = [...(extraLines||[])];
   sectors.forEach(s=>{
     const was = before.partisan[s.id]||0, now = s.partisan||0;
@@ -7109,6 +7378,25 @@ function showTurnChangeSummary(before, newTurnLabel, extraLines){
   sectors.filter(s=>s.rc>0).forEach(s=>{
     const was = before.rcStatus[s.id], now = s.status;
     if(was!==now) lines.push(`${s.name} RC status: ${was} → ${now}`);
+  });
+  // §3.7 Recovery — formatted at display time, not when it happened, so it
+  // reflects whoever is actually looking at this summary right now. Exact
+  // point totals are Tier-3-only knowledge (§5.1); an enemy BG's recovery
+  // only shows if the current viewer could already see its exact points —
+  // fighting, sitting Contested, or REC/INL/ULTRA-targeted this turn — the
+  // same standard as everywhere else in this tool, not a special case.
+  const viewer = playerRole || 'Observer';
+  (recoveryChanges||[]).forEach(c=>{
+    const tier = computeBgTier(c.bg, viewer);
+    if(tier === 3){
+      lines.push(`${c.bg.name} (${c.bg.nation}) recovers +${c.actualGain} pts${c.home?' (home province)':''} — now ${c.after}/${c.cap}`);
+    } else if(tier === 2){
+      // Partial Info (§5.1): category and nation are visible, points are not.
+      lines.push(`A ${c.bg.nation} ${c.bg.type} BG recovered points this turn — exact amount hidden (§5.1, not Tier 3 to you)`);
+    }
+    // Tier 1: skipped entirely — the BG's existence itself isn't revealed
+    // (§5.1), so even a generic "something recovered" line would leak more
+    // than Tier 1 is supposed to.
   });
   if(!lines.length){
     notify(`Advanced to ${newTurnLabel}. Nothing auto-changed this turn.`);
@@ -7140,11 +7428,12 @@ document.getElementById('advanceTurn').addEventListener('click', async ()=>{
   sectors.forEach(s=>{ if(s.type==='Sea') s.ntfLocked = {}; });
   advancePartisans();
   const supplyChanges = advanceSupplyStatus();
+  const recoveryChanges = advanceRecovery();
   await saveState(true, true);
   updateClockBadge();
   render();
   if(selectedBgId) renderBGPanel();
-  showTurnChangeSummary(beforeSnap, `${next.season} ${next.year}`, supplyChanges);
+  showTurnChangeSummary(beforeSnap, `${next.season} ${next.year}`, supplyChanges, recoveryChanges);
 });
 
 Object.values(INSET_CONFIGS).forEach(cfg=>{
@@ -7322,6 +7611,7 @@ document.getElementById('resetData').addEventListener('click', async ()=>{
   dashboards = defaultDashboards();
   minorStatus = {};
   nationRcBonus = {};
+  startingTokensAllocated = {Axis:false, Allied:false};
   undoSnapshot = null; undoFaction = null; // a full reset shouldn't be undoable back through
   sectors.forEach(s=>{ if(s.type==='Sea'){ s.ntf = {}; s.ntfLocked = {}; } });
   selectedId = null; selectedBgId = null;
@@ -7336,7 +7626,7 @@ document.getElementById('exportBackup').addEventListener('click', ()=>{
   const payload = {
     exportedAt: new Date().toISOString(),
     turn: `${clock.season} ${clock.year}`,
-    sectors, bgs, clock, battleLog, actionLog, dashboards, minorStatus, nationRcBonus,
+    sectors, bgs, clock, battleLog, actionLog, dashboards, minorStatus, nationRcBonus, startingTokensAllocated,
   };
   const blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
   const url = URL.createObjectURL(blob);
@@ -7381,6 +7671,7 @@ document.getElementById('importFileInput').addEventListener('change', async (ev)
   dashboards = normalizeDashboards(data.dashboards);
   minorStatus = data.minorStatus || {};
   nationRcBonus = data.nationRcBonus || {};
+  startingTokensAllocated = data.startingTokensAllocated || {Axis:false, Allied:false};
   selectedId = null; selectedBgId = null;
   await saveState(true, true);
   render();
@@ -7487,11 +7778,10 @@ document.addEventListener('keydown', (e)=>{
   const tag = (e.target && e.target.tagName) || '';
   if(tag==='INPUT' || tag==='TEXTAREA' || tag==='SELECT') return; // don't hijack typing
   if(e.key==='l' || e.key==='L'){
+    // One switch for every "attachment to the space" — sector name labels,
+    // Partisan Level markers, Industrial Evacuation icons, the Lodgement
+    // Active ring — all together, not four separate toggles to remember.
     labelsVisible = !labelsVisible;
-    render();
-  }
-  if(e.key==='p' || e.key==='P'){
-    partisanMarkersVisible = !partisanMarkersVisible;
     render();
   }
 });
