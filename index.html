@@ -1375,7 +1375,19 @@ coming-year convention as §2):</p>
 </tbody>
 </table>
 <h3 id="sec-9-2">9.2. National tokens</h3>
-<p>Bought like any other token. <strong>Max one each.</strong></p>
+<p>Bought by spending <strong>2</strong> currently-banked Support Tokens
+(any type, or two of the same type). <strong>Max one each.</strong></p>
+<p><strong>Fog of War (house rule).</strong> Every National Token
+purchase is Sealed (§5.2) by default — it doesn’t appear in the shared
+Action Log until revealed. Since there’s no sector to check exposure
+against, a purchase stays hidden indefinitely unless something reveals
+it. In practice that only ever happens for Germany and Japan: the Allied
+player’s ULTRA or MAGIC National Token (§9.2) can reveal either nation’s
+Sealed purchase, the same way both already reveal a Sealed BG order. No
+equivalent tool exists for the Axis side, so a USA, UK, USSR, or China
+purchase stays Sealed for the rest of the campaign — a deliberate
+asymmetry reflecting the real imbalance in WWII signals intelligence,
+not an oversight.</p>
 <table>
 <colgroup>
 <col style="width: 50%" />
@@ -1414,18 +1426,20 @@ Each strategic turn, before Alternating Movement, the Allied player
 picks up to 3 German BGs <strong>or</strong> 1 German controlled sector
 and upgrades each one FoW Tier for that turn only (Tier 1→2, Tier 2→3).
 Unpicked BGs use their normal Tier. Once per strategic turn, the Allied
-player may also name one German BG and demand its Sealed Order Log entry
-for that turn be revealed.</td>
+player may also pick one Sealed German Action Log entry that turn — a
+BG’s Sealed Order, or a Sealed National Token purchase (§9.2) — and
+demand it be revealed.</td>
 </tr>
 <tr class="even">
 <td><strong>MAGIC</strong> (USA)</td>
 <td><strong>Standing intelligence effect.</strong> Requires the USA to
 hold Hawaii. NTF sea-sector assignments are public information (visible
 to both players), so MAGIC’s power lies elsewhere: <strong>once per
-strategic turn</strong>, the USA may name one specific Japanese BG and
-demand its Sealed Order Log entry for that turn (if any) be revealed —
-same mechanism as ULTRA’s reveal power, §5.2, but for Japan instead of
-Germany. No FoW Tier upgrades — that stays exclusive to ULTRA.</td>
+strategic turn</strong>, the USA may pick one Sealed Japanese Action Log
+entry that turn — a BG’s Sealed Order, or a Sealed National Token
+purchase (§9.2) — and demand it be revealed. Same mechanism as ULTRA’s
+reveal power (§5.2), just for Japan instead of Germany. No FoW Tier
+upgrades — that stays exclusive to ULTRA.</td>
 </tr>
 </tbody>
 </table>
@@ -2340,12 +2354,12 @@ Germany loses the +1 RC</td>
 the Ionian Sea → create <strong>2× INF BG</strong></td>
 </tr>
 <tr class="even">
-<td><strong>Vichy &amp;</strong>** Colonies**</td>
+<td><strong>Vichy &amp; Colonies</strong></td>
 <td>Permits Axis BG transit</td>
-<td>Allied invasion of any Vichy sector → <strong>+1 RC</strong> for
-Germany</td>
-<td>Allies capture any Vichy sector → <strong>+1 Free French
-BG</strong></td>
+<td>See §13.1 (Case Anton) and §13.2 (French Legitimacy Track) — Vichy’s
+activation is handled by those two systems, not a simple one-time
+trigger.</td>
+<td>See §13.1 and §13.2.</td>
 </tr>
 </tbody>
 </table>
@@ -3002,6 +3016,37 @@ RC-per-ratio penalty to a permanent flat -10 to every Soviet BG type’s
 starting experience baseline — considered too punishing in its previous
 form.</td>
 </tr>
+<tr class="odd">
+<td>v15</td>
+<td>National Tokens (§9.2) now cost 2 banked Support Tokens to acquire,
+up from 1 — either two of the same type or one each of two different
+types, player’s choice.</td>
+</tr>
+<tr class="even">
+<td>v16</td>
+<td>German and Japanese National Token purchases (§9.2) are now Sealed
+by default (house rule), revealable only through ULTRA or MAGIC —
+extending both tokens’ existing reveal power beyond BG Sealed Orders to
+cover this too. No other nation’s purchase is Sealed, since no reveal
+mechanism exists for them.</td>
+</tr>
+<tr class="odd">
+<td>v17</td>
+<td>Removed §13’s “Vichy &amp; Colonies” activation row — its simple
+one-time trigger predated and had become redundant with the more
+detailed Case Anton (§13.1) and French Legitimacy Track (§13.2) systems,
+which already track the same underlying events with real mechanical
+effects. The campaign tool’s Minor Nations checklist had the same
+duplication and was cleaned up to match.</td>
+</tr>
+<tr class="even">
+<td>v18</td>
+<td>Extended §9.2’s National Token Fog of War rule to every nation, not
+just Germany and Japan. An Allied purchase now stays Sealed for the rest
+of the campaign with no reveal path — intentional, reflecting that the
+Axis never broke Allied codes the way the Allies broke German and
+Japanese ones.</td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -3280,14 +3325,14 @@ const NATIONAL_TOKEN_OPTIONS = {
 // that actually makes them work is currently true — holding the token
 // alone isn't the same as the effect being live.
 const NATIONAL_TOKEN_INFO = {
-  Schwerpunkt: {cost:'Costs 1 banked Support Token (any type) to acquire.', effect:'+500 air and +500 artillery to one ARM/MECH BG this turn.', standing:false},
-  Banzai: {cost:'Costs 1 banked Support Token (any type) to acquire.', effect:'One INF/Marine BG cannot be Shattered or forced to retreat.', standing:false},
-  "Il Volo dell'Airone": {cost:'Costs 1 banked Support Token (any type) to acquire.', effect:'One BG ignores out-of-supply penalties this turn.', standing:false},
-  Maskirovka: {cost:'Costs 1 banked Support Token (any type) to acquire.', effect:'Redeploy BGs between adjacent sectors right before an engagement — never costs Fatigue.', standing:false},
-  ULTRA: {cost:'Costs 1 banked Support Token (any type) to acquire.', effect:'Upgrades up to 3 German BGs\' FoW Tier each turn, plus one Sealed Log reveal.', standing:true,
+  Schwerpunkt: {cost:'Costs 2 banked Support Tokens (any type) to acquire.', effect:'+500 air and +500 artillery to one ARM/MECH BG this turn.', standing:false},
+  Banzai: {cost:'Costs 2 banked Support Tokens (any type) to acquire.', effect:'One INF/Marine BG cannot be Shattered or forced to retreat.', standing:false},
+  "Il Volo dell'Airone": {cost:'Costs 2 banked Support Tokens (any type) to acquire.', effect:'One BG ignores out-of-supply penalties this turn.', standing:false},
+  Maskirovka: {cost:'Costs 2 banked Support Tokens (any type) to acquire.', effect:'Redeploy BGs between adjacent sectors right before an engagement — never costs Fatigue.', standing:false},
+  ULTRA: {cost:'Costs 2 banked Support Tokens (any type) to acquire.', effect:'Upgrades up to 3 German BGs\' FoW Tier each turn, plus one Sealed Log reveal.', standing:true,
     activeCheck: ()=>{ const s=sectors.find(x=>x.name==='London'); return !!(s && factionForNation(s.occupier||s.owner)==='Allied'); },
     inactiveReason: 'Held, but inactive — UK doesn\'t currently hold Southern England (§9.2).'},
-  MAGIC: {cost:'Costs 1 banked Support Token (any type) to acquire.', effect:'One Sealed Japanese order reveal per turn.', standing:true,
+  MAGIC: {cost:'Costs 2 banked Support Tokens (any type) to acquire.', effect:'One Sealed Japanese order reveal per turn.', standing:true,
     activeCheck: ()=>{ const s=sectors.find(x=>x.name==='Hawaii'); return !!(s && factionForNation(s.occupier||s.owner)==='Allied'); },
     inactiveReason: 'Held, but inactive — USA doesn\'t currently hold Hawaii (§9.2).'},
 };
@@ -4833,8 +4878,14 @@ function bgVisibleToViewer(bg, viewerFaction){
   return computeBgTier(bg, viewerFaction) > 1;
 }
 
-function logAction(faction, type, description, relevantSectors, bgId){
-  const sealed = relevantSectors.length>0 && relevantSectors.every(s => !sectorExposed(s, faction));
+function logAction(faction, type, description, relevantSectors, bgId, forceSealed){
+  // Most actions derive sealed status from sector exposure — a BG move is
+  // hidden if where it started and ended are both out of enemy view.
+  // Some actions (a National Token purchase) have no sector to check
+  // exposure against at all; forceSealed lets those opt into Fog of War
+  // directly rather than defaulting to always-visible just because the
+  // sector-based check has nothing to evaluate.
+  const sealed = forceSealed || (relevantSectors.length>0 && relevantSectors.every(s => !sectorExposed(s, faction)));
   actionLog.unshift({
     id: Date.now()+Math.random(),
     turn: `${clock.season} ${clock.year}`,
@@ -6976,9 +7027,15 @@ function minorNationChecklist(){
     {name:'Sweden', side:'Neutral', auto:false, key:'Sweden', met: (minorStatus['Sweden']||'Neutral')!=='Allied', text:'Standing +1 RC for Germany while Neutral. Allies liberate Norway AND capture Prussia → Germany loses the +1 RC. Set status to Allied below once that happens — this is the one entry here that actually feeds into the RC total for Germany.'},
     {name:'Turkey', side:'Axis', auto:true, met: heldByFaction('Moscow','Axis') && heldByFaction('Caucasus','Axis'), text:'Axis capture Moscow AND the Caucasus → create 2× INF BG'},
     {name:'Turkey', side:'Allied', auto:false, key:'Turkey', met:null, text:'Allies liberate Greece AND hold naval supremacy in the Ionian Sea → create 2× INF BG (check manually)'},
-    {name:'Vichy & Colonies', side:'Axis', auto:false, key:'Vichy & Colonies', met:null, text:'Allied invasion of any Vichy sector → +1 RC for Germany (check manually, per-event)'},
-    {name:'Vichy & Colonies', side:'Allied', auto:false, key:'Vichy & Colonies', met:null, text:'Allies capture any Vichy sector → +1 Free French BG (check manually, per-event)'},
   ];
+  // Vichy & Colonies deliberately has no entry here — its original simple
+  // one-time trigger ("Allied invasion → +1 RC for Germany" / "Allies
+  // capture → +1 Free French BG") is fully superseded by two more detailed
+  // systems tracked elsewhere on the Allied dashboard: Case Anton (§13.1,
+  // an actual sector-flip, not a flat RC bonus) and the French Legitimacy
+  // Track (§13.2, a 0-3 counter with real threshold payoffs). Keeping both
+  // versions here would just be two different answers to the same
+  // question sitting side by side.
 }
 
 // ---------- §11.3 Strategic Bombing ----------
@@ -7251,7 +7308,7 @@ function buildIntelSectionHtml(faction, dash){
       </select>
       <button class="cr-roll-btn" id="ultra_apply_btn" style="margin-top:8px;">Apply for ${thisTurn}</button>
 
-      <div class="fg-label" style="margin-top:14px;">Reveal one Sealed German order this turn</div>
+      <div class="fg-label" style="margin-top:14px;">Reveal one Sealed German action this turn</div>
       <div class="winter-note" style="margin:2px 0 6px;padding:0;background:none;border:none;font-size:11px;color:var(--ink-faint);">Entries are listed blind, by number only — pick one, then hit Reveal. Its actual content (type, description) shows up in the Action Log afterward, not here.</div>
       <select id="ultra_reveal_sel">
         <option value="">— pick a sealed entry —</option>
@@ -7274,7 +7331,7 @@ function buildIntelSectionHtml(faction, dash){
     html += `
     <div class="winter-nation">
       <h3 title="Requires the USA to hold Hawaii (§9.2). Narrower than ULTRA — no FoW tier upgrades, just one reveal per turn.">MAGIC</h3>
-      <div class="fg-label">Reveal one Sealed Japanese order this turn</div>
+      <div class="fg-label">Reveal one Sealed Japanese action this turn</div>
       <div class="winter-note" style="margin:2px 0 6px;padding:0;background:none;border:none;font-size:11px;color:var(--ink-faint);">Entries are listed blind, by number only — pick one, then hit Reveal. Its actual content (type, description) shows up in the Action Log afterward, not here.</div>
       <select id="magic_reveal_sel">
         <option value="">— pick a sealed entry —</option>
@@ -7385,7 +7442,7 @@ function buildDashboardHtml(faction){
     // up front, not just after opening the purchase modal.
     const nextOptions = NATIONAL_TOKEN_OPTIONS[n].filter(o=>o!=='None' && o!==d.token);
     const costLine = nextOptions.length
-      ? `Costs 1 banked Support Token (any type) — see Purchase.`
+      ? `Costs 2 banked Support Tokens (any type) — see Purchase.`
       : `${n} has no other National Token available.`;
     return `
     <div class="winter-nation"><h3>${n}</h3>
@@ -7399,7 +7456,7 @@ function buildDashboardHtml(faction){
           <div class="winter-note" style="margin:4px 0 0;padding:0;background:none;border:none;font-size:11px;color:var(--ink-faint);"><b>Cost:</b> ${DOCTRINE_EFFECTS[d.active].costText}</div>
           ` : ''}
         </div>
-        <div><div class="fg-label rule-link" data-section="sec-9-2" title="Max one National Token per nation. Separate from Doctrines — a nation can hold both a Doctrine and a National Token at once (§9.5). Bought like any other token (§9.2) — spends one currently-banked Support Token of your choice.">National Token (§9.2)</div>
+        <div><div class="fg-label rule-link" data-section="sec-9-2" title="Max one National Token per nation. Separate from Doctrines — a nation can hold both a Doctrine and a National Token at once (§9.5). Bought like any other token (§9.2) — spends 2 currently-banked Support Tokens of your choice.">National Token (§9.2)</div>
           <div class="stat-line" style="padding-top:9px;"><b>${d.token || 'None'}</b> ${statusBadge}</div>
           ${hasToken && info ? `<div class="winter-note" style="margin:2px 0 0;padding:0;background:none;border:none;font-size:11px;">${info.effect}</div>` : ''}
           <div class="winter-note" style="margin:4px 0 0;padding:0;background:none;border:none;font-size:11px;color:var(--ink-faint);">${costLine}</div>
@@ -7928,28 +7985,61 @@ function openNationalTokenPurchaseModal(faction, nation){
     notify(`${nation} has no other National Token available to purchase.`);
     return;
   }
-  const available = tokenTypesFor(nation).filter(t=>(dash.tokens[nation][t]||0) > 0);
-  if(!available.length){
-    notify(`${nation} has no banked Support Tokens to spend right now — collect some at the next Winter Logistics Phase first.`);
+  const totalBanked = tokenTypesFor(nation).reduce((sum,t)=>sum+(dash.tokens[nation][t]||0), 0);
+  if(totalBanked < 2){
+    notify(`${nation} needs 2 banked Support Tokens to spend right now (has ${totalBanked}) — collect more at the next Winter Logistics Phase first.`);
     return;
   }
+  const optionsFor = (excludeIdx) => {
+    // Live availability for the second pick accounts for whatever the
+    // first pick already reserved — lets the player spend two of the same
+    // type if they genuinely have two, without ever letting them double
+    // spend a single banked token as if it were two.
+    const held = {...dash.tokens[nation]};
+    if(excludeIdx !== null) held[excludeIdx] = (held[excludeIdx]||0) - 1;
+    return tokenTypesFor(nation).filter(t=>(held[t]||0) > 0).map(t=>`${t} — ${held[t]} available`);
+  };
   openModal(`Purchase National Token — ${nation}`, `
-    <div class="winter-note">Spends one currently-banked Support Token to acquire a National Token (§9.2, max one held at a time).${d.token && d.token!=='None' ? ` Replaces the current ${d.token}.` : ''}</div>
+    <div class="winter-note">Spends 2 currently-banked Support Tokens to acquire a National Token (§9.2, max one held at a time).${d.token && d.token!=='None' ? ` Replaces the current ${d.token}.` : ''}</div>
     <div class="fg-label">National Token</div>
     <select id="nt_choice">${choices.map(c=>`<option>${c}</option>`).join('')}</select>
-    <div class="fg-label" style="margin-top:8px;">Spend which Support Token (only types currently held are listed)</div>
-    <select id="nt_spend">${available.map(t=>`<option>${t} — ${dash.tokens[nation][t]} available</option>`).join('')}</select>
+    <div class="fg-label" style="margin-top:8px;">Spend Token #1</div>
+    <select id="nt_spend1">${optionsFor(null).map(o=>`<option>${o}</option>`).join('')}</select>
+    <div class="fg-label" style="margin-top:8px;">Spend Token #2</div>
+    <select id="nt_spend2"></select>
     <button class="cr-roll-btn" id="nt_confirm" style="margin-top:12px;">Confirm Purchase</button>
     <button class="ctrl-btn" id="nt_cancel" style="margin-left:8px;">Cancel</button>
   `);
+  const refreshSecond = () => {
+    const first = document.getElementById('nt_spend1').value.split(' — ')[0];
+    document.getElementById('nt_spend2').innerHTML = optionsFor(first).map(o=>`<option>${o}</option>`).join('');
+  };
+  refreshSecond();
+  document.getElementById('nt_spend1').addEventListener('change', refreshSecond);
   document.getElementById('nt_cancel').addEventListener('click', closeModal);
   document.getElementById('nt_confirm').addEventListener('click', async ()=>{
     const chosenToken = document.getElementById('nt_choice').value;
-    const spendType = document.getElementById('nt_spend').value.split(' — ')[0];
-    dash.tokens[nation][spendType] = (dash.tokens[nation][spendType]||0) - 1;
+    const spend1 = document.getElementById('nt_spend1').value.split(' — ')[0];
+    const spend2El = document.getElementById('nt_spend2');
+    if(!spend2El.value){ notify("Nothing available for Token #2 — pick a different Token #1, or this nation doesn't have a second token to spend."); return; }
+    const spend2 = spend2El.value.split(' — ')[0];
+    dash.tokens[nation][spend1] = (dash.tokens[nation][spend1]||0) - 1;
+    dash.tokens[nation][spend2] = (dash.tokens[nation][spend2]||0) - 1;
     const oldToken = d.token;
     d.token = chosenToken;
-    logAction(faction, 'National Token', `${nation} purchases National Token: ${oldToken||'None'} → ${chosenToken} (spent 1× ${spendType})`, []);
+    const spendDesc = spend1===spend2 ? `2× ${spend1}` : `1× ${spend1} + 1× ${spend2}`;
+    // §5.2/§9.2 house rule: a National Token purchase has no sector to
+    // check exposure against, so it can't derive sealed status the normal
+    // way — every purchase is Sealed by default instead. Only Germany's
+    // and Japan's have any path back to visibility: ULTRA and MAGIC are
+    // the sole reveal mechanisms in the game, and they're one-directional
+    // (Allied-only, targeting those two nations specifically). An Allied
+    // purchase (USA/UK/USSR/China) has no equivalent Axis tool and so
+    // stays Sealed indefinitely — a deliberate asymmetry, not an
+    // oversight, matching the real imbalance in WWII signals intelligence
+    // (the Allies broke German and Japanese codes at scale; the Axis
+    // never achieved anything comparable against Allied traffic).
+    logAction(faction, 'National Token', `${nation} purchases National Token: ${oldToken||'None'} → ${chosenToken} (spent ${spendDesc})`, [], null, true);
     await saveState(true, true);
     closeModal();
     openDashboard(faction);
