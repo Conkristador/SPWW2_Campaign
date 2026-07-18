@@ -5037,7 +5037,7 @@ function computeBgTier(bg, viewerFaction){
   const sector = byId[bg.sectorId];
   if(!sector) return 3;
   const thisTurn = `${clock.season} ${clock.year}`;
-  const foughtThisTurn = battleLog.some(e => e.turn===thisTurn &&
+  const foughtThisTurn = bg.engagedThisTurn || battleLog.some(e => e.turn===thisTurn &&
     (e.attacker.includes(bg.name) || e.defender.includes(bg.name)));
   if(sector.contested || foughtThisTurn) return 3;
   let tier = !sectorExposed(sector, bgFaction) ? 1 : 2;
@@ -5079,17 +5079,23 @@ function logAction(faction, type, description, relevantSectors, bgId, forceSeale
 }
 
 // §5.2 "Reveal on trigger": a Sealed entry auto-reveals the instant its BG
-// stops qualifying for Tier 1 (moves adjacent to the enemy, fights, etc.) —
-// checked against the ORIGINAL mover's faction, since that's whose secrecy
-// it represents.
+// stops qualifying for Tier 1 — moves adjacent to the enemy, gets
+// targeted by REC/INL/ULTRA, or fights. Checked from the OPPOSING
+// faction's viewpoint (are they the ones who'd now see it?), against the
+// full Tier calculation — not just the adjacency-only sectorExposed
+// check, which on its own only catches the "moved adjacent" case and
+// misses fighting or Contested status entirely. A BG that fought this
+// turn is Tier 3 to the enemy regardless of where its sector sits
+// relative to enemy territory, so a Sealed entry tied to it needs to
+// reveal even when sectorExposed alone would say no.
 function autoRevealTriggeredEntries(){
   const thisTurn = `${clock.season} ${clock.year}`;
   actionLog.forEach(e=>{
     if(e.turn!==thisTurn || !e.sealed || e.revealed || !e.bgId) return;
     const bg = bgs.find(b=>b.id===e.bgId);
     if(!bg) return;
-    const sector = byId[bg.sectorId];
-    if(sector && sectorExposed(sector, e.faction)) e.revealed = true;
+    const opposingFaction = e.faction==='Axis' ? 'Allied' : 'Axis';
+    if(computeBgTier(bg, opposingFaction) === 3) e.revealed = true;
   });
 }
 
@@ -6023,6 +6029,13 @@ function renderBGPanel(){
     }
     if(b.fatigue !== oldFatigue){
       logAction(faction, 'Fatigue Change', `${b.name} (${b.nation}) fatigue ${oldFatigue} → ${b.fatigue}`, [sector]);
+      // A fatigue increase is, by rule (§3.5), specifically "+1 per battle
+      // fought" — so a manual increase here is itself evidence this BG
+      // fought, same as the automated combat paths already flag via this
+      // same field. Without this, a hand-recorded battle result (typing in
+      // the new fatigue after playing an external WinSPWW2 match) would
+      // never trigger the Tier 3 reveal that a real battle should.
+      if(b.fatigue > oldFatigue) b.engagedThisTurn = true;
     }
     const moveEl = document.getElementById('f_move');
     const moveVal = moveEl && !moveEl.disabled ? moveEl.value : '';
@@ -6830,11 +6843,64 @@ function openCombatResolverModal(attackerBGs, defenderBGs, sector, moverBgId, or
       <div><div class="fg-label" title="Multiplies each BG's effective points by type — e.g. ARM +15% in Open/Steppe but -20% in Mountain/Jungle; INF is steady everywhere; Airborne/Marine favor Amphibious Landing.">Terrain</div><select id="cr_terrain">${TERRAINS.map(s=>`<option>${s}</option>`).join('')}</select></div>
       <div><div class="fg-label rule-link" data-section="sec-12-4" title="Winter 1941 only (§12.4): German BGs attack at 50% and defend at 80% of normal points. Leave 'No' for any other year or nation.">General Winter</div><select id="cr_genwinter"><option>No</option><option>Yes</option></select></div>
     </div>
-    <button id="cr_roll_btn" class="cr-roll-btn">Roll &amp; Resolve</button>
+    <button id="cr_roll_btn" class="cr-roll-btn">Roll &amp; Resolve (Auto)</button>
+    <button id="cr_manual_btn" class="ctrl-btn" style="margin-left:8px;">Enter Result Manually</button>
     <div id="cr_result"></div>
   `;
   openModal('Combat Resolver', html);
   document.getElementById('cr_roll_btn').addEventListener('click', runCombatResolver);
+  document.getElementById('cr_manual_btn').addEventListener('click', showManualResultForm);
+}
+
+// For a battle actually played out in WinSPWW2 rather than resolved by
+// this tool's own formula. Attacker/defender/sector are already known
+// from the engagement that triggered this modal — unlike the standalone
+// Manual Battle Log form, nothing needs re-selecting from a dropdown.
+// Reuses applyCombatResult() entirely rather than duplicating its apply
+// logic: this just populates pendingEngagement.result with what was
+// typed in instead of what resolveCombat() would have computed, so
+// Desert Outflanking, the Hungarian Second-Army-on-Don rule, and
+// everything else in that function apply exactly the same either way.
+function showManualResultForm(){
+  const pe = pendingEngagement;
+  const atkTokType = document.getElementById('cr_atk_tok_type').value;
+  const atkTokCount = parseInt(document.getElementById('cr_atk_tok_count').value)||0;
+  const defTokType = document.getElementById('cr_def_tok_type').value;
+  const defTokCount = parseInt(document.getElementById('cr_def_tok_count').value)||0;
+  pe.atkTokType = atkTokType; pe.atkTokCount = atkTokCount;
+  pe.defTokType = defTokType; pe.defTokCount = defTokCount;
+
+  const retreatOptions = (pe.sector.connections||[]).map(cid=>byId[cid]).filter(Boolean);
+  document.getElementById('cr_result').innerHTML = `
+    <div class="winter-note">Enter the actual result from playing this out in WinSPWW2. Token spend above carries over from this screen if you filled it in.</div>
+    <div class="field-row" style="margin-top:8px;">
+      <div><div class="fg-label">Outcome</div>
+        <select id="mr_outcome">
+          <option>Decisive Victory</option><option>Standard Victory</option><option>Stalemate</option>
+        </select>
+      </div>
+      <div><div class="fg-label">Winner</div>
+        <select id="mr_winner"><option value="ATTACKER">Attacker</option><option value="DEFENDER">Defender</option></select>
+      </div>
+    </div>
+    <div class="field-row" style="margin-top:8px;">
+      <div><div class="fg-label">Attacker Points Lost</div><input class="txtfield" id="mr_atk_loss" type="number" value="0"></div>
+      <div><div class="fg-label">Defender Points Lost</div><input class="txtfield" id="mr_def_loss" type="number" value="0"></div>
+    </div>
+    <div class="fg-label" style="margin-top:8px;">Retreat sector for the loser (leave blank for Annihilation; ignored on a Stalemate)</div>
+    <select id="cr_retreat_select"><option value="">— Annihilation / not applicable —</option>${retreatOptions.map(o=>`<option value="${o.id}">${o.name}</option>`).join('')}</select>
+    <button id="mr_apply_btn" class="cr-roll-btn" style="margin-top:12px;">Apply Manual Result</button>
+    <button id="mr_cancel_btn" class="ctrl-btn" style="margin-left:8px;">Back</button>
+  `;
+  document.getElementById('mr_cancel_btn').addEventListener('click', ()=>{ document.getElementById('cr_result').innerHTML = ''; });
+  document.getElementById('mr_apply_btn').addEventListener('click', ()=>{
+    const outcome = document.getElementById('mr_outcome').value;
+    const winner = outcome==='Stalemate' ? 'TIE' : document.getElementById('mr_winner').value;
+    const atkLoss = parseFloat(document.getElementById('mr_atk_loss').value)||0;
+    const defLoss = parseFloat(document.getElementById('mr_def_loss').value)||0;
+    pe.result = {outcome, winner, atkLoss, defLoss};
+    applyCombatResult();
+  });
 }
 
 function runCombatResolver(){
@@ -6960,7 +7026,7 @@ async function applyCombatResult(){
       bgs = bgs.filter(b=>!destroyedIds.has(b.id));
       notify(`§13.1 Second Army on the Don: ${donRiverDestroyed.map(b=>b.name).join(', ')} Shattered in a USSR sector — destroyed outright, no retreat.`);
     }
-    if(retreatSel){
+    if(retreatSel && retreatSel.value){
       const dest = byId[parseInt(retreatSel.value)];
       remainingLosers.forEach(b=>{ b.sectorId = dest.id; b.location = dest.name; });
     } else {
