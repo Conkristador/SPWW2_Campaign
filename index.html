@@ -5766,6 +5766,13 @@ function renderBGPanel(){
   const sectorBGsHere = sector ? bgs.filter(x=>x.sectorId===sector.id).filter(x=>bgVisibleToViewer(x, viewerFaction)) : [];
   const factionsHere = new Set(sectorBGsHere.map(x=>x.faction||factionForNation(x.nation)));
   const mixedHere = factionsHere.size > 1;
+  // Tier 3 (§5.1) means the DATA is visible — full stats, because it's
+  // fighting, Contested, or REC/INL/ULTRA-targeted — but visibility was
+  // never meant to imply control. Without this, a Contested enemy BG's
+  // stats and move options would render as ordinary editable form
+  // controls, letting a player quietly edit or relocate the opponent's
+  // own unit. isOwnUnit gates every editable field and action below.
+  const isOwnUnit = (faction === viewerFaction);
 
   el.innerHTML = `
     <div class="panel-head">
@@ -5785,27 +5792,27 @@ function renderBGPanel(){
       </div>
 
       <div class="field-group">
-        <div class="fg-label">Strength</div>
+        <div class="fg-label">Strength${isOwnUnit?'':' <span style="color:var(--ink-faint);font-weight:400;">(read-only — enemy unit)</span>'}</div>
         <div class="field-row">
           <div>
             <div class="fg-label">Points</div>
-            <input class="txtfield" id="f_points" type="number" step="50" value="${b.points}">
+            <input class="txtfield" id="f_points" type="number" step="50" value="${b.points}" ${isOwnUnit?'':'disabled'}>
           </div>
           <div>
             <div class="fg-label">Experience</div>
-            <input class="txtfield" id="f_exp" type="number" value="${b.experience}">
+            <input class="txtfield" id="f_exp" type="number" value="${b.experience}" ${isOwnUnit?'':'disabled'}>
           </div>
         </div>
         <div class="field-row">
           <div>
             <div class="fg-label rule-link" data-section="sec-3-6" title="+1 per battle fought. Penalty to tactical budget: FP1 -10%, FP2 -30%, FP3+ -50%. Combined with Out-of-Supply penalty, capped at 50% total (§4 floor). Resets to 0 by resting a full turn in a friendly, uncontested sector.">Fatigue (§3.6)</div>
-            <select id="f_fatigue" title="+1 per battle fought. Penalty to tactical budget: FP1 -10%, FP2 -30%, FP3+ -50%. Combined with Out-of-Supply penalty, capped at 50% total (§4 floor). Resets to 0 by resting a full turn in a friendly, uncontested sector.">
+            <select id="f_fatigue" ${isOwnUnit?'':'disabled'} title="+1 per battle fought. Penalty to tactical budget: FP1 -10%, FP2 -30%, FP3+ -50%. Combined with Out-of-Supply penalty, capped at 50% total (§4 floor). Resets to 0 by resting a full turn in a friendly, uncontested sector.">
               ${[0,1,2,3].map(v=>`<option value="${v}" ${b.fatigue==v?'selected':''}>${v}${v>=3?'+':''}</option>`).join('')}
             </select>
           </div>
           <div>
             <div class="fg-label rule-link" data-section="sec-4" title="Out of Supply: -20% points per engagement, plus -20% permanently per turn out of supply (§4). Combined with Fatigue, never costs more than 50% total.">In Supply (§4)</div>
-            <select id="f_supply" title="Out of Supply: -20% points per engagement, plus -20% permanently per turn out of supply (§4). Combined with Fatigue, never costs more than 50% total.">
+            <select id="f_supply" ${isOwnUnit?'':'disabled'} title="Out of Supply: -20% points per engagement, plus -20% permanently per turn out of supply (§4). Combined with Fatigue, never costs more than 50% total.">
               ${['Yes','No'].map(v=>`<option value="${v}" ${b.in_supply===v?'selected':''}>${v}</option>`).join('')}
             </select>
           </div>
@@ -5817,13 +5824,13 @@ function renderBGPanel(){
         <div class="field-row">
           <div>
             <div class="fg-label">Orders</div>
-            <select id="f_orders">
+            <select id="f_orders" ${isOwnUnit?'':'disabled'}>
               ${['Hold','Fortify','Move','Attack','Rest'].map(v=>`<option value="${v}" ${b.orders===v?'selected':''}>${v}</option>`).join('')}
             </select>
           </div>
           <div>
             <div class="fg-label rule-link" data-section="sec-8-1" title="Result of a Decisive Victory loss (§8.1) — score was under 30% of the winner's. Refits back to Ready automatically if it spends a Winter turn in a friendly RC sector (§10).">Shattered (§8.1)</div>
-            <select id="f_shattered" title="Result of a Decisive Victory loss (§8.1) — score was under 30% of the winner's. Refits back to Ready automatically if it spends a Winter turn in a friendly RC sector (§10).">
+            <select id="f_shattered" ${isOwnUnit?'':'disabled'} title="Result of a Decisive Victory loss (§8.1) — score was under 30% of the winner's. Refits back to Ready automatically if it spends a Winter turn in a friendly RC sector (§10).">
               ${['No','Yes'].map(v=>`<option value="${v}" ${(b.shattered?'Yes':'No')===v?'selected':''}>${v}</option>`).join('')}
             </select>
           </div>
@@ -5832,11 +5839,12 @@ function renderBGPanel(){
 
       <div class="field-group">
         <div class="fg-label rule-link" data-section="sec-9-3" title="One Elite slot per 6 RCs, max 3 per nation (§9.3). Gets its nation's listed tokens free every turn. Lost only when the BG is destroyed — never by falling below the RC threshold.">Elite Formation (§9.3)</div>
-        <select id="f_elite" title="One Elite slot per 6 RCs, max 3 per nation (§9.3). Gets its nation's listed tokens free every turn. Lost only when the BG is destroyed — never by falling below the RC threshold.">
+        <select id="f_elite" ${isOwnUnit?'':'disabled'} title="One Elite slot per 6 RCs, max 3 per nation (§9.3). Gets its nation's listed tokens free every turn. Lost only when the BG is destroyed — never by falling below the RC threshold.">
           ${['No','Yes'].map(v=>`<option value="${v}" ${(b.elite?'Yes':'No')===v?'selected':''}>${v}</option>`).join('')}
         </select>
       </div>
 
+      ${isOwnUnit ? `
       <div class="field-group">
         <div class="fg-label rule-link" data-section="sec-7-4">Move to Sector ${moved?'— locked (already activated)':''}</div>
         <select id="f_move" ${moved?'disabled':''}>
@@ -5890,6 +5898,11 @@ function renderBGPanel(){
       <div class="field-group">
         <button class="link-btn" id="f_remove_bg" style="color:var(--danger);">✕ Remove this Battle Group (destroyed / disbanded)</button>
       </div>
+      ` : `
+      <div class="field-group">
+        <div class="winter-note">This is an enemy Battle Group. Its full stats are visible under Fog of War (§5.1 Tier 3 — it's fighting, Contested, or targeted this turn), but visibility isn't control: nothing here can be edited, and it can't be moved, detached, or removed from this side of the board.</div>
+      </div>
+      `}
 
       <div class="save-note" id="saveNote">✓ Saved to shared campaign state</div>
     </div>
@@ -6078,7 +6091,8 @@ function renderBGPanel(){
     const other = names.find(n=>n!==mine);
     openCombatResolverModal(groups[mine].slice(0,2), groups[other].slice(0,2), sector, null, null);
   });
-  document.getElementById('f_remove_bg').addEventListener('click', async ()=>{
+  const removeBtn = document.getElementById('f_remove_bg');
+  if(removeBtn) removeBtn.addEventListener('click', async ()=>{
     if(!(await confirmDialog(`Remove ${b.name} (${b.nation}) permanently? This can't be undone.`))) return;
     logAction(faction, 'Disband/Destroy', `${b.name} (${b.nation}) removed at ${sector?sector.name:'?'}`, [sector]);
     bgs = bgs.filter(x=>x.id!==b.id);
