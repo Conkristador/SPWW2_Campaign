@@ -2700,6 +2700,15 @@ let pendingEngagement = null;
 let actionLog = [];
 let playerRole = null; // 'Axis' | 'Allied' | 'Observer' — personal, not shared
 const TOKEN_TYPES = ['AIR','ART','HVY','ENG','AMPH','NAVGUN','ABN','REC','INL','STRAT','Fighter','Submarine'];
+// §9.2's Lend-Lease is unlike every other National Token — it's a
+// per-engagement spend ("+500 points to a non-US Allied BG this turn"),
+// exactly the same shape as AIR/ART/etc., not a held "max one" special
+// slot like Schwerpunkt or a standing effect like ULTRA. So it's treated
+// as a standard, purchasable, stackable token — just restricted to USA,
+// the only nation the rule ever lets hold it.
+function tokenTypesFor(nation){
+  return nation==='USA' ? [...TOKEN_TYPES, 'Lend-Lease'] : TOKEN_TYPES;
+}
 const NTF_ALLOTMENT = {
   Germany:{1941:1,1942:0,1943:0,1944:0,1945:0}, Japan:{1941:4,1942:4,1943:3,1944:2,1945:1},
   Italy:{1941:2,1942:2,1943:1,1944:0,1945:0}, USA:{1941:3,1942:5,1943:8,1944:12,1945:15},
@@ -2718,7 +2727,24 @@ const DOCTRINE_OPTIONS = {
 };
 const NATIONAL_TOKEN_OPTIONS = {
   Germany:['None','Schwerpunkt'], Japan:['None','Banzai'], Italy:['None',"Il Volo dell'Airone"],
-  USA:['None','Lend-Lease','MAGIC'], UK:['None','ULTRA'], USSR:['None','Maskirovka'], China:['None'],
+  USA:['None','MAGIC'], UK:['None','ULTRA'], USSR:['None','Maskirovka'], China:['None'],
+};
+// §9.2 — short cost/effect summaries shown directly on the dashboard, not
+// just buried inside the purchase modal, plus (for the two standing
+// intelligence effects) a live check of whether the geographic condition
+// that actually makes them work is currently true — holding the token
+// alone isn't the same as the effect being live.
+const NATIONAL_TOKEN_INFO = {
+  Schwerpunkt: {cost:'Costs 1 banked Support Token (any type) to acquire.', effect:'+500 air and +500 artillery to one ARM/MECH BG this turn.', standing:false},
+  Banzai: {cost:'Costs 1 banked Support Token (any type) to acquire.', effect:'One INF/Marine BG cannot be Shattered or forced to retreat.', standing:false},
+  "Il Volo dell'Airone": {cost:'Costs 1 banked Support Token (any type) to acquire.', effect:'One BG ignores out-of-supply penalties this turn.', standing:false},
+  Maskirovka: {cost:'Costs 1 banked Support Token (any type) to acquire.', effect:'Redeploy BGs between adjacent sectors right before an engagement — never costs Fatigue.', standing:false},
+  ULTRA: {cost:'Costs 1 banked Support Token (any type) to acquire.', effect:'Upgrades up to 3 German BGs\' FoW Tier each turn, plus one Sealed Log reveal.', standing:true,
+    activeCheck: ()=>{ const s=sectors.find(x=>x.name==='London'); return !!(s && factionForNation(s.occupier||s.owner)==='Allied'); },
+    inactiveReason: 'Held, but inactive — UK doesn\'t currently hold Southern England (§9.2).'},
+  MAGIC: {cost:'Costs 1 banked Support Token (any type) to acquire.', effect:'One Sealed Japanese order reveal per turn.', standing:true,
+    activeCheck: ()=>{ const s=sectors.find(x=>x.name==='Hawaii'); return !!(s && factionForNation(s.occupier||s.owner)==='Allied'); },
+    inactiveReason: 'Held, but inactive — USA doesn\'t currently hold Hawaii (§9.2).'},
 };
 const SEASON_ORDER = ['Spring','Summer','Fall','Winter'];
 function addTurns(season, year, n){
@@ -4765,7 +4791,7 @@ function openRepairTokenPicker(sector, nation, cost, oldStatus, newStatus, callb
     <div class="winter-note">Repairing ${sector.name} from ${oldStatus} to ${newStatus} costs <b>${cost}</b> token(s) of any type (§10/§11.3). Pick which to spend from ${nation}'s inventory.</div>
     ${Array.from({length:cost}).map((_,i)=>`
       <div class="fg-label">Token ${i+1}</div>
-      <select class="repair-tok-sel">${TOKEN_TYPES.map(t=>`<option value="${t}">${t} (${inv[t]||0} available)</option>`).join('')}</select>
+      <select class="repair-tok-sel">${tokenTypesFor(nation).map(t=>`<option value="${t}">${t} (${inv[t]||0} available)</option>`).join('')}</select>
     `).join('')}
     <button class="cr-roll-btn" id="repair_confirm_btn" style="margin-top:10px;">Pay &amp; Repair</button>
     <button class="ctrl-btn" id="repair_cancel_btn" style="margin-left:8px;">Cancel</button>
@@ -6468,10 +6494,11 @@ function buildIntelSectionHtml(faction, dash){
       <button class="cr-roll-btn" id="ultra_apply_btn" style="margin-top:8px;">Apply for ${thisTurn}</button>
 
       <div class="fg-label" style="margin-top:14px;">Reveal one Sealed German order this turn</div>
+      <div class="winter-note" style="margin:2px 0 6px;padding:0;background:none;border:none;font-size:11px;color:var(--ink-faint);">Entries are listed blind, by number only — pick one, then hit Reveal. Its actual content (type, description) shows up in the Action Log afterward, not here.</div>
       <select id="ultra_reveal_sel">
         <option value="">— pick a sealed entry —</option>
         ${actionLog.filter(e=>e.turn===thisTurn && e.faction==='Axis' && e.sealed && !e.revealed && e.description.includes('Germany'))
-          .map(e=>`<option value="${e.id}">${e.type}: ${e.description.slice(0,60)}…</option>`).join('')}
+          .map((e,i)=>`<option value="${e.id}">Sealed Entry ${i+1} (§5.2 — content unknown until revealed)</option>`).join('')}
       </select>
       <button class="cr-roll-btn" id="ultra_reveal_btn" style="margin-top:8px;" ${intel.ultraRevealTurn===thisTurn && intel.ultraRevealCount>=(dash.doctrine.UK.active==='Bletchley Park Expansion'?2:1)?'disabled':''}>
         ${intel.ultraRevealTurn===thisTurn && intel.ultraRevealCount>=(dash.doctrine.UK.active==='Bletchley Park Expansion'?2:1) ? 'Already used this turn' : `Reveal Entry (${intel.ultraRevealTurn===thisTurn?intel.ultraRevealCount:0}/${dash.doctrine.UK.active==='Bletchley Park Expansion'?2:1} used)`}
@@ -6490,10 +6517,11 @@ function buildIntelSectionHtml(faction, dash){
     <div class="winter-nation">
       <h3 title="Requires the USA to hold Hawaii (§9.2). Narrower than ULTRA — no FoW tier upgrades, just one reveal per turn.">MAGIC</h3>
       <div class="fg-label">Reveal one Sealed Japanese order this turn</div>
+      <div class="winter-note" style="margin:2px 0 6px;padding:0;background:none;border:none;font-size:11px;color:var(--ink-faint);">Entries are listed blind, by number only — pick one, then hit Reveal. Its actual content (type, description) shows up in the Action Log afterward, not here.</div>
       <select id="magic_reveal_sel">
         <option value="">— pick a sealed entry —</option>
         ${actionLog.filter(e=>e.turn===thisTurn && e.faction==='Axis' && e.sealed && !e.revealed && e.description.includes('Japan'))
-          .map(e=>`<option value="${e.id}">${e.type}: ${e.description.slice(0,60)}…</option>`).join('')}
+          .map((e,i)=>`<option value="${e.id}">Sealed Entry ${i+1} (§5.2 — content unknown until revealed)</option>`).join('')}
       </select>
       <button class="cr-roll-btn" id="magic_reveal_btn" style="margin-top:8px;" ${intel.magicRevealTurn===thisTurn && intel.magicRevealDone?'disabled':''}>
         ${intel.magicRevealTurn===thisTurn && intel.magicRevealDone ? 'Already used this turn' : 'Reveal Entry'}
@@ -6574,6 +6602,28 @@ function buildDashboardHtml(faction){
   const doctrineRows = majors.map(n=>{
     const d = dash.doctrine[n];
     const hasToken = d.token && d.token !== 'None';
+    const info = hasToken ? NATIONAL_TOKEN_INFO[d.token] : null;
+    // Status badge: standing effects (ULTRA/MAGIC) need their geographic
+    // condition currently true to actually be doing anything — holding the
+    // token alone isn't the same as it being live. Everything else just
+    // needs to be held.
+    let statusBadge = `<span style="color:var(--ink-faint);">— Not held</span>`;
+    if(hasToken && info){
+      if(info.standing){
+        const isActive = info.activeCheck();
+        statusBadge = isActive
+          ? `<span style="color:var(--ok);font-weight:700;">● ACTIVE</span>`
+          : `<span style="color:var(--danger);font-weight:700;" title="${info.inactiveReason}">● INACTIVE</span>`;
+      } else {
+        statusBadge = `<span style="color:var(--ok);font-weight:700;">● HELD</span>`;
+      }
+    }
+    // What buying this nation's next token would actually cost — visible
+    // up front, not just after opening the purchase modal.
+    const nextOptions = NATIONAL_TOKEN_OPTIONS[n].filter(o=>o!=='None' && o!==d.token);
+    const costLine = nextOptions.length
+      ? `Costs 1 banked Support Token (any type) — see Purchase.`
+      : `${n} has no other National Token available.`;
     return `
     <div class="winter-nation"><h3>${n}</h3>
       <div class="field-row">
@@ -6583,9 +6633,11 @@ function buildDashboardHtml(faction){
           </select>
         </div>
         <div><div class="fg-label rule-link" data-section="sec-9-2" title="Max one National Token per nation. Separate from Doctrines — a nation can hold both a Doctrine and a National Token at once (§9.5). Bought like any other token (§9.2) — spends one currently-banked Support Token of your choice.">National Token (§9.2)</div>
-          <div class="stat-line" style="padding-top:9px;"><b>${d.token || 'None'}</b></div>
+          <div class="stat-line" style="padding-top:9px;"><b>${d.token || 'None'}</b> ${statusBadge}</div>
+          ${hasToken && info ? `<div class="winter-note" style="margin:2px 0 0;padding:0;background:none;border:none;font-size:11px;">${info.effect}</div>` : ''}
+          <div class="winter-note" style="margin:4px 0 0;padding:0;background:none;border:none;font-size:11px;color:var(--ink-faint);">${costLine}</div>
           <div style="display:flex;gap:6px;margin-top:6px;">
-            ${NATIONAL_TOKEN_OPTIONS[n].filter(o=>o!=='None').length ? `<button class="ctrl-btn nt-purchase-btn" data-fac="${faction}" data-nation="${n}" style="flex:1;">Purchase</button>` : ''}
+            ${nextOptions.length ? `<button class="ctrl-btn nt-purchase-btn" data-fac="${faction}" data-nation="${n}" style="flex:1;">Purchase</button>` : ''}
             ${hasToken ? `<button class="ctrl-btn nt-drop-btn" data-fac="${faction}" data-nation="${n}" style="flex:1;">Drop</button>` : ''}
           </div>
         </div>
@@ -6601,11 +6653,12 @@ function buildDashboardHtml(faction){
       const over = cap!=null && count>cap;
       return `<td style="text-align:right;${over?'color:var(--danger);font-weight:700;':''}" ${over?`title="Exceeds the §9.1 build cap for ${n} in ${clock.year} (max ${cap})"`:''}>${count}${over?' ⚠':''}</td>`;
     }).join('')}</tr>`).join('')}
+    ${majors.includes('USA') ? `<tr><td>Lend-Lease <span style="color:var(--ink-faint);font-size:10px;">(USA only, §9.2)</span></td>${majors.map(n=>`<td style="text-align:right;">${n==='USA' ? (dash.tokens.USA['Lend-Lease']||0) : '—'}</td>`).join('')}</tr>` : ''}
   </tbody></table>
   <div class="winter-note" style="margin-top:6px;">Collected automatically each Winter (above), or adjust by hand below — e.g. to record a manual correction. ⚠ flags a nation's STRAT holding over its §9.1 build cap for the current year; no other token type has a rules-defined cap, so nothing else is checked.</div>
   <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;">
     <select id="tok_adj_nation">${majors.map(n=>`<option>${n}</option>`).join('')}</select>
-    <select id="tok_adj_type">${TOKEN_TYPES.map(t=>`<option>${t}</option>`).join('')}</select>
+    <select id="tok_adj_type">${tokenTypesFor(majors[0]).map(t=>`<option>${t}</option>`).join('')}</select>
     <button class="ctrl-btn" id="tok_adj_buy">+1 (Buy)</button>
     <button class="ctrl-btn" id="tok_adj_spend">−1 (Spend)</button>
   </div>`;
@@ -6708,6 +6761,16 @@ function wireDashboardInputs(faction){
   });
   const startingTokensBtn = document.getElementById('starting_tokens_btn');
   if(startingTokensBtn) startingTokensBtn.addEventListener('click', ()=>openStartingTokensPrompt(faction));
+  const tokAdjNationSel = document.getElementById('tok_adj_nation');
+  if(tokAdjNationSel) tokAdjNationSel.addEventListener('change', ()=>{
+    const typeSel = document.getElementById('tok_adj_type');
+    const prevValue = typeSel.value;
+    typeSel.innerHTML = tokenTypesFor(tokAdjNationSel.value).map(t=>`<option>${t}</option>`).join('');
+    // Keep the same selection if it's still valid for the new nation (e.g.
+    // switching between two non-USA nations); otherwise falls back to the
+    // dropdown's first option naturally.
+    if(tokenTypesFor(tokAdjNationSel.value).includes(prevValue)) typeSel.value = prevValue;
+  });
   const tokAdjBuy = document.getElementById('tok_adj_buy');
   if(tokAdjBuy) tokAdjBuy.addEventListener('click', async ()=>{
     const nation = document.getElementById('tok_adj_nation').value;
@@ -7039,7 +7102,7 @@ function openTokenAllocationModal(nationList, getCount, onAllDone){
       <div class="winter-note">${nation} collects ${count} Support Token${count===1?'':'s'} this turn (§2 — 1 per 2 RCs). Choose a type for each.</div>
       ${Array.from({length:count}).map((_,i)=>`
         <div class="fg-label" style="margin-top:${i?8:8}px;">Token ${i+1} of ${count}</div>
-        <select class="tok-alloc-sel">${TOKEN_TYPES.map(t=>`<option>${t}</option>`).join('')}</select>
+        <select class="tok-alloc-sel">${tokenTypesFor(nation).map(t=>`<option>${t}</option>`).join('')}</select>
       `).join('')}
       <button class="cr-roll-btn" id="tok_alloc_confirm" style="margin-top:12px;">Confirm ${nation}'s Tokens</button>
     `);
@@ -7078,7 +7141,7 @@ function openNationalTokenPurchaseModal(faction, nation){
     notify(`${nation} has no other National Token available to purchase.`);
     return;
   }
-  const available = TOKEN_TYPES.filter(t=>(dash.tokens[nation][t]||0) > 0);
+  const available = tokenTypesFor(nation).filter(t=>(dash.tokens[nation][t]||0) > 0);
   if(!available.length){
     notify(`${nation} has no banked Support Tokens to spend right now — collect some at the next Winter Logistics Phase first.`);
     return;
