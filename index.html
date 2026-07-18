@@ -4680,58 +4680,67 @@ function renderPanel(){
   });
 
   const commit = async () => {
-    s.owner = document.getElementById('f_owner').value.trim();
-    s.occupier = document.getElementById('f_occ').value.trim() || null;
-    const statusEl = document.getElementById('f_status');
-    if(statusEl) s.status = statusEl.value;
-    const evacEl = document.getElementById('f_evac');
-    if(evacEl) s.evacuated = evacEl.value;
-    s.partisan = parseInt(document.getElementById('f_partisan').value);
-    s.faction = deriveFaction(s.occupier || s.owner);
-    const contestedEl = document.getElementById('f_contested');
-    if(contestedEl) s.contested = contestedEl.value === 'Yes';
-    const garrisonEl = document.getElementById('f_gibraltar_garrison');
-    if(garrisonEl) s.ukGarrison = garrisonEl.value === 'Yes';
-    const activeAmphibEl = document.getElementById('f_active_amphib');
-    if(activeAmphibEl) s.activeAmphibiousOp = activeAmphibEl.checked;
-    const terrainEl = document.getElementById('f_terrain');
-    if(terrainEl) s.terrainOverride = terrainEl.value;
-    if(s.type==='Sea'){
-      s.ntf = s.ntf || {};
-      s.ntfLocked = s.ntfLocked || {};
-      el.querySelectorAll('.f-ntf').forEach(inp=>{
-        if(inp.disabled) return; // already locked this turn — no further changes
-        const n = inp.dataset.nation;
-        const newVal = parseFloat(inp.value)||0;
-        const oldVal = s.ntf[n]||0;
-        if(newVal === oldVal) return;
-        if(s.id===181 && newVal>0 && gibraltarClosedFor(n)){
-          notify('Gibraltar is held by the UK garrison — the strait is closed to Axis navy (§11.1). Reverted.');
-          return;
-        }
-        const allotted = (NTF_ALLOTMENT[n] && NTF_ALLOTMENT[n][clock.year]) || 0;
-        const usedElsewhere = ntfAssignedFor(n) - oldVal;
-        if(usedElsewhere + newVal > allotted){
-          notify(`${n} only has ${Math.max(0,allotted-usedElsewhere)} NTF(s) left to assign this year (§11.4) — reverted.`);
-          return;
-        }
-        if(newVal > oldVal){
-          const reachable = computeNtfReachableSeaSectors(n);
-          if(!reachable.has(s.id)){
-            notify(`${s.name} is out of NTF deployment range for ${n} (§11.6 — max ${ntfDeploymentRange(n)} sea sectors from an active RC or Forward Staging Base, at most 1 land crossing along the way). Reverted.`);
+    try{
+      s.owner = document.getElementById('f_owner').value.trim();
+      s.occupier = document.getElementById('f_occ').value.trim() || null;
+      const statusEl = document.getElementById('f_status');
+      if(statusEl) s.status = statusEl.value;
+      const evacEl = document.getElementById('f_evac');
+      if(evacEl) s.evacuated = evacEl.value;
+      s.partisan = parseInt(document.getElementById('f_partisan').value);
+      s.faction = deriveFaction(s.occupier || s.owner);
+      const contestedEl = document.getElementById('f_contested');
+      if(contestedEl) s.contested = contestedEl.value === 'Yes';
+      const garrisonEl = document.getElementById('f_gibraltar_garrison');
+      if(garrisonEl) s.ukGarrison = garrisonEl.value === 'Yes';
+      const activeAmphibEl = document.getElementById('f_active_amphib');
+      if(activeAmphibEl) s.activeAmphibiousOp = activeAmphibEl.checked;
+      const terrainEl = document.getElementById('f_terrain');
+      if(terrainEl) s.terrainOverride = terrainEl.value;
+      if(s.type==='Sea'){
+        s.ntf = s.ntf || {};
+        s.ntfLocked = s.ntfLocked || {};
+        el.querySelectorAll('.f-ntf').forEach(inp=>{
+          if(inp.disabled) return; // already locked this turn — no further changes
+          const n = inp.dataset.nation;
+          const newVal = parseFloat(inp.value)||0;
+          const oldVal = s.ntf[n]||0;
+          if(newVal === oldVal) return;
+          if(s.id===181 && newVal>0 && gibraltarClosedFor(n)){
+            notify('Gibraltar is held by the UK garrison — the strait is closed to Axis navy (§11.1). Reverted.');
             return;
           }
-        }
-        s.ntf[n] = newVal;
-        if(newVal > 0) s.ntfLocked[n] = true; // once played, fixed for the turn (§11.4)
-        // NTF assignments are public information (visible on the map to both
-        // sides), so this is never sealed regardless of where the sector is.
-        logAction(factionForNation(n), 'NTF Deployment', `${n} assigns ${newVal} NTF(s) to ${s.name} (was ${oldVal})`, []);
-      });
+          const allotted = (NTF_ALLOTMENT[n] && NTF_ALLOTMENT[n][clock.year]) || 0;
+          const usedElsewhere = ntfAssignedFor(n) - oldVal;
+          if(usedElsewhere + newVal > allotted){
+            notify(`${n} only has ${Math.max(0,allotted-usedElsewhere)} NTF(s) left to assign this year (§11.4) — reverted.`);
+            return;
+          }
+          if(newVal > oldVal){
+            const reachable = computeNtfReachableSeaSectors(n);
+            if(!reachable.has(s.id)){
+              notify(`${s.name} is out of NTF deployment range for ${n} (§11.6 — max ${ntfDeploymentRange(n)} sea sectors from an active RC or Forward Staging Base, at most 1 land crossing along the way). Reverted.`);
+              return;
+            }
+          }
+          s.ntf[n] = newVal;
+          if(newVal > 0) s.ntfLocked[n] = true; // once played, fixed for the turn (§11.4)
+          // NTF assignments are public information (visible on the map to both
+          // sides), so this is never sealed regardless of where the sector is.
+          logAction(factionForNation(n), 'NTF Deployment', `${n} assigns ${newVal} NTF(s) to ${s.name} (was ${oldVal})`, []);
+        });
+      }
+      await saveState(true, true);
+      render();
+      selectSector(s.id);
+    }catch(err){
+      // A failure anywhere above this point used to abort silently — every
+      // field read after the one that threw, contested included, would
+      // simply never run, and neither would the save at the end. Now it's
+      // visible instead of an unexplained "my change didn't stick."
+      console.error('Sector panel commit failed:', err);
+      notify(`⚠ Couldn't save ${s.name}'s changes — ${err.message}. Nothing after the error was applied; try the edit again.`);
     }
-    await saveState(true, true);
-    render();
-    selectSector(s.id);
   };
 
   ['f_owner','f_occ','f_evac','f_partisan','f_gibraltar_garrison','f_active_amphib','f_terrain','f_contested'].forEach(id=>{
@@ -5010,6 +5019,7 @@ function renderBGPanel(){
   `;
 
   const commit = async () => {
+    try{
     const oldPoints = b.points, oldFatigue = b.fatigue;
     b.points = parseFloat(document.getElementById('f_points').value) || 0;
     b.experience = parseFloat(document.getElementById('f_exp').value) || 0;
@@ -5132,6 +5142,10 @@ function renderBGPanel(){
     await saveState(true, true);
     render();
     selectBG(b.id);
+    }catch(err){
+      console.error('Battle Group panel commit failed:', err);
+      notify(`⚠ Couldn't save ${b.name}'s changes — ${err.message}. Nothing after the error was applied; try the edit again.`);
+    }
   };
 
   ['f_points','f_exp','f_fatigue','f_supply','f_orders','f_shattered','f_elite','f_move'].forEach(id=>{
@@ -6798,33 +6812,43 @@ function wireDashboardInputs(faction){
   });
   const tokAdjBuy = document.getElementById('tok_adj_buy');
   if(tokAdjBuy) tokAdjBuy.addEventListener('click', async ()=>{
-    const nation = document.getElementById('tok_adj_nation').value;
-    const type = document.getElementById('tok_adj_type').value;
-    const d = dashboards[faction];
-    d.tokens[nation] = d.tokens[nation] || {};
-    d.tokens[nation][type] = (d.tokens[nation][type]||0) + 1;
-    if(type==='STRAT' && STRAT_BUILD_CAP[nation]){
-      const cap = STRAT_BUILD_CAP[nation][clock.year];
-      if(d.tokens[nation][type] > cap){
-        notify(`${nation} now holds ${d.tokens[nation][type]}× STRAT — over the §9.1 build cap for ${clock.year} (max ${cap}). Added anyway since this is a manual override; flagged in the table.`);
+    try{
+      const nation = document.getElementById('tok_adj_nation').value;
+      const type = document.getElementById('tok_adj_type').value;
+      const d = dashboards[faction];
+      d.tokens[nation] = d.tokens[nation] || {};
+      d.tokens[nation][type] = (d.tokens[nation][type]||0) + 1;
+      if(type==='STRAT' && STRAT_BUILD_CAP[nation]){
+        const cap = STRAT_BUILD_CAP[nation][clock.year];
+        if(d.tokens[nation][type] > cap){
+          notify(`${nation} now holds ${d.tokens[nation][type]}× STRAT — over the §9.1 build cap for ${clock.year} (max ${cap}). Added anyway since this is a manual override; flagged in the table.`);
+        }
       }
+      logAction(faction, 'Support Tokens', `${nation} manually gains 1× ${type} (now ${d.tokens[nation][type]})`, []);
+      await saveState(true, true);
+      openDashboard(faction);
+    }catch(err){
+      console.error('Token Buy failed:', err);
+      notify(`⚠ Couldn't save that token purchase — ${err.message}. Please try again.`);
     }
-    logAction(faction, 'Support Tokens', `${nation} manually gains 1× ${type} (now ${d.tokens[nation][type]})`, []);
-    await saveState(true, true);
-    openDashboard(faction);
   });
   const tokAdjSpend = document.getElementById('tok_adj_spend');
   if(tokAdjSpend) tokAdjSpend.addEventListener('click', async ()=>{
-    const nation = document.getElementById('tok_adj_nation').value;
-    const type = document.getElementById('tok_adj_type').value;
-    const d = dashboards[faction];
-    d.tokens[nation] = d.tokens[nation] || {};
-    const current = d.tokens[nation][type]||0;
-    if(current <= 0){ notify(`${nation} has no ${type} tokens to spend.`); return; }
-    d.tokens[nation][type] = current - 1;
-    logAction(faction, 'Support Tokens', `${nation} manually spends 1× ${type} (now ${d.tokens[nation][type]})`, []);
-    await saveState(true, true);
-    openDashboard(faction);
+    try{
+      const nation = document.getElementById('tok_adj_nation').value;
+      const type = document.getElementById('tok_adj_type').value;
+      const d = dashboards[faction];
+      d.tokens[nation] = d.tokens[nation] || {};
+      const current = d.tokens[nation][type]||0;
+      if(current <= 0){ notify(`${nation} has no ${type} tokens to spend.`); return; }
+      d.tokens[nation][type] = current - 1;
+      logAction(faction, 'Support Tokens', `${nation} manually spends 1× ${type} (now ${d.tokens[nation][type]})`, []);
+      await saveState(true, true);
+      openDashboard(faction);
+    }catch(err){
+      console.error('Token Spend failed:', err);
+      notify(`⚠ Couldn't save that token spend — ${err.message}. Please try again.`);
+    }
   });
   const thisTurn = `${clock.season} ${clock.year}`;
 
