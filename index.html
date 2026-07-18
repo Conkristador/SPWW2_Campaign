@@ -2971,6 +2971,22 @@ function withTimeout(promise, ms){
   ]);
 }
 
+// Confirmed by direct testing against the real account: a real campaign
+// payload came in at 104,194 bytes and was rejected — JSONBin's free tier
+// hard-rejects any UPDATE over 100KB (102,400 bytes), with the message
+// "Free users cannot update a record over 100kb." That's a server-side
+// rejection with no partial-save fallback, so this has to be enforced
+// before every write, not just when a new log entry happens to be added.
+// Tightened further from the original 50/30 caps — those were computed
+// against an estimated baseline that turned out to be too optimistic; a
+// real campaign's actual BG count (grown via mobilization, Kampfgruppe
+// detachments, minor-nation activations) evidently eats more of the 100KB
+// budget than the starting OOB alone suggested.
+function trimLogs(){
+  if(actionLog && actionLog.length > 30) actionLog.length = 30;
+  if(battleLog && battleLog.length > 20) battleLog.length = 20;
+}
+
 // ---------- JSONBin.io persistence (GitHub Pages deployment) ----------
 // Fill these in with your own Bin ID and Access Key before publishing this
 // file. The key necessarily lives in this client-side code — JSONBin has no
@@ -3035,6 +3051,7 @@ async function hydrateFromStorage(){
       clock = record.clock || clock;
       battleLog = record.battleLog || battleLog;
       actionLog = record.actionLog || actionLog;
+      trimLogs(); // catch any array that was already oversized before this cap existed
       dashboards = normalizeDashboards(record.dashboards);
       minorStatus = record.minorStatus || {};
       nationRcBonus = record.nationRcBonus || {};
@@ -3264,8 +3281,22 @@ async function performSave(showNote){
         }
       }
     }
+    trimLogs(); // catch anything appended since the last trim, right before building the payload
+    let payload = snapshotPayload();
+    let payloadSize = new Blob([JSON.stringify(payload)]).size;
+    console.log('[SAVE] Payload size:', payloadSize.toLocaleString(), 'bytes (JSONBin free-tier limit: 102,400)');
+    if(payloadSize > 100000){
+      // Confirmed by direct testing: JSONBin's free tier hard-rejects any
+      // update over 100KB with a 403 and an explicit "cannot update a
+      // record over 100kb" message. trimLogs() already ran, so if it's
+      // still over, the logs are already at their floor (30/20 entries) —
+      // this is the sectors+BGs baseline itself being too large, which no
+      // amount of log trimming can fix. Surface that plainly rather than
+      // send a doomed request and report a confusing 403.
+      console.warn('[SAVE] Payload still over 100KB after trimming logs to their floor. This save will likely be rejected by JSONBin.');
+      notify(`⚠ This save is ${(payloadSize/1024).toFixed(1)}KB — over JSONBin's 100KB free-tier limit even with logs trimmed to their minimum. The campaign's own data (sectors + Battle Groups) has grown too large on its own. This attempt may fail; if it does, the practical fix is upgrading the JSONBin plan (mentioned in their own rejection message) rather than anything trimmable here.`);
+    }
     console.log('[SAVE] Writing to JSONBin now...');
-    const payload = snapshotPayload();
     await jsonbinWrite(payload);
     bumpRequestCounter();
     preActionSnapshot = payload; // roll forward for the next action's undo target
@@ -4237,7 +4268,7 @@ function logAction(faction, type, description, relevantSectors, bgId){
   // way to blow the budget on a long campaign. Keep the most recent
   // entries only; older history is still visible in-session, just not
   // persisted indefinitely.
-  if(actionLog.length > 50) actionLog.length = 50;
+  if(actionLog.length > 30) actionLog.length = 30;
 }
 
 // §5.2 "Reveal on trigger": a Sealed entry auto-reveals the instant its BG
@@ -6107,7 +6138,7 @@ async function applyCombatResult(){
     outcome: r.outcome,
     winner: r.winner,
   });
-  if(battleLog.length > 30) battleLog.length = 30; // see actionLog's cap note — same size-budget reason
+  if(battleLog.length > 20) battleLog.length = 20; // see actionLog's cap note — same size-budget reason
 
   await saveState(true, true);
   pendingEngagement = null;
@@ -7505,7 +7536,7 @@ function openBattleLogModal(){
       id: Date.now(), turn: `${clock.season} ${clock.year}`, sector: sec.name,
       attacker: atkDesc, defender: defDesc, outcome, winner, manual: true,
     });
-    if(battleLog.length > 30) battleLog.length = 30; // see actionLog's cap note — same size-budget reason
+    if(battleLog.length > 20) battleLog.length = 20; // see actionLog's cap note — same size-budget reason
 
     if(applyToMap){
       const atkSel = document.getElementById('mb_atk_bgs');
@@ -7919,6 +7950,7 @@ document.getElementById('undoLastAction').addEventListener('click', async ()=>{
   const restored = undoSnapshot;
   sectors = restored.sectors; bgs = restored.bgs; clock = restored.clock;
   battleLog = restored.battleLog; actionLog = restored.actionLog;
+  trimLogs();
   dashboards = restored.dashboards; minorStatus = restored.minorStatus || {};
   undoSnapshot = null; undoFaction = null; // single-use — no undoing the undo
   preActionSnapshot = snapshotPayload();
@@ -7996,6 +8028,7 @@ document.getElementById('importFileInput').addEventListener('change', async (ev)
   clock = data.clock;
   battleLog = data.battleLog || [];
   actionLog = data.actionLog || [];
+  trimLogs();
   dashboards = normalizeDashboards(data.dashboards);
   minorStatus = data.minorStatus || {};
   nationRcBonus = data.nationRcBonus || {};
