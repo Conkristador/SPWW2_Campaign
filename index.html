@@ -572,7 +572,11 @@ sectors previously evacuated support only 0.5 BG for Germany — §12.1;
 the Caucasus is a flat-value case outside this ratio system — also
 §12.1).</p>
 <p><strong>Support Tokens.</strong> 1 token per 2 RCs, collected in the
-Winter Logistics Phase. Type chosen at collection.</p>
+Winter Logistics Phase. Type chosen at collection. <strong>House
+rule:</strong> unspent tokens don’t carry forward past the end of the
+year — any token still sitting unused when a Winter Logistics Phase runs
+is cleared before that Winter’s fresh collection replaces it. Spend down
+before Winter, or lose it.</p>
 <h3 id="sec-2-1">2.1. Minor-Nation RCs <em>(Advanced)</em></h3>
 <p>A <strong>Minor Nation</strong> is a non-major country that fields
 its own BGs under a major’s faction (currently Romania, Bulgaria, and
@@ -2589,6 +2593,24 @@ absorbed too. Added a second path to reach it (ordinary Axis combat
 capture of a Vichy sector, not just Case Anton), since Case Anton alone
 can now only ever contribute +2 toward the 3-point threshold.</li>
 </ul>
+<p><strong>v9 → v10</strong></p>
+<ul>
+<li><strong>Support Tokens no longer carry forward indefinitely (§2,
+house rule).</strong> Unspent tokens now clear at the end of the year,
+right before that Winter’s fresh collection replaces them — spend down
+before Winter Logistics runs, or lose whatever’s left. The campaign tool
+shows exactly what was cleared, per nation, before the new collection
+begins.</li>
+<li><strong>Manual token adjustment restored, in a more controlled
+form.</strong> Regular Support Tokens gained a real collection mechanic
+recently (a guided “pick a type for each token you earned” flow instead
+of freely editing numbers) — but sometimes a manual correction is still
+genuinely needed. Added dedicated Buy (+1) / Spend (−1) controls per
+nation and type, and the tool now flags a nation’s STRAT holding
+directly in the inventory table if it exceeds that nation’s §9.1 build
+cap for the current year — the only Support Token type with an actual
+rules-defined numeric limit.</li>
+</ul>
 </div>
   </div>
 </div>
@@ -2646,6 +2668,14 @@ const YEAR_RATIO = {
   USA:     {1941:0.5, 1942:1, 1943:2, 1944:3, 1945:4},
   UK:      {1941:1, 1942:1, 1943:1, 1944:1, 1945:1},
   USSR:    {1941:1, 1942:1.5, 1943:2, 1944:3, 1945:3},
+};
+// §9.1 — the only Support Token type with an actual rule-defined numeric
+// cap. Same coming-year convention as YEAR_RATIO (§2): the cap that applies
+// during a given year was set by the Winter audit at the END of the
+// previous year.
+const STRAT_BUILD_CAP = {
+  USA: {1941:0, 1942:1, 1943:2, 1944:4, 1945:4},
+  UK:  {1941:1, 1942:1, 1943:2, 1944:2, 1945:2},
 };
 const MAJORS = ['Germany','Japan','Italy','USA','UK','USSR','China'];
 const HOME_CAPITAL = {Germany:'Berlin',Japan:'Japan (Tokyo)',Italy:'Rome',USA:'USA (East Coast)',UK:'London',USSR:'Moscow',China:'Chongqing'};
@@ -4560,7 +4590,7 @@ function renderPanel(){
       shattered:false, movedThisTurn:false
     });
     logAction(faction==='Neutral'?'Axis':faction, 'Purchase', `${name} (${nation}, ${document.getElementById('nb_type').value}) raised at ${s.name}`, [s]);
-    await saveState(true);
+    await saveState(true, true);
     render();
     selectSector(s.id);
   });
@@ -4648,7 +4678,7 @@ function renderPanel(){
         logAction(factionForNation(n), 'NTF Deployment', `${n} assigns ${newVal} NTF(s) to ${s.name} (was ${oldVal})`, []);
       });
     }
-    await saveState(true);
+    await saveState(true, true);
     render();
     selectSector(s.id);
   };
@@ -4694,7 +4724,7 @@ function renderPanel(){
     dashboards.Allied.tokens[nation].AMPH = inv - 1;
     s.lodgementRotationTurn = `${clock.season} ${clock.year}`;
     logAction('Allied', 'Lodgement Rotation', `${nation} spends 1× AMPH to pay for Lodgement Rotation at ${s.name} this turn (§11.1.6)`, [s]);
-    await saveState(true);
+    await saveState(true, true);
     render();
     selectSector(s.id);
   });
@@ -4707,7 +4737,7 @@ function renderPanel(){
     s.forwardStagingBase = true;
     s.forwardStagingNation = 'USA';
     logAction('Allied', 'Forward Staging Base', `USA spends 1× ${tokType} to build a Forward Staging Base at ${s.name} (§11.6)`, [s]);
-    await saveState(true);
+    await saveState(true, true);
     render();
     selectSector(s.id);
   });
@@ -4757,7 +4787,7 @@ function openRepairTokenPicker(sector, nation, cost, oldStatus, newStatus, callb
     for(const t in need){ dash.tokens[nation][t] = (dash.tokens[nation][t]||0) - need[t]; }
     logAction(fac, 'Repair', `${nation} spends ${picks.join('+')} to repair ${sector.name} (${oldStatus}→${newStatus})`, []);
     closeModal();
-    await saveState(true);
+    await saveState(true, true);
     callback(true);
   });
 }
@@ -5048,7 +5078,7 @@ function renderBGPanel(){
         }
       }
     }
-    await saveState(true);
+    await saveState(true, true);
     render();
     selectBG(b.id);
   };
@@ -5072,7 +5102,7 @@ function renderBGPanel(){
       shattered:false, movedThisTurn:true, isKampfgruppe:true, parentBgId:b.id,
     });
     logAction('Axis', 'Kampfgruppe', `${b.name} detaches a ${kgPoints}pt Kampfgruppe to ${dest.name}`, [sector, dest]);
-    await saveState(true);
+    await saveState(true, true);
     render();
     selectBG(b.id);
   });
@@ -5083,14 +5113,14 @@ function renderBGPanel(){
     parent.points += b.points;
     bgs = bgs.filter(x=>x.id!==b.id);
     logAction('Axis', 'Kampfgruppe', `${b.name} re-merges with ${parent.name} (+${b.points}pts)`, []);
-    await saveState(true);
+    await saveState(true, true);
     render();
     selectBG(parent.id);
   });
   const undoBtn = document.getElementById('f_undo_move');
   if(undoBtn) undoBtn.addEventListener('click', async ()=>{
     b.movedThisTurn = false;
-    await saveState(true);
+    await saveState(true, true);
     render();
     selectBG(b.id);
   });
@@ -5111,7 +5141,7 @@ function renderBGPanel(){
     logAction(faction, 'Disband/Destroy', `${b.name} (${b.nation}) removed at ${sector?sector.name:'?'}`, [sector]);
     bgs = bgs.filter(x=>x.id!==b.id);
     selectedBgId = null;
-    await saveState(true);
+    await saveState(true, true);
     render();
     document.getElementById('emptyState').style.display='block';
     document.getElementById('panelContent').style.display='none';
@@ -6247,7 +6277,7 @@ function openStrategicBombingModal(){
       <div class="winter-note">${outcomeText}</div>
     </div>`;
     logAction('Allied', 'Strategic Bombing', `Allies strike ${s.name} (${owner}) — ${outcomeText}`, []);
-    await saveState(true);
+    await saveState(true, true);
     render();
   });
 }
@@ -6287,7 +6317,7 @@ function openSubmarineWarfareModal(){
       }
     }
     dashboards[fac].tokens[nation].Submarine = inv - 1;
-    await saveState(true);
+    await saveState(true, true);
     render();
   });
 }
@@ -6565,9 +6595,20 @@ function buildDashboardHtml(faction){
     </div>`;}).join('');
 
   const tokenGrid = `<table class="econ-table"><thead><tr><th>Token</th>${majors.map(n=>`<th>${n}</th>`).join('')}</tr></thead><tbody>
-    ${TOKEN_TYPES.map(tt=>`<tr><td>${tt}</td>${majors.map(n=>`<td style="text-align:right;">${dash.tokens[n][tt]||0}</td>`).join('')}</tr>`).join('')}
-  </tbody></table>`;
-
+    ${TOKEN_TYPES.map(tt=>`<tr><td>${tt}</td>${majors.map(n=>{
+      const count = dash.tokens[n][tt]||0;
+      const cap = tt==='STRAT' && STRAT_BUILD_CAP[n] ? STRAT_BUILD_CAP[n][clock.year] : null;
+      const over = cap!=null && count>cap;
+      return `<td style="text-align:right;${over?'color:var(--danger);font-weight:700;':''}" ${over?`title="Exceeds the §9.1 build cap for ${n} in ${clock.year} (max ${cap})"`:''}>${count}${over?' ⚠':''}</td>`;
+    }).join('')}</tr>`).join('')}
+  </tbody></table>
+  <div class="winter-note" style="margin-top:6px;">Collected automatically each Winter (above), or adjust by hand below — e.g. to record a manual correction. ⚠ flags a nation's STRAT holding over its §9.1 build cap for the current year; no other token type has a rules-defined cap, so nothing else is checked.</div>
+  <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;">
+    <select id="tok_adj_nation">${majors.map(n=>`<option>${n}</option>`).join('')}</select>
+    <select id="tok_adj_type">${TOKEN_TYPES.map(t=>`<option>${t}</option>`).join('')}</select>
+    <button class="ctrl-btn" id="tok_adj_buy">+1 (Buy)</button>
+    <button class="ctrl-btn" id="tok_adj_spend">−1 (Spend)</button>
+  </div>`;
   const ntfMajors = majors.filter(n=>NTF_ALLOTMENT[n]);
   const ntfRows = ntfMajors.map(n=>{
     const allotted = NTF_ALLOTMENT[n][clock.year] ?? 0;
@@ -6662,11 +6703,39 @@ function wireDashboardInputs(faction){
   if(alphaForceBtn) alphaForceBtn.addEventListener('click', async ()=>{
     dashboards.Allied.flags['China Alpha Force unlocked'] = 'Yes';
     logAction('Allied', 'China Modernization', 'Alpha Force Trigger met — China may now build up to 1× ARM and 1× MECH (§12.3)', []);
-    await saveState(true);
+    await saveState(true, true);
     openDashboard(faction);
   });
   const startingTokensBtn = document.getElementById('starting_tokens_btn');
   if(startingTokensBtn) startingTokensBtn.addEventListener('click', ()=>openStartingTokensPrompt(faction));
+  const tokAdjBuy = document.getElementById('tok_adj_buy');
+  if(tokAdjBuy) tokAdjBuy.addEventListener('click', async ()=>{
+    const nation = document.getElementById('tok_adj_nation').value;
+    const type = document.getElementById('tok_adj_type').value;
+    dash.tokens[nation] = dash.tokens[nation] || {};
+    dash.tokens[nation][type] = (dash.tokens[nation][type]||0) + 1;
+    if(type==='STRAT' && STRAT_BUILD_CAP[nation]){
+      const cap = STRAT_BUILD_CAP[nation][clock.year];
+      if(dash.tokens[nation][type] > cap){
+        notify(`${nation} now holds ${dash.tokens[nation][type]}× STRAT — over the §9.1 build cap for ${clock.year} (max ${cap}). Added anyway since this is a manual override; flagged in the table.`);
+      }
+    }
+    logAction(faction, 'Support Tokens', `${nation} manually gains 1× ${type} (now ${dash.tokens[nation][type]})`, []);
+    await saveState(true, true);
+    openDashboard(faction);
+  });
+  const tokAdjSpend = document.getElementById('tok_adj_spend');
+  if(tokAdjSpend) tokAdjSpend.addEventListener('click', async ()=>{
+    const nation = document.getElementById('tok_adj_nation').value;
+    const type = document.getElementById('tok_adj_type').value;
+    dash.tokens[nation] = dash.tokens[nation] || {};
+    const current = dash.tokens[nation][type]||0;
+    if(current <= 0){ notify(`${nation} has no ${type} tokens to spend.`); return; }
+    dash.tokens[nation][type] = current - 1;
+    logAction(faction, 'Support Tokens', `${nation} manually spends 1× ${type} (now ${dash.tokens[nation][type]})`, []);
+    await saveState(true, true);
+    openDashboard(faction);
+  });
   const thisTurn = `${clock.season} ${clock.year}`;
 
   const ultraApplyBtn = document.getElementById('ultra_apply_btn');
@@ -6676,7 +6745,7 @@ function wireDashboardInputs(faction){
     dashboards.Allied.intel.ultraTurn = thisTurn;
     dashboards.Allied.intel.ultraTargets = ids;
     logAction('Allied', 'ULTRA', `ULTRA FoW boost applied to ${ids.length} German BG(s) for ${thisTurn}`, []);
-    await saveState(true);
+    await saveState(true, true);
     render();
     openDashboard('Allied');
   });
@@ -6691,7 +6760,7 @@ function wireDashboardInputs(faction){
     const wasThisTurn = dashboards.Allied.intel.ultraRevealTurn === thisTurn;
     dashboards.Allied.intel.ultraRevealTurn = thisTurn;
     dashboards.Allied.intel.ultraRevealCount = (wasThisTurn ? dashboards.Allied.intel.ultraRevealCount : 0) + 1;
-    await saveState(true);
+    await saveState(true, true);
     openDashboard('Allied');
   });
 
@@ -6704,7 +6773,7 @@ function wireDashboardInputs(faction){
     if(entry){ entry.revealed = true; }
     dashboards.Allied.intel.magicRevealTurn = thisTurn;
     dashboards.Allied.intel.magicRevealDone = true;
-    await saveState(true);
+    await saveState(true, true);
     openDashboard('Allied');
   });
 
@@ -6772,7 +6841,7 @@ function wireDashboardInputs(faction){
       });
       logAction(faction, 'Purchase', `${name} (${n}, ${type}) mobilized at ${deploySector.name}`, [deploySector]);
       dashboards[faction].mobilizationSlack[n] = Math.max(0, (dashboards[faction].mobilizationSlack[n]||0) - 1);
-      await saveState(true);
+      await saveState(true, true);
       render();
       openDashboard(faction);
     });
@@ -6780,7 +6849,7 @@ function wireDashboardInputs(faction){
   const notesEl = document.getElementById('dashNotes');
   if(notesEl) notesEl.addEventListener('change', async ()=>{
     dashboards[faction].notes = notesEl.value;
-    await saveState(true);
+    await saveState(true, true);
   });
 }
 
@@ -7331,12 +7400,36 @@ async function applyWinterLogistics(plan, comingYear){
     dashboards[fac].mobilizationSlack = dashboards[fac].mobilizationSlack || {};
     dashboards[fac].mobilizationSlack[n] = slack>0 ? slack : 0;
   });
-  // §10 Tokens: 1 per 2 RCs, type chosen at collection — walks each major
-  // nation through a short "pick a type for each token you just earned"
-  // modal before the rest of Winter Logistics (Refit, Partisan advance,
-  // Supply status, Recovery, clock advance) finishes up.
-  const econForTokens = computeEconomy();
-  openTokenAllocationModal(MAJORS, n=>econForTokens[n].tokens, ()=>finishWinterLogistics(beforeSnap, comingYear));
+  // §2 house rule: unspent Support Tokens clear at year-end rather than
+  // carrying forward indefinitely — shown here before the fresh Winter
+  // collection replaces them, so it's never a silent loss.
+  const clearedSummary = [];
+  MAJORS.forEach(n=>{
+    const fac = factionForNation(n);
+    const held = dashboards[fac].tokens[n] || {};
+    const total = Object.values(held).reduce((a,v)=>a+v, 0);
+    if(total>0) clearedSummary.push(`${n}: ${total} token${total===1?'':'s'} (${Object.entries(held).filter(([,v])=>v>0).map(([t,v])=>`${v}× ${t}`).join(', ')})`);
+    dashboards[fac].tokens[n] = {};
+  });
+  logAction('Axis', 'Support Tokens', `Unspent tokens cleared at year-end: ${clearedSummary.length ? clearedSummary.join('; ') : 'none held'}`, []);
+  const proceedToCollection = () => {
+    // §10 Tokens: 1 per 2 RCs, type chosen at collection — walks each major
+    // nation through a short "pick a type for each token you just earned"
+    // modal before the rest of Winter Logistics (Refit, Partisan advance,
+    // Supply status, Recovery, clock advance) finishes up.
+    const econForTokens = computeEconomy();
+    openTokenAllocationModal(MAJORS, n=>econForTokens[n].tokens, ()=>finishWinterLogistics(beforeSnap, comingYear));
+  };
+  if(clearedSummary.length){
+    openModal('Unspent Tokens Cleared (house rule)', `
+      <div class="winter-note">Support Tokens don't carry forward past the end of the year — everyone's unspent inventory just cleared:</div>
+      ${clearedSummary.map(l=>`<div class="winter-line">${l}</div>`).join('')}
+      <button class="cr-roll-btn" id="tok_clear_continue" style="margin-top:10px;">Continue to Winter Token Collection</button>
+    `);
+    document.getElementById('tok_clear_continue').addEventListener('click', proceedToCollection);
+  } else {
+    proceedToCollection();
+  }
 }
 async function finishWinterLogistics(beforeSnap, comingYear){
   // Refit: any Shattered BG resets if it's sitting on a friendly-controlled RC sector (§10)
