@@ -6712,15 +6712,16 @@ function wireDashboardInputs(faction){
   if(tokAdjBuy) tokAdjBuy.addEventListener('click', async ()=>{
     const nation = document.getElementById('tok_adj_nation').value;
     const type = document.getElementById('tok_adj_type').value;
-    dash.tokens[nation] = dash.tokens[nation] || {};
-    dash.tokens[nation][type] = (dash.tokens[nation][type]||0) + 1;
+    const d = dashboards[faction];
+    d.tokens[nation] = d.tokens[nation] || {};
+    d.tokens[nation][type] = (d.tokens[nation][type]||0) + 1;
     if(type==='STRAT' && STRAT_BUILD_CAP[nation]){
       const cap = STRAT_BUILD_CAP[nation][clock.year];
-      if(dash.tokens[nation][type] > cap){
-        notify(`${nation} now holds ${dash.tokens[nation][type]}× STRAT — over the §9.1 build cap for ${clock.year} (max ${cap}). Added anyway since this is a manual override; flagged in the table.`);
+      if(d.tokens[nation][type] > cap){
+        notify(`${nation} now holds ${d.tokens[nation][type]}× STRAT — over the §9.1 build cap for ${clock.year} (max ${cap}). Added anyway since this is a manual override; flagged in the table.`);
       }
     }
-    logAction(faction, 'Support Tokens', `${nation} manually gains 1× ${type} (now ${dash.tokens[nation][type]})`, []);
+    logAction(faction, 'Support Tokens', `${nation} manually gains 1× ${type} (now ${d.tokens[nation][type]})`, []);
     await saveState(true, true);
     openDashboard(faction);
   });
@@ -6728,11 +6729,12 @@ function wireDashboardInputs(faction){
   if(tokAdjSpend) tokAdjSpend.addEventListener('click', async ()=>{
     const nation = document.getElementById('tok_adj_nation').value;
     const type = document.getElementById('tok_adj_type').value;
-    dash.tokens[nation] = dash.tokens[nation] || {};
-    const current = dash.tokens[nation][type]||0;
+    const d = dashboards[faction];
+    d.tokens[nation] = d.tokens[nation] || {};
+    const current = d.tokens[nation][type]||0;
     if(current <= 0){ notify(`${nation} has no ${type} tokens to spend.`); return; }
-    dash.tokens[nation][type] = current - 1;
-    logAction(faction, 'Support Tokens', `${nation} manually spends 1× ${type} (now ${dash.tokens[nation][type]})`, []);
+    d.tokens[nation][type] = current - 1;
+    logAction(faction, 'Support Tokens', `${nation} manually spends 1× ${type} (now ${d.tokens[nation][type]})`, []);
     await saveState(true, true);
     openDashboard(faction);
   });
@@ -7041,8 +7043,20 @@ function openTokenAllocationModal(nationList, getCount, onAllDone){
       `).join('')}
       <button class="cr-roll-btn" id="tok_alloc_confirm" style="margin-top:12px;">Confirm ${nation}'s Tokens</button>
     `);
-    document.getElementById('tok_alloc_confirm').addEventListener('click', async ()=>{
-      const picks = Array.from(document.querySelectorAll('.tok-alloc-sel')).map(el=>el.value);
+    const confirmBtn = document.getElementById('tok_alloc_confirm');
+    confirmBtn.addEventListener('click', async ()=>{
+      // Disabled immediately — a slow save shouldn't leave the button
+      // clickable long enough for a second click to double-commit tokens.
+      confirmBtn.disabled = true;
+      const picks = Array.from(document.getElementById('modalBody').querySelectorAll('.tok-alloc-sel')).map(el=>el.value);
+      if(picks.length !== count){
+        // Something's out of sync between what was rendered and what's
+        // actually in the DOM right now — surface it rather than silently
+        // committing a wrong (likely incomplete) set of tokens.
+        notify(`Expected ${count} token picks for ${nation} but found ${picks.length} — nothing was saved. Please try again.`);
+        confirmBtn.disabled = false;
+        return;
+      }
       dashboards[faction].tokens[nation] = dashboards[faction].tokens[nation] || {};
       picks.forEach(t=>{
         dashboards[faction].tokens[nation][t] = (dashboards[faction].tokens[nation][t]||0) + 1;
