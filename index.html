@@ -485,21 +485,57 @@
 Winter). Movement is <strong>alternating and initiative-driven</strong>,
 with <strong>sealed orders</strong> for anything the enemy can’t see.
 Every battle is resolved as a WinSPWW2 PBEM custom match.</p>
-<p><strong>Key terms</strong> - <strong>BG (Battle Group)</strong> — one
-maneuver unit on the map. Baseline 2,500 tactical points. - <strong>RC
-(Resource Centre)</strong> — the sole currency. RCs pay for BGs and
-Support Tokens. - <strong>Sector</strong> — one map space. Land or sea.
-- <strong>Stack limit</strong> — 2 BGs per sector per player (exception:
-capitals). - <strong>FoW Tier</strong> — how much a BG’s owner must
-reveal about it. See §5.</p>
-<p><strong>Core vs. Advanced.</strong> <strong>Core:</strong> §1–11,
-base §12 (Oil War, Kampfgruppe, Atlantic Wall, Three-Alls, Rice
-Campaign, Home Island defense, Partisan Warfare §12.0, Italian
-Armistice, SOE, USSR standing rules), §13’s activation table.
-<strong>Advanced:</strong> §2.1 Minor-Nation RCs, §9.2.1/§9.5 Doctrines,
-§9.4 Contingent Bonus Precedence, §13.1/§13.2 Minor Doctrines and the
-French Legitimacy Track. Advanced modules may be adopted
-independently.</p>
+<p><strong>How to use this document.</strong> Sections 1–13 are the
+rules in play order — read them once, front to back, to learn the game.
+Once playing, the <strong>Quick Reference</strong> appendix at the end
+collects every numeric table in one place for fast lookup mid-turn, and
+the <strong>Glossary</strong> defines every specialized term used
+throughout.</p>
+<p><strong>Key terms</strong></p>
+<ul>
+<li><strong>BG (Battle Group)</strong> — one maneuver unit on the map.
+Baseline 2,500 tactical points.</li>
+<li><strong>RC (Resource Centre)</strong> — the sole currency. RCs pay
+for BGs and Support Tokens.</li>
+<li><strong>Sector</strong> — one map space. Land or sea.</li>
+<li><strong>Stack limit</strong> — 2 BGs per sector per player
+(exception: capitals).</li>
+<li><strong>FoW Tier</strong> — how much a BG’s owner must reveal about
+it. See §5.</li>
+</ul>
+<p><em>(The full Glossary at the end of this document covers every other
+specialized term — Contested, Lodgement, KG, and the rest.)</em></p>
+<p><strong>Core vs. Advanced</strong></p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Module</th>
+<th>Sections</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>Core</strong></td>
+<td>§1–11; §12 except 12.0’s regional variance table footnotes; §13’s
+activation table</td>
+<td>Everything needed to play a full campaign.</td>
+</tr>
+<tr class="even">
+<td><strong>Advanced</strong></td>
+<td>§2.1 (Minor-Nation RCs), §9.2.1 &amp; §9.5 (Doctrines), §9.4
+(Contingent Bonus Precedence), §13.1 &amp; §13.2 (Minor Doctrine Rules,
+French Legitimacy Track)</td>
+<td>Each module may be adopted independently — none depend on each
+other.</td>
+</tr>
+</tbody>
+</table>
 <h2 id="sec-1">1. Sequence of Play</h2>
 <p>Each turn, in order:</p>
 <ul>
@@ -1279,10 +1315,8 @@ Invasions.</td>
 <tr class="even">
 <td><strong>Lend-Lease</strong> (USA only)</td>
 <td>+500 points to any <strong>non-US</strong> Allied BG this turn.
-Unlike the other National Tokens in §9.2, this behaves exactly like a
-standard token — purchased and stacked the normal way, not a held “max
-one” special slot — it’s simply restricted to the USA, the only nation
-the rule ever lets hold it.</td>
+Purchased and stacked like any other Standard Token, just restricted to
+the USA.</td>
 </tr>
 <tr class="odd">
 <td><strong>REC</strong></td>
@@ -1506,7 +1540,8 @@ if eligible.</td>
 <td><strong>Stavka Reserve</strong></td>
 <td>Mobile Reserve (§7.6) can activate any adjacent ARM/MECH/INF BG, not
 just ARM/MECH.</td>
-<td>USSR’s BG-per-RC ratio (§2) drops 0.5 for the following year.</td>
+<td>Every Soviet BG type’s starting experience baseline (§3.5) drops by
+10, permanently.</td>
 </tr>
 <tr class="odd">
 <td>China</td>
@@ -2477,124 +2512,498 @@ mutually exclusive. Invading Iraq, for instance, still triggers its own
 automatic Summer 1941 activation independently of this house
 rule.</p></li>
 </ul>
-<h2 id="changelog">Changelog</h2>
-<p><strong>v6 → v7 (consistency audit)</strong></p>
-<ul>
-<li><strong>Fixed a duplicate section number.</strong> Two different
-sections were both numbered §3.4 (Cavalry and Experience). Experience is
-now §3.5, Fatigue §3.6, Recovery §3.7 — every cross-reference to the old
-numbers throughout the document has been updated to match.</li>
-<li><strong>Added §3.1.1 Terrain Types.</strong> A real, previously
-undocumented mechanic — sectors have a major terrain type (8 categories)
-shown in their panel, which is reference information for choosing among
-the Combat Resolver’s five tactical terrain categories (Open/Steppe,
-Urban, Mountain/Jungle, Amphibious Landing, Arctic/Tundra) that actually
-multiply BG effective points by type. Two existing rules (Alpini
-Doctrine, Desert Outflanking) referenced “major terrain” and cited the
-wrong section (§3.1, the Battle Group types table) — both now correctly
-point to §3.1.1.</li>
-<li><strong>Added §6.1 Small Island Outposts.</strong> A house rule that
-was fully implemented and enforced in the campaign tool but had no
-corresponding rulebook entry at all: Wake Island, Midway, Fiji, Samoa,
-Gilbert Islands, and Marshall Islands are hard-capped at 1 BG per
-faction, overriding even an adjacent Lodgement Rotation pool.</li>
-<li><strong>Terminology cleanup.</strong> §12.6 and §13.1 used
-“Occupy_RC” / “Owner_RC,” which don’t match the campaign tool’s actual
-field names. Changed to plain “Owner” / “Occupier” throughout.</li>
-<li><strong>Clarified NTF Deployment Range (§11.6) is nation-scoped, not
-faction-scoped.</strong> The previous wording (“friendly Resource
-Centre”) was ambiguous between “same nation” and “same faction” — this
-ambiguity previously caused a real bug where a nation’s NTF range was
-incorrectly computed from its whole faction’s combined RC network rather
-than its own. The rule text now says so explicitly.</li>
-<li><strong>Tagged all six Advanced-module sections inline</strong>
-(§2.1, §9.2.1, §9.4, §9.5, §13.1, §13.2) with <em>(Advanced)</em> next
-to their headers, so the Core/Advanced split declared in the
-introduction is usable while reading through the document, not just
-stated once at the top and then forgotten.</li>
-</ul>
-<p><strong>v7 → v8</strong></p>
-<ul>
-<li><strong>Italian Armistice trigger simplified (§12.6).</strong> Was
-Sicily plus any 2 of {Naples, Rome, Milan}; now Sicily plus just 1 of
-those 3. The campaign tool now also prompts the Allied player directly —
-not the Axis player — once the condition is met, since the Allies are
-the ones taking the action that triggers it.</li>
-</ul>
-<p><strong>v8 → v9</strong></p>
-<ul>
-<li><strong>§13.1 Vichy trigger renamed and fixed.</strong> “Compiègne
-Armistice” is now “Case Anton,” matching the actual historical operation
-(Germany’s occupation of Vichy France following Operation Torch —
-Compiègne refers to the 1940 armistice that <em>created</em> Vichy
-France, a different event entirely).</li>
-<li><strong>Corrected the trigger sectors.</strong> The old text named
-“(Vichy, Tunis)” as the North African trigger — but the sector literally
-named “Vichy” is in metropolitan France, not North Africa, and Tunis was
-already German-occupied, not Vichy-controlled. Neither was a sector an
-Allied invasion could actually target under the rule’s own intent. Now
-correctly reads Morocco or Algiers — the two sectors that are genuinely
-both North African and still under direct Vichy control.</li>
-<li><strong>Narrowed what Case Anton actually annexes.</strong>
-Previously “all remaining Vichy sectors” at once — meaning a single
-invasion of French North Africa could instantly flip the entire Vichy
-colonial empire to Germany, which both wasn’t historically accurate (the
-real Case Anton took metropolitan France only; the colonies kept
-fracturing on their own for years after) and made the ongoing Free
-France vs. Vichy contest largely pointless the moment it fired. Case
-Anton now annexes only Vichy’s 2 metropolitan sectors (Vichy,
-Marseille); colonial territory stays a live contest for Free France to
-Rally or the Allies to capture.</li>
-<li><strong>§13.2’s “full collaboration” endgame (3 Vichy Legitimacy)
-now does the job the old version of Case Anton used to do</strong> —
-it’s the point where whatever colonial remnant is left finally gets
-absorbed too. Added a second path to reach it (ordinary Axis combat
-capture of a Vichy sector, not just Case Anton), since Case Anton alone
-can now only ever contribute +2 toward the 3-point threshold.</li>
-</ul>
-<p><strong>v9 → v10</strong></p>
-<ul>
-<li><strong>Support Tokens no longer carry forward indefinitely (§2,
-house rule).</strong> Unspent tokens now clear at the end of the year,
-right before that Winter’s fresh collection replaces them — spend down
-before Winter Logistics runs, or lose whatever’s left. The campaign tool
-shows exactly what was cleared, per nation, before the new collection
-begins.</li>
-<li><strong>Manual token adjustment restored, in a more controlled
-form.</strong> Regular Support Tokens gained a real collection mechanic
-recently (a guided “pick a type for each token you earned” flow instead
-of freely editing numbers) — but sometimes a manual correction is still
-genuinely needed. Added dedicated Buy (+1) / Spend (−1) controls per
-nation and type, and the tool now flags a nation’s STRAT holding
-directly in the inventory table if it exceeds that nation’s §9.1 build
-cap for the current year — the only Support Token type with an actual
-rules-defined numeric limit.</li>
-</ul>
-<p><strong>v10 → v11</strong></p>
-<ul>
-<li><strong>Lend-Lease moved from §9.2 (National Tokens) to §9.1
-(Standard Tokens).</strong> This was a real gap between the document and
-the campaign tool, not just a wording tidy-up — the tool has treated
-Lend-Lease as a standard, purchasable, stackable token restricted to the
-USA for a while now, since it behaves nothing like the other National
-Tokens (a one-time “+500 to an ally’s BG” spend, not a held “max one”
-special slot like Schwerpunkt or a standing effect like ULTRA). The
-rulebook still listed it under §9.2 until this pass. Fixed the
-cross-reference in §11.5’s Convoy Raiding rule to match.</li>
-</ul>
-<p><strong>v11 → v12</strong></p>
-<ul>
-<li><strong>Doctrine activation and switching no longer cost Support
-Tokens.</strong> Previously, activating a Doctrine required paying a
-themed token cost (e.g. Germany’s Panzerwaffe: 4× HVY / 3× ART), and
-switching after lock-in expired cost that same activation fee again plus
-forfeiting the entire Winter’s token collection on top. All of that’s
-removed — a Doctrine’s only cost now is the structural one already
-listed in its own entry (§9.2.1), which still runs its full course
-exactly as before. The 4-turn lock-in on switching is unchanged; that’s
-a time-based constraint, not a token cost, and stays as the check
-against flip-flopping doctrines turn to turn.</li>
-</ul>
+<h2 id="quick-reference">Quick Reference</h2>
+<p>A single lookup point for every numeric table in this document,
+grouped by topic rather than by section. When in doubt about a rule’s
+exact wording, follow the §-reference back to its full entry — this
+appendix is for fast recall of numbers you already know how to apply,
+not a substitute for the rule text itself.</p>
+<p><strong>Economy — BGs supported per RC, by year (§2)</strong></p>
+<table>
+<thead>
+<tr class="header">
+<th></th>
+<th>1941</th>
+<th>1942</th>
+<th>1943</th>
+<th>1944</th>
+<th>1945</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Germany</td>
+<td>1</td>
+<td>1</td>
+<td>1.5</td>
+<td>2</td>
+<td>2</td>
+</tr>
+<tr class="even">
+<td>USA</td>
+<td>0.5</td>
+<td>1</td>
+<td>2</td>
+<td>3</td>
+<td>4</td>
+</tr>
+<tr class="odd">
+<td>USSR</td>
+<td>1</td>
+<td>1.5</td>
+<td>2</td>
+<td>3</td>
+<td>3</td>
+</tr>
+<tr class="even">
+<td>All others</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Infantry Minimums (§3.2)</strong></p>
+<table>
+<thead>
+<tr class="header">
+<th>Germany</th>
+<th>Japan</th>
+<th>Italy</th>
+<th>USA</th>
+<th>UK</th>
+<th>USSR</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>40%</td>
+<td>80%</td>
+<td>60%</td>
+<td>30%</td>
+<td>50%</td>
+<td>40%</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Experience Baselines by nation and type (§3.5)</strong></p>
+<table>
+<thead>
+<tr class="header">
+<th></th>
+<th>ARM</th>
+<th>MECH</th>
+<th>INF/CAV</th>
+<th>A/M</th>
+<th>MIL</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Germany</td>
+<td>80</td>
+<td>80</td>
+<td>70</td>
+<td>65</td>
+<td>40</td>
+</tr>
+<tr class="even">
+<td>Japan</td>
+<td>70</td>
+<td>70</td>
+<td>75</td>
+<td>80</td>
+<td>40</td>
+</tr>
+<tr class="odd">
+<td>Other Axis</td>
+<td>60</td>
+<td>60</td>
+<td>60</td>
+<td>60</td>
+<td>40</td>
+</tr>
+<tr class="even">
+<td>USA</td>
+<td>70</td>
+<td>70</td>
+<td>70</td>
+<td>80</td>
+<td>40</td>
+</tr>
+<tr class="odd">
+<td>UK</td>
+<td>70</td>
+<td>70</td>
+<td>70</td>
+<td>80</td>
+<td>40</td>
+</tr>
+<tr class="even">
+<td>USSR</td>
+<td>70</td>
+<td>70</td>
+<td>60</td>
+<td>70</td>
+<td>40</td>
+</tr>
+<tr class="odd">
+<td>Other Allied</td>
+<td>60</td>
+<td>60</td>
+<td>50</td>
+<td>60</td>
+<td>40</td>
+</tr>
+</tbody>
+</table>
+<p>Win +3 · Decisive victory +5 · Shattered −5 · Stalemate: no
+change.</p>
+<p><strong>Fatigue Penalty (§3.6)</strong></p>
+<table>
+<thead>
+<tr class="header">
+<th>FP</th>
+<th>Penalty</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>−10%</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>−30%</td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td>−50%</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Fog of War Tiers (§5.1)</strong></p>
+<table>
+<thead>
+<tr class="header">
+<th>Tier</th>
+<th>Name</th>
+<th>Opponent Learns</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>No Info</td>
+<td>Nothing</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>Partial Info</td>
+<td>Sector + BG category only</td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td>Full Info</td>
+<td>Everything</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Combat Outcomes (§8.1)</strong></p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Loser’s score vs. winner’s</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>&lt; 30%</td>
+<td>Decisive victory — Shattered + retreat. Winner +5 XP, loser −5
+XP.</td>
+</tr>
+<tr class="even">
+<td>30–70%</td>
+<td>Standard victory — retreat, no shatter. Winner +3 XP.</td>
+</tr>
+<tr class="odd">
+<td>&gt; 70%, or tied</td>
+<td>Stalemate — neither retreats, sector Contested.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Match Settings (§7.8)</strong></p>
+<table>
+<thead>
+<tr class="header">
+<th>Match</th>
+<th>Attacker</th>
+<th>Defender</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Meeting Engagement</td>
+<td>2,500/BG</td>
+<td>2,500/BG, no fortifications</td>
+</tr>
+<tr class="even">
+<td>Advance / Delay</td>
+<td>2,500/BG</td>
+<td>2,500/BG +250/BG</td>
+</tr>
+<tr class="odd">
+<td>Assault / Defend</td>
+<td>3,000/BG</td>
+<td>2,500/BG +750/BG</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Strategic Bomber Build Cap by year (§9.1)</strong></p>
+<table>
+<thead>
+<tr class="header">
+<th></th>
+<th>1941</th>
+<th>1942</th>
+<th>1943</th>
+<th>1944</th>
+<th>1945</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>USA</td>
+<td>0</td>
+<td>1</td>
+<td>2</td>
+<td>4</td>
+<td>4</td>
+</tr>
+<tr class="even">
+<td>UK</td>
+<td>1</td>
+<td>1</td>
+<td>2</td>
+<td>2</td>
+<td>2</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Naval Task Force Allotment by year (§11.4)</strong></p>
+<table>
+<thead>
+<tr class="header">
+<th></th>
+<th>1941</th>
+<th>1942</th>
+<th>1943</th>
+<th>1944</th>
+<th>1945</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Germany</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td>Japan</td>
+<td>4</td>
+<td>4</td>
+<td>3</td>
+<td>2</td>
+<td>1</td>
+</tr>
+<tr class="odd">
+<td>Italy</td>
+<td>2</td>
+<td>2</td>
+<td>1</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td>USA</td>
+<td>3</td>
+<td>5</td>
+<td>8</td>
+<td>12</td>
+<td>15</td>
+</tr>
+<tr class="odd">
+<td>UK</td>
+<td>4</td>
+<td>4</td>
+<td>5</td>
+<td>5</td>
+<td>5</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Partisan Level Effects (§12.0)</strong></p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Level</th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>−10% points to occupier</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td>−20% points; RC Damaged; no Strategic Movement (Western Europe:
+capped here, −20% only)</td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td>−20% points; supply tracing disrupted (not reachable in Western
+Europe)</td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td>−20% points; supply disrupted; RC Destroyed (not reachable in
+Western Europe)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="glossary">Glossary</h2>
+<p><strong>Advance/Delay</strong> — the Engagement Matrix result when
+attacking a BG that held last turn but not the turn before. See §7.7,
+§7.8.</p>
+<p><strong>Annihilation</strong> — a defeated BG with no valid retreat
+sector is destroyed outright. §8.3.</p>
+<p><strong>Assault/Defend</strong> — the Engagement Matrix result when
+attacking a Fortified (2+ turn stationary) BG. See §7.7, §7.8.</p>
+<p><strong>BG (Battle Group)</strong> — the game’s core maneuver unit,
+baseline 2,500 tactical points.</p>
+<p><strong>Contested</strong> — a sector where a Stalemate (§8.1) has
+left both sides’ BGs in place. Blocks Strategic Movement through it and
+several other rules that require a sector to be secure.</p>
+<p><strong>Elite Formation</strong> — a BG designation earned per 6 RCs
+(max 3/nation) granting free tokens every turn. §9.3.</p>
+<p><strong>Engagement Check</strong> — the test run whenever a BG’s
+activation would move it into a sector containing an enemy BG,
+determining which Match type applies. §7.7.</p>
+<p><strong>FoW Tier</strong> — Fog of War Tier, 1–3, governing what’s
+revealed about a BG to the opponent. §5.1.</p>
+<p><strong>Fortified</strong> — a BG that held its position for 2+
+consecutive turns, triggering Assault/Defend if attacked. §7.7.</p>
+<p><strong>Kampfgruppe (KG)</strong> — a German detachment mechanic
+letting an adjacent ARM/MECH BG commit up to 1,000 points into an
+engagement without counting against the stack limit. §12.1.</p>
+<p><strong>Lodgement</strong> — the elevated stacking status
+(temporarily up to 4 BGs) following a successful Amphibious Invasion.
+§11.1.3–11.1.7.</p>
+<p><strong>Meeting Engagement</strong> — the Engagement Matrix result
+when both sides moved into the same sector on the same turn. §7.7,
+§7.8.</p>
+<p><strong>NTF (Naval Task Force)</strong> — a nation’s naval strength
+unit, fixed allotment per year, cannot be built. §11.4.</p>
+<p><strong>RC (Resource Centre)</strong> — the sole in-game currency;
+pays for BGs and Support Tokens.</p>
+<p><strong>Sealed Order</strong> — a move announced without revealing
+which BG or where, available only when both origin and destination are
+FoW Tier 1. §5.2.</p>
+<p><strong>Sector</strong> — one map space, land or sea.</p>
+<p><strong>Shattered</strong> — the survivor status of a BG that lost a
+Decisive victory (§8.1); loses its next Rest cycle’s benefit and must
+retreat.</p>
+<p><strong>Stalemate</strong> — a tied or near-tied (&gt;70%) engagement
+result; neither side retreats, the sector becomes/remains Contested.
+§8.1.</p>
+<p><strong>Standard Token</strong> — the common pool of Support Tokens
+(AIR, ART, HVY, ENG, AMPH, NAVGUN, ABN, REC, INL, STRAT, Fighter,
+Submarine, Lend-Lease) as opposed to a nation-specific National Token.
+§9.1.</p>
+<p><strong>Support Token</strong> — the general currency spent on a
+specific battle or standing effect; collected at Winter Logistics (1 per
+2 RCs). §9.</p>
+<h2 id="version-history">Version History</h2>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Version</th>
+<th>Summary</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>v7</td>
+<td>Consistency audit: fixed a duplicate §3.4 numbering, added §3.1.1
+Terrain Types and §6.1 Small Island Outposts (both already tool-enforced
+but undocumented), standardized Owner/Occupier terminology, clarified
+NTF Deployment Range is nation-scoped, tagged all Advanced modules
+inline.</td>
+</tr>
+<tr class="even">
+<td>v8</td>
+<td>Simplified the Italian Armistice trigger (Sicily + 1 of 3 RCs, was +
+2 of 3).</td>
+</tr>
+<tr class="odd">
+<td>v9</td>
+<td>Renamed “Compiègne Armistice” to Case Anton and corrected its
+trigger sectors and scope (metropolitan France only, not the colonial
+empire).</td>
+</tr>
+<tr class="even">
+<td>v10</td>
+<td>Support Tokens now clear at year-end instead of carrying forward
+indefinitely; added manual Buy/Spend token controls with a STRAT-cap
+warning.</td>
+</tr>
+<tr class="odd">
+<td>v11</td>
+<td>Moved Lend-Lease from §9.2 (National Tokens) to §9.1 (Standard
+Tokens) to match how it actually behaves.</td>
+</tr>
+<tr class="even">
+<td>v12</td>
+<td>Removed Support Token costs from Doctrine activation and switching —
+a Doctrine’s only cost is now the structural one in its own §9.2.1
+entry. The 4-turn lock-in is unchanged.</td>
+</tr>
+<tr class="odd">
+<td>v13</td>
+<td>Editorial reorganization pass: added this Quick Reference and
+Glossary, condensed the version history, fixed several flattened
+list-formatting artifacts, and tightened a few entries that had drifted
+into explaining their own edit history rather than just stating the
+current rule. No rule content changed.</td>
+</tr>
+<tr class="even">
+<td>v14</td>
+<td>Stavka Reserve’s structural cost changed from a one-year
+RC-per-ratio penalty to a permanent flat -10 to every Soviet BG type’s
+starting experience baseline — considered too punishing in its previous
+form.</td>
+</tr>
+</tbody>
+</table>
 </div>
   </div>
 </div>
@@ -2802,10 +3211,9 @@ const DOCTRINE_EFFECTS = {
   },
   'Stavka Reserve': {
     effectText: 'Mobile Reserve (§7.6) can activate any adjacent ARM/MECH/INF BG, not just ARM/MECH.',
-    costText: "USSR's BG-per-RC ratio (§2) drops 0.5 for the following year.",
-    permCost: {},
-    tempCost: {key:'ratio', value:-0.5},
-    automatedNote: "Applied: USSR's BG-per-RC ratio is reduced by 0.5 for the year this takes effect.",
+    costText: "All Soviet BGs' starting experience baseline drops by 10, permanently.",
+    permCost: {expBaselineOffset: -10},
+    automatedNote: "Applied: every Soviet BG type's starting experience is now 10 lower — check the dashboard's Experience Baseline reference.",
     manualNote: "Remember Mobile Reserve now accepts an adjacent INF BG too, not just ARM/MECH — that's a battle-time rule, not tracked here.",
   },
   "People's War Doctrine": {
@@ -3890,10 +4298,16 @@ function experienceBaseline(nation, type){
   // active (and forever after — costs outlive switching) use a reduced
   // baseline of 70 instead of the normal 80.
   const armOverride = type==='ARM' ? doctrineCostFor(nation, 'armExpBaseline') : 0;
-  if(armOverride) return armOverride;
-  if(EXP_BASELINE[nation]) return EXP_BASELINE[nation][type] ?? 60;
-  const fac = factionForNation(nation);
-  return (fac==='Axis' ? OTHER_AXIS_EXP : OTHER_ALLIED_EXP)[type] ?? 50;
+  // §9.2.1 Stavka Reserve cost: flat -10 to every Soviet BG type's
+  // starting experience, permanently. Unlike Panzerwaffe's override (a
+  // fixed replacement value for one type), this is an offset applied
+  // across all types — so it stacks against the type-specific override
+  // above if a future doctrine ever combined the two, rather than one
+  // silently replacing the other.
+  const offset = doctrineCostFor(nation, 'expBaselineOffset');
+  const base = armOverride || (EXP_BASELINE[nation] ? (EXP_BASELINE[nation][type] ?? 60)
+    : (factionForNation(nation)==='Axis' ? OTHER_AXIS_EXP : OTHER_ALLIED_EXP)[type] ?? 50);
+  return Math.max(0, base + offset);
 }
 
 // §3.1 composition requirements — advisory only, since composition % isn't
@@ -6980,6 +7394,10 @@ function buildDashboardHtml(faction){
           <select class="dash-doctrine-sel" data-fac="${faction}" data-nation="${n}">
             ${DOCTRINE_OPTIONS[n].map(o=>`<option ${d.active===o?'selected':''}>${o}</option>`).join('')}
           </select>
+          ${d.active && d.active!=='None' && DOCTRINE_EFFECTS[d.active] ? `
+          <div class="winter-note" style="margin:6px 0 0;padding:0;background:none;border:none;font-size:11px;"><b>Effect:</b> ${DOCTRINE_EFFECTS[d.active].effectText}</div>
+          <div class="winter-note" style="margin:4px 0 0;padding:0;background:none;border:none;font-size:11px;color:var(--ink-faint);"><b>Cost:</b> ${DOCTRINE_EFFECTS[d.active].costText}</div>
+          ` : ''}
         </div>
         <div><div class="fg-label rule-link" data-section="sec-9-2" title="Max one National Token per nation. Separate from Doctrines — a nation can hold both a Doctrine and a National Token at once (§9.5). Bought like any other token (§9.2) — spends one currently-banked Support Token of your choice.">National Token (§9.2)</div>
           <div class="stat-line" style="padding-top:9px;"><b>${d.token || 'None'}</b> ${statusBadge}</div>
