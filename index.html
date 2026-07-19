@@ -361,13 +361,14 @@
     <div id="topRightStack">
       <button class="ctrl-btn" id="resetView">RESET VIEW</button>
       <button class="ctrl-btn" id="toggleEditPositions">MAP EDITOR MODE: OFF</button>
+      <button class="ctrl-btn ctrl-btn-gold" id="toggleGmMode">GAME MASTER MODE: OFF</button>
       <button class="ctrl-btn" id="createNewSector">+ CREATE NEW SECTOR</button>
       <button class="ctrl-btn" id="resetNodePositions">RESET ALL POSITIONS TO DEFAULT</button>
     </div>
     <div id="controls">
       <div class="ctrl-row" id="controlsGameplay">
         <button class="ctrl-btn ctrl-btn-gold" id="openEconomy">ECONOMY</button>
-        <button class="ctrl-btn ctrl-btn-gold" id="openSequenceBtn">TURN CHECKLIST</button>
+        <button class="ctrl-btn ctrl-btn-gold" id="openSequenceBtn">AVAILABLE ACTIVATIONS</button>
         <button class="ctrl-btn ctrl-btn-gold" id="openLog">BATTLE LOG</button>
         <button class="ctrl-btn ctrl-btn-gold" id="openActionLog">ACTION LOG</button>
         <button class="ctrl-btn" id="undoLastAction" disabled>UNDO LAST ACTION</button>
@@ -1578,6 +1579,14 @@ own size. Order matters and this is deliberately asymmetric: a patrol
 deployed <em>after</em> an NTF is already sitting there doesn’t trigger
 this (it’s sneaking into contested waters, not being hunted) — only the
 reverse does.</p>
+<p><strong>Deploying and resolving are two separate activations, never
+one.</strong> A patrol can’t be deployed and then immediately resolved
+in the same activation — the whole point of the counter-attack window
+above is giving the opposing faction a real chance to respond (deploy an
+NTF here to intercept, or act elsewhere) before the patrol’s fate is
+settled. A newly-deployed patrol stays locked against resolution until
+the acting player has moved on to a different activation (selecting a
+sector, in tool terms) and come back to it.</p>
 <p><strong>Resolution.</strong> Whichever applies — the NTF
 counter-attack if an opposing NTF is present, or the patrol’s own chosen
 effect if not — resolves from that sea sector’s own panel. A patrol
@@ -4249,10 +4258,10 @@ function updateUndoButton(){
   const btn = document.getElementById('undoLastAction');
   if(!btn) return;
   const viewer = playerRole || 'Observer';
-  const usable = !!undoSnapshot && (viewer==='Observer' || viewer===undoFaction);
+  const usable = !!undoSnapshot && (gmMode || viewer==='Observer' || viewer===undoFaction);
   btn.disabled = !usable;
   btn.textContent = undoFaction ? `UNDO LAST ACTION (${undoFaction})` : 'UNDO LAST ACTION';
-  btn.title = usable ? `Restore the state from just before ${undoFaction}'s last saved action.`
+  btn.title = usable ? `Restore the state from just before ${undoFaction}'s last saved action.${gmMode && viewer!=='Observer' && viewer!==undoFaction ? ' (GM Mode — faction restriction bypassed.)' : ''}`
     : (undoSnapshot ? `Only ${undoFaction} (or an Observer) can undo this.` : 'Nothing to undo yet.');
 }
 
@@ -5117,9 +5126,11 @@ function nextTurnOf(season, year){
 function recordReconstitutionOpportunity(bg){
   if(!bg || bg.emergencyReserve || bg.isKampfgruppe) return; // both already outside the normal cap system entirely
   const nation = bg.nation;
-  const econ = computeEconomy();
-  const e = econ[nation];
-  if(!e || e.fielded >= e.bgCap) return; // at or over cap — nothing opened up, no opportunity
+  if(!gmMode){
+    const econ = computeEconomy();
+    const e = econ[nation];
+    if(!e || e.fielded >= e.bgCap) return; // at or over cap — nothing opened up, no opportunity
+  }
   const fac = factionForNation(nation);
   const eligible = nextTurnOf(clock.season, clock.year);
   dashboards[fac].reconstitution.push({
@@ -5642,8 +5653,27 @@ let insetState = {
 };
 let labelsVisible = true;
 let editPositionsMode = false;
+// Game Master Toggle: bypasses the validation gates built up over this
+// session (NTF range/allotment/decrease-lock, submarine fleet
+// availability/deploy-resolve activation split, bomber commitment caps,
+// weather grounding, reconstitution's below-cap check, undo's faction
+// restriction) without touching what those checks actually compute or
+// removing them for everyone else — a GM overseeing or correcting a game
+// needs the escape hatch, a normal player shouldn't have it on by
+// accident. Does NOT bypass Fog of War visibility (a GM sees what an
+// Observer sees) — this is about being ABLE to act, not being able to
+// see hidden information.
+let gmMode = false;
+// Whether the current "Playing as" role may act (assign NTFs, deploy
+// submarines) as the given nation. Observers and an unset role aren't
+// restricted — they're not actually playing a side. GM Mode bypasses
+// this along with everything else it bypasses.
+function canActAsNation(nation){
+  if(gmMode) return true;
+  if(!playerRole || playerRole==='Observer') return true;
+  return factionForNation(nation) === playerRole;
+}
 let hiddenRegions = new Set();
-let sequenceChecklist = {turn:'', naval:false, bombing:false, movement:false, partisan:false};
 
 try{
   if(window.ResizeObserver){
@@ -5815,6 +5845,11 @@ function diamondPath(cx,cy,r){
 function selectSector(id){
   selectedId = id;
   selectedBgId = null;
+  // A fresh sector selection is the activation boundary for the
+  // deploy/resolve split on submarine patrols (§8.4) — clears the lock
+  // set at deployment, distinct from the render() called automatically
+  // as a side-effect of the deployment action itself.
+  sectors.forEach(s=>{ if(s.submarinePatrol) s.submarinePatrol.lockedForActivation = false; });
   nodeLayer.selectAll('g.sector-node').classed('selected', d=>d.id===id);
   bgLayer.selectAll('g.bg-icon').classed('selected', false);
   renderPanel();
@@ -5865,9 +5900,9 @@ function renderPanel(){
         <div class="winter-note">Reads the Battle Groups actually present here and works out the exact parameters to type into WinSPWW2's own "Playing a one off battle" screen — nations, date, water conditions, map size, visibility, and terrain generator variables — so nothing has to be re-derived by hand.</div>
         <button class="cr-roll-btn" id="f_match_setup_btn" style="margin-top:8px;width:100%;">Generate WinSPWW2 Match Setup</button>
       </div>` : ''}
-      ${(s.type!=='Sea' && s.rc>0 && factionForNation(s.occupier||s.owner)==='Axis' && s.status!=='Destroyed' && bomberTargetInRange(s)) ? `<div class="field-group">
+      ${(s.type!=='Sea' && s.rc>0 && factionForNation(s.occupier||s.owner)==='Axis' && s.status!=='Destroyed' && (gmMode || bomberTargetInRange(s))) ? `<div class="field-group">
         <div class="fg-label rule-link" data-section="sec-8-5">Strategic Bombing (§8.5)</div>
-        <div class="winter-note">Valid target — Axis RC within Bomber Force range. Spends an activation, same as moving a BG. Fighter defense resolves automatically.</div>
+        <div class="winter-note">${gmMode && !bomberTargetInRange(s) ? 'GM Mode — normally out of Bomber Force range, range requirement bypassed.' : 'Valid target — Axis RC within Bomber Force range.'} Spends an activation, same as moving a BG. Fighter defense resolves automatically.</div>
         <button class="cr-roll-btn" id="f_bomber_strike_btn" style="margin-top:8px;width:100%;">Resolve Bomber Strike Mission</button>
       </div>` : ''}
       ${stackWarnings.length ? `<div class="moved-banner" style="border-color:var(--danger);color:var(--danger);">⚠ Stack limit exceeded (§6) — more than ${effectiveStackCap(s)} ${stackWarnings.join(', ')} Battle Group(s) here. ${s.smallIslandOutpost ? 'This is a Small Island Outpost, capped at 1 BG per faction.' : 'Non-capital sectors are normally capped at 2.'} Move one out or resolve the excess.</div>` : ''}
@@ -5967,10 +6002,13 @@ function renderPanel(){
           const allotted = ntfAllotmentFor(n);
           const usedElsewhere = ntfAssignedFor(n) - ((s.ntf&&s.ntf[n])||0);
           const remaining = allotted - usedElsewhere;
+          const restricted = !canActAsNation(n);
+          const title = restricted ? `You're playing as ${playerRole} — only ${playerRole}'s own nations can be assigned here.`
+            : (locked ? `Committed here this turn (§8.3) — can still add more, but can't withdraw below ${(s.ntf&&s.ntf[n])||0} until Advance Turn.` : `${remaining} of ${allotted} remaining this year, not counting what's already here`);
           return `
           <div class="field-row">
             <div style="flex:0 0 90px;padding-top:8px;font-size:12px;color:var(--ink-dim);">${n}${locked?' 🔒':''}</div>
-            <div><input class="txtfield f-ntf" data-nation="${n}" type="number" min="0" max="${remaining}" value="${(s.ntf&&s.ntf[n])||0}" ${locked?'disabled title="Locked — already played this turn (§8.3)"':`title="${remaining} of ${allotted} remaining this year, not counting what's already here"`}></div>
+            <div><input class="txtfield f-ntf" data-nation="${n}" type="number" min="0" max="${remaining}" value="${(s.ntf&&s.ntf[n])||0}" ${restricted?'disabled':''} title="${title}"></div>
           </div>`;}).join('')}
         ${s.id===181 ? `
         <div class="fg-label rule-link" data-section="sec-8-1" style="margin-top:10px;">UK Garrison (special, not a BG)</div>
@@ -5980,7 +6018,10 @@ function renderPanel(){
         </select>` : ''}
         <div class="fg-label rule-link" data-section="sec-8-4" style="margin-top:12px;">Submarine Patrol (§8.4)</div>
         ${s.submarinePatrol ? `<div class="stat-line"><span>${s.submarinePatrol.nation} patrol here</span><b>${s.submarinePatrol.count} subs — ${s.submarinePatrol.effect}</b></div>
-        <button class="cr-roll-btn" id="f_resolve_sub_zone_btn" style="margin-top:8px;width:100%;">Resolve Submarine Interdiction / NTF Combat</button>` : `
+        ${s.submarinePatrol.lockedForActivation && !gmMode
+          ? `<div class="winter-note" style="margin-top:8px;">Deploying and resolving are separate activations — this patrol was just deployed this activation. Select a different sector (or reselect this one) once the opposing faction has had a chance to respond — deploying an NTF here to intercept, or acting elsewhere — before resolving.</div>
+             <button class="cr-roll-btn" id="f_resolve_sub_zone_btn" style="margin-top:8px;width:100%;" disabled title="Locked until a separate activation — see note above">Resolve Submarine Interdiction / NTF Combat</button>`
+          : `${s.submarinePatrol.lockedForActivation && gmMode ? `<div class="winter-note" style="margin-top:8px;">GM Mode — deploy/resolve activation split bypassed.</div>` : ''}<button class="cr-roll-btn" id="f_resolve_sub_zone_btn" style="margin-top:8px;width:100%;">Resolve Submarine Interdiction / NTF Combat</button>`}` : `
         <button class="cr-roll-btn" id="f_deploy_sub_btn" style="margin-top:8px;width:100%;">Deploy Submarine Patrol</button>`}
       </div>`;
       })() : ''}
@@ -6215,22 +6256,34 @@ function renderPanel(){
         s.ntf = s.ntf || {};
         s.ntfLocked = s.ntfLocked || {};
         el.querySelectorAll('.f-ntf').forEach(inp=>{
-          if(inp.disabled) return; // already locked this turn — no further changes
           const n = inp.dataset.nation;
           const newVal = parseFloat(inp.value)||0;
           const oldVal = s.ntf[n]||0;
           if(newVal === oldVal) return;
-          if(s.id===181 && newVal>0 && gibraltarClosedFor(n)){
+          if(!canActAsNation(n)){
+            notify(`You're playing as ${playerRole} — can't assign NTFs for ${n}. Reverted.`);
+            return;
+          }
+          // §8.3 locks a commitment against being WITHDRAWN mid-turn, not
+          // against being reinforced — a nation can still add more NTFs to
+          // a sector it already committed to this turn, just can't pull
+          // any back out until Advance Turn. The lock only blocks going
+          // below whatever was already here.
+          if(newVal < oldVal && !gmMode && s.ntfLocked && s.ntfLocked[n]){
+            notify(`${n} already committed NTFs to ${s.name} this turn (§8.3) — can't withdraw below ${oldVal} until Advance Turn. Reverted.`);
+            return;
+          }
+          if(!gmMode && s.id===181 && newVal>0 && gibraltarClosedFor(n)){
             notify('Gibraltar is held by the UK garrison — the strait is closed to Axis navy (§11.1). Reverted.');
             return;
           }
           const allotted = ntfAllotmentFor(n);
           const usedElsewhere = ntfAssignedFor(n) - oldVal;
-          if(usedElsewhere + newVal > allotted){
+          if(!gmMode && usedElsewhere + newVal > allotted){
             notify(`${n} only has ${Math.max(0,allotted-usedElsewhere)} NTF(s) left to assign this year (§11.4) — reverted.`);
             return;
           }
-          if(newVal > oldVal){
+          if(!gmMode && newVal > oldVal){
             const reachable = computeNtfReachableSeaSectors(n);
             if(!reachable.has(s.id)){
               notify(`${s.name} is out of NTF deployment range for ${n} (§11.6 — max ${ntfDeploymentRange(n)} sea sectors from an active RC or Forward Staging Base, at most 1 land crossing along the way). Reverted.`);
@@ -6238,10 +6291,12 @@ function renderPanel(){
             }
           }
           s.ntf[n] = newVal;
-          if(newVal > 0) s.ntfLocked[n] = true; // once played, fixed for the turn (§11.4)
+          if(newVal > 0) s.ntfLocked[n] = true; // once played, can't be withdrawn below this for the turn (§8.3)
           // NTF assignments are public information (visible on the map to both
           // sides), so this is never sealed regardless of where the sector is.
-          logAction(factionForNation(n), 'NTF Deployment', `${n} assigns ${newVal} NTF(s) to ${s.name} (was ${oldVal})`, []);
+          const resultDesc = `${n} assigns ${newVal} NTF(s) to ${s.name} (was ${oldVal})`;
+          logAction(factionForNation(n), 'NTF Deployment', resultDesc, []);
+          notify(resultDesc);
         });
       }
       await saveState(true, true);
@@ -7584,7 +7639,7 @@ const FLAK_BASE = 3;
 function resolveBomberStrike(targetSector, committedBombers){
   const targetNation = targetSector.occupier || targetSector.owner;
   const rawFighterForce = (dashboards.Axis.airForces[targetNation] && dashboards.Axis.airForces[targetNation].fighterDefense) || 0;
-  if(WEATHER_BLOCKS_STRATEGIC_MOVEMENT.has(targetSector.weather)){
+  if(!gmMode && WEATHER_BLOCKS_STRATEGIC_MOVEMENT.has(targetSector.weather)){
     return {blocked:true, reason:`Weather (${targetSector.weather}) at ${targetSector.name} grounds the mission — no launch attempted, no losses either side.`};
   }
   const rcCount = Math.max(1, activeRcCount(targetNation));
@@ -7673,15 +7728,16 @@ function openBomberStrikeModal(sector){
     const n = document.getElementById('bomber_nation').value;
     const af = dashboards.Allied.airForces[n];
     const max = Math.max(0, ((af&&af.bomberForce)||0) - ((af&&af.committedThisTurn)||0));
-    const commit = Math.max(1, Math.min(max, parseInt(document.getElementById('bomber_commit').value)||0));
-    if(commit<=0 || max<=0){ notify('No uncommitted Bomber Force available this turn.'); return; }
+    const typedVal = parseInt(document.getElementById('bomber_commit').value)||0;
+    const commit = gmMode ? Math.max(1, typedVal) : Math.max(1, Math.min(max, typedVal));
+    if(!gmMode && (commit<=0 || max<=0)){ notify('No uncommitted Bomber Force available this turn.'); return; }
     af.committedThisTurn = (af.committedThisTurn||0) + commit;
     const r = resolveBomberStrike(sector, commit);
     if(r.blocked){
-      logAction('Allied', 'Strategic Bombing', `${n} attempts a strike on ${sector.name} — ${r.reason}`, [sector]);
+      const blockedDesc = `${n} attempts a strike on ${sector.name} — ${r.reason}`;
+      logAction('Allied', 'Strategic Bombing', blockedDesc, [sector]);
       await saveState(true, true);
-      closeModal();
-      notify(r.reason);
+      openModal('Strategic Bombing — Mission Grounded', `<div class="winter-note">${blockedDesc}</div>`);
       return;
     }
     af.bomberForce = Math.max(0, af.bomberForce - r.bomberLosses);
@@ -7695,10 +7751,14 @@ function openBomberStrikeModal(sector){
     } else {
       outcomeText = 'Mission failed — fighters turned the raid back, no RC damage.';
     }
-    logAction('Allied', 'Strategic Bombing', `${n} strikes ${sector.name} (${r.targetNation}): ${commit} bombers vs ${r.rawFighterForce} total Fighter Defense (${r.fighterForce.toFixed(1)} effective — ${r.rcCount} active RCs, ${r.posture} posture; ${Math.round(r.successChance*100)}% success chance) — ${r.success?'SUCCESS':'FAILED'}. ${n} loses ${r.bomberLosses} bombers (now ${af.bomberForce}); ${r.targetNation} loses ${r.fighterLosses} fighters (now ${defenderAf?defenderAf.fighterDefense:0}). ${outcomeText}`, [sector]);
+    // Built once, used verbatim for both the action log and the result
+    // popup below — the two should never be able to drift out of sync,
+    // saying slightly different things about the same strike.
+    const resultDesc = `${n} strikes ${sector.name} (${r.targetNation}): ${commit} bombers vs ${r.rawFighterForce} total Fighter Defense (${r.fighterForce.toFixed(1)} effective — ${r.rcCount} active RCs, ${r.posture} posture; ${Math.round(r.successChance*100)}% success chance) — ${r.success?'SUCCESS':'FAILED'}. ${n} loses ${r.bomberLosses} bombers (now ${af.bomberForce}); ${r.targetNation} loses ${r.fighterLosses} fighters (now ${defenderAf?defenderAf.fighterDefense:0}). ${outcomeText}`;
+    logAction('Allied', 'Strategic Bombing', resultDesc, [sector]);
     await saveState(true, true);
     render();
-    closeModal();
+    openModal(`Strategic Bombing — ${r.success ? 'Success' : 'Failed'}`, `<div class="winter-note">${resultDesc}</div>`);
   });
 }
 
@@ -7717,10 +7777,10 @@ function submarineTargetInRange(targetSector, nation){
   return sectorHopDistance(home.id, targetSector.id, SUBMARINE_RANGE) !== null;
 }
 function openSubmarineDeployModal(sector){
-  const sources = ['Germany','USA'].filter(n => (dashboards[factionForNation(n)].submarineFleet[n]||0) > 0);
-  const inRangeSources = sources.filter(n=>submarineTargetInRange(sector, n));
+  const sources = (gmMode ? ['Germany','USA'] : ['Germany','USA'].filter(n => (dashboards[factionForNation(n)].submarineFleet[n]||0) > 0)).filter(canActAsNation);
+  const inRangeSources = gmMode ? sources : sources.filter(n=>submarineTargetInRange(sector, n));
   if(!inRangeSources.length){
-    openModal('Submarine Patrol', `<div class="winter-note">No nation with an available, in-range Submarine Fleet (§${SUBMARINE_RANGE}-sector range from home capital). Germany and USA are the only nations tracked (§10.1) — fleet grows automatically each Winter.</div>`);
+    openModal('Submarine Patrol', `<div class="winter-note">No nation with an available, in-range Submarine Fleet (§${SUBMARINE_RANGE}-sector range from home capital) that you're playing as. Germany and USA are the only nations tracked (§10.1) — fleet grows automatically each Winter.</div>`);
     return;
   }
   openModal(`Submarine Patrol — ${sector.name}`, `
@@ -7759,28 +7819,40 @@ function openSubmarineDeployModal(sector){
   const updateMax = () => {
     const n = document.getElementById('sub_nation').value;
     const max = dashboards[factionForNation(n)].submarineFleet[n]||0;
-    document.getElementById('sub_commit_max').textContent = `${n} Submarine Fleet available: ${max}`;
-    document.getElementById('sub_commit').max = max;
+    document.getElementById('sub_commit_max').textContent = gmMode ? `${n} Submarine Fleet available: ${max} (GM Mode — commitment cap bypassed)` : `${n} Submarine Fleet available: ${max}`;
+    if(!gmMode) document.getElementById('sub_commit').max = max;
   };
   document.getElementById('sub_nation').addEventListener('change', updateMax);
   updateMax();
   document.getElementById('sub_deploy_go').addEventListener('click', async ()=>{
     const n = document.getElementById('sub_nation').value;
+    if(!canActAsNation(n)){ notify(`You're playing as ${playerRole} — can't deploy submarines for ${n}.`); return; }
     const fac = factionForNation(n);
     const max = dashboards[fac].submarineFleet[n]||0;
-    const commit = Math.max(1, Math.min(max, parseInt(document.getElementById('sub_commit').value)||0));
+    const typedVal = parseInt(document.getElementById('sub_commit').value)||0;
+    const commit = gmMode ? Math.max(1, typedVal) : Math.max(1, Math.min(max, typedVal));
     const effect = document.getElementById('sub_effect').value;
-    if(commit<=0 || max<=0){ notify('No Submarine Fleet available to commit.'); return; }
-    sector.submarinePatrol = {nation:n, count:commit, effect, turn:`${clock.season} ${clock.year}`};
+    if(!gmMode && (commit<=0 || max<=0)){ notify('No Submarine Fleet available to commit.'); return; }
+    // lockedForActivation: deploying and resolving a patrol are two
+    // separate activations, not one — the whole point of the NTF
+    // counter-attack mechanic is giving the opposing faction a real
+    // window to respond (deploy an NTF here to intercept, or do
+    // something else entirely) before the patrol can be resolved.
+    // Cleared the next time the player navigates to select a sector
+    // (selectSector) rather than the render() called as a side-effect
+    // of this very deployment, so it can't be immediately bypassed by
+    // clicking Resolve in the same breath as Deploy.
+    sector.submarinePatrol = {nation:n, count:commit, effect, turn:`${clock.season} ${clock.year}`, lockedForActivation:true};
     // The committed portion leaves the standing fleet count while deployed
     // — not lost, just temporarily out on patrol and unavailable for a
     // second, separate deployment this same turn until this one resolves
     // and any survivors return.
-    dashboards[fac].submarineFleet[n] = max - commit;
-    logAction(fac, 'Submarine Warfare', `${n} deploys ${commit} submarines to ${sector.name} — ${effect} (§8.4)`, [sector]);
+    dashboards[fac].submarineFleet[n] = Math.max(0, max - commit);
+    const resultDesc = `${n} deploys ${commit} submarines to ${sector.name} — ${effect} (§8.4)`;
+    logAction(fac, 'Submarine Warfare', resultDesc, [sector]);
     await saveState(true, true);
     render();
-    closeModal();
+    openModal('Submarine Warfare — Deployed', `<div class="winter-note">${resultDesc}</div>`);
   });
 }
 // Resolves whichever applies: a counter-attack if an opposing-faction NTF
@@ -7806,17 +7878,23 @@ function autoResolvePendingSubmarinePatrols(){
 function resolveSubmarineSeaZone(sector, auto){
   const patrol = sector.submarinePatrol;
   if(!patrol){ if(!auto) notify('No submarine patrol currently deployed here.'); return; }
+  if(!auto && !gmMode && patrol.lockedForActivation){
+    notify('Deploying and resolving are separate activations (§8.4) — select a different sector and come back once the opposing faction has had a chance to respond.');
+    return;
+  }
   const patrolFaction = factionForNation(patrol.nation);
   const enemyNtfCount = Object.entries(sector.ntf||{}).reduce((sum,[n,c])=>
     factionForNation(n)!==patrolFaction ? sum+c : sum, 0);
   if(enemyNtfCount > 0){
     const subLosses = Math.min(patrol.count, Math.round(patrol.count*0.2) + enemyNtfCount);
     const survivors = patrol.count - subLosses;
-    logAction(patrolFaction, 'Submarine Warfare', `Counter-attack at ${sector.name}: ${enemyNtfCount} enemy NTF ambush ${patrol.nation}'s ${patrol.count}-submarine patrol — ${subLosses} lost, ${survivors} survive.`, [sector]);
+    const resultDesc = `Counter-attack at ${sector.name}: ${enemyNtfCount} enemy NTF ambush ${patrol.nation}'s ${patrol.count}-submarine patrol — ${subLosses} lost, ${survivors} survive.`;
+    logAction(patrolFaction, 'Submarine Warfare', resultDesc, [sector]);
     // Survivors return to the standing fleet (they left it entirely at
     // deployment, not just conceptually) — losses simply don't return.
     dashboards[patrolFaction].submarineFleet[patrol.nation] = (dashboards[patrolFaction].submarineFleet[patrol.nation]||0) + survivors;
     delete sector.submarinePatrol;
+    if(!auto) openModal('Submarine Warfare — Counter-Attack', `<div class="winter-note">${resultDesc}</div>`);
   } else {
     let effectText;
     if(patrol.effect==='Convoy Hunting'){
@@ -7852,10 +7930,12 @@ function resolveSubmarineSeaZone(sector, auto){
     } else {
       effectText = `${patrol.effect} in effect at ${sector.name} — apply its Interdiction/convoy consequences per §8.4 where relevant elsewhere on the map.`;
     }
-    logAction(patrolFaction, 'Submarine Warfare', `${patrol.nation}'s patrol at ${sector.name} resolves uncontested: ${patrol.effect}. ${effectText}`, [sector]);
+    const resultDesc = `${patrol.nation}'s patrol at ${sector.name} resolves uncontested: ${patrol.effect}. ${effectText}`;
+    logAction(patrolFaction, 'Submarine Warfare', resultDesc, [sector]);
     // Uncontested — the full committed force returns to the standing fleet.
     dashboards[patrolFaction].submarineFleet[patrol.nation] = (dashboards[patrolFaction].submarineFleet[patrol.nation]||0) + patrol.count;
     delete sector.submarinePatrol;
+    if(!auto) openModal('Submarine Warfare — Resolved', `<div class="winter-note">${resultDesc}</div>`);
   }
   if(!auto){ saveState(true, true); render(); }
 }
@@ -8564,142 +8644,131 @@ const BOMBING_BASING = {
     return false;
   }},
 };
+// §8.5 Strategic Bombing summary — replaces the old token-based modal
+// entirely (it referenced the STRAT/Fighter-as-per-strike tokens that no
+// longer exist since §8.5 became a standing-force activation, §10.1).
+// Actual strikes are resolved from a target RC's own sector panel
+// (openBomberStrikeModal) — this is a read-only overview: every logged
+// strike so far, and the reinforcement schedule both forces grow from.
 function openStrategicBombingModal(){
-  const axisRCs = sectors.filter(s=>s.rc>0 && factionForNation(s.occupier||s.owner)==='Axis');
-  const html = `
-    <div class="winter-note">§11.3. Pick the target RC's nation, confirm basing, assign STRAT/Fighter tokens, then resolve.</div>
-    <div class="fg-label">Target RC</div>
-    <select id="bomb_target">${axisRCs.map(s=>`<option value="${s.id}">${s.name} (${s.owner==='Germany'||s.occupier==='Germany'?'Germany':s.occupier||s.owner})</option>`).join('')}</select>
-    <div id="bomb_basing_note" class="winter-note"></div>
-    <div class="field-row" style="margin-top:8px;">
-      <div><div class="fg-label">Allied STRAT tokens (USA)</div><input class="txtfield" id="bomb_strat_usa" type="number" value="0"></div>
-      <div><div class="fg-label">Allied STRAT tokens (UK)</div><input class="txtfield" id="bomb_strat_uk" type="number" value="0"></div>
-    </div>
-    <div class="field-row" style="margin-top:8px;">
-      <div><div class="fg-label">Allied Fighter tokens (escort)</div><input class="txtfield" id="bomb_fighter_allied" type="number" value="0"></div>
-      <div><div class="fg-label">Axis Fighter tokens (defend)</div><input class="txtfield" id="bomb_fighter_axis" type="number" value="0"></div>
-    </div>
-    <button class="cr-roll-btn" id="bomb_resolve_btn" style="margin-top:10px;">Resolve Strike</button>
-    <div id="bomb_result"></div>
-  `;
-  openModal('Strategic Bombing (§11.3)', html);
-  const targetSel = document.getElementById('bomb_target');
-  const updateBasing = ()=>{
-    const s = byId[parseInt(targetSel.value)];
-    const owner = (s.occupier==='Germany'||s.owner==='Germany') ? 'Germany' : (s.occupier==='Italy'||s.owner==='Italy') ? 'Italy' : 'Japan';
-    const basing = BOMBING_BASING[owner];
-    const ok = basing.check(s.id);
-    document.getElementById('bomb_basing_note').innerHTML = `Basing requirement for ${owner}: hold ${basing.name} — <b class="${ok?'pill-ok':'pill-over'}">${ok?'satisfied':'NOT satisfied'}</b>.`;
-  };
-  targetSel.addEventListener('change', updateBasing);
-  updateBasing();
-
-  document.getElementById('bomb_resolve_btn').addEventListener('click', async ()=>{
-    const s = byId[parseInt(targetSel.value)];
-    const owner = (s.occupier==='Germany'||s.owner==='Germany') ? 'Germany' : (s.occupier==='Italy'||s.owner==='Italy') ? 'Italy' : 'Japan';
-    const basing = BOMBING_BASING[owner];
-    if(!basing.check(s.id)){ notify(`Basing requirement not met — Allies must hold ${basing.name}.`); return; }
-    const stratUsa = parseInt(document.getElementById('bomb_strat_usa').value)||0;
-    const stratUk = parseInt(document.getElementById('bomb_strat_uk').value)||0;
-    const totalStrat = stratUsa + stratUk;
-    const fighterAllied = parseInt(document.getElementById('bomb_fighter_allied').value)||0;
-    const fighterAxis = parseInt(document.getElementById('bomb_fighter_axis').value)||0;
-    const proximityFuze = dashboards.Allied.doctrine.USA.active==="Proximity Fuze & Massed Logistics";
-    const cancelledAxisFighters = Math.min(fighterAxis, fighterAllied * (proximityFuze?2:1));
-    const survivingAxisFighters = fighterAxis - cancelledAxisFighters;
-    const survivingStrat = Math.max(0, totalStrat - survivingAxisFighters);
-    const success = survivingStrat >= 1;
-    let outcomeText;
-    if(success){
-      if(s.status==='ACTIVE'){ s.status='Damaged'; outcomeText = `${s.name} is now Damaged.`; }
-      else if(s.status==='Damaged'){ s.status='Destroyed'; outcomeText = `${s.name} is now Destroyed.`; }
-      else { outcomeText = `${s.name} is already Destroyed — no further effect.`; }
-    } else {
-      outcomeText = 'Strike failed — no surviving bombers.';
-    }
-    if(stratUsa) { dashboards.Allied.tokens.USA = dashboards.Allied.tokens.USA||{}; dashboards.Allied.tokens.USA.STRAT = Math.max(0,(dashboards.Allied.tokens.USA.STRAT||0)-stratUsa); }
-    if(stratUk) { dashboards.Allied.tokens.UK = dashboards.Allied.tokens.UK||{}; dashboards.Allied.tokens.UK.STRAT = Math.max(0,(dashboards.Allied.tokens.UK.STRAT||0)-stratUk); }
-    if(fighterAllied) { dashboards.Allied.tokens.UK = dashboards.Allied.tokens.UK||{}; dashboards.Allied.tokens.UK.Fighter = Math.max(0,(dashboards.Allied.tokens.UK.Fighter||0)-fighterAllied); }
-    if(fighterAxis) { dashboards.Axis.tokens[owner] = dashboards.Axis.tokens[owner]||{}; dashboards.Axis.tokens[owner].Fighter = Math.max(0,(dashboards.Axis.tokens[owner].Fighter||0)-fighterAxis); }
-    document.getElementById('bomb_result').innerHTML = `<div class="cr-results">
-      <div class="stat-line"><span>Total STRAT</span><b>${totalStrat}</b></div>
-      <div class="stat-line"><span>Axis Fighters surviving escort</span><b>${survivingAxisFighters}</b></div>
-      <div class="stat-line"><span>Surviving bombers</span><b>${survivingStrat}</b></div>
-      <div class="winter-note">${outcomeText}</div>
+  const viewer = playerRole || 'Observer';
+  const entries = actionLog.filter(e=>e.type==='Strategic Bombing');
+  const rows = entries.length ? entries.map(e=>{
+    const canSeeFull = viewer==='Observer' || e.faction===viewer || e.revealed;
+    const desc = canSeeFull ? e.description : `A ${e.faction} Battle Group took a Sealed action (§5.2) — hidden until it moves adjacent to the enemy, is targeted, or fights.`;
+    return `<div class="log-entry">
+      <div class="log-turn">${e.turn} · ${e.faction}${e.sealed && !canSeeFull ? ' · SEALED' : ''}</div>
+      <div class="log-sides">${desc}</div>
     </div>`;
-    logAction('Allied', 'Strategic Bombing', `Allies strike ${s.name} (${owner}) — ${outcomeText}`, []);
-    await saveState(true, true);
-    render();
-  });
+  }).join('') : `<div class="winter-note">No strikes logged yet this campaign.</div>`;
+  const bomberRows = ['USA','UK'].map(n=>`<tr><td>${n}</td>${[1941,1942,1943,1944,1945].map(y=>`<td>${BOMBER_FORCE_GROWTH[n][y]}</td>`).join('')}<td><b>${(dashboards.Allied.airForces[n]&&dashboards.Allied.airForces[n].bomberForce)||0}</b></td></tr>`).join('');
+  const fighterRows = ['Germany','Japan'].map(n=>`<tr><td>${n}</td>${[1941,1942,1943,1944,1945].map(y=>`<td>${FIGHTER_DEFENSE_GROWTH[n][y]}</td>`).join('')}<td><b>${(dashboards.Axis.airForces[n]&&dashboards.Axis.airForces[n].fighterDefense)||0}</b></td></tr>`).join('');
+  openModal('Strategic Bombing (§8.5)', `
+    <div class="winter-note">Strikes are resolved from a target RC's own sector panel — this is a running summary of what's happened so far, and the reinforcement schedule both standing forces grow from each Winter.</div>
+    <div class="cr-side-title" style="margin-top:4px;">Bomber Force reinforcement schedule (§8.5) — starting value, then +growth per year</div>
+    <table class="econ-table"><thead><tr><th>Nation</th><th>1941</th><th>1942</th><th>1943</th><th>1944</th><th>1945</th><th>Current</th></tr></thead><tbody>${bomberRows}</tbody></table>
+    <div class="cr-side-title" style="margin-top:14px;">Fighter Defense Force reinforcement schedule (§8.5)</div>
+    <table class="econ-table"><thead><tr><th>Nation</th><th>1941</th><th>1942</th><th>1943</th><th>1944</th><th>1945</th><th>Current (raw)</th></tr></thead><tbody>${fighterRows}</tbody></table>
+    <div class="cr-side-title" style="margin-top:14px;">Strike log (${entries.length})</div>
+    ${rows}
+  `);
 }
 
 // ---------- §11.5 Submarine Warfare ----------
+// §8.4 Submarine Warfare summary — replaces the old token-based modal
+// entirely (it referenced the Submarine-token inventory that no longer
+// exists since §8.4 became a standing-fleet activation, §10.1). Actual
+// patrols are deployed and resolved from a sea sector's own panel
+// (openSubmarineDeployModal / resolveSubmarineSeaZone) — this is a
+// read-only overview: every logged patrol/counter-attack so far, and the
+// reinforcement schedule the fleet grows from.
 function openSubmarineWarfareModal(){
-  const oceanSectors = sectors.filter(s=>s.type==='Sea');
-  const html = `
-    <div class="winter-note">§11.5 Convoy Hunting: spend a Submarine token in an ocean sector with no enemy NTF present, adjacent to an enemy RC — that RC becomes Damaged (no effect if already Damaged).</div>
-    <div class="fg-label">Submarine's nation</div>
-    <select id="sub_nation">${['Germany','Japan','USA','UK'].map(n=>`<option>${n}</option>`).join('')}</select>
-    <div class="fg-label">Ocean sector</div>
-    <select id="sub_sector">${oceanSectors.map(s=>`<option value="${s.id}">${s.name}</option>`).join('')}</select>
-    <button class="cr-roll-btn" id="sub_resolve_btn" style="margin-top:10px;">Spend Token &amp; Resolve Convoy Hunting</button>
-    <div id="sub_result"></div>
-  `;
-  openModal('Submarine Warfare (§11.5)', html);
-  document.getElementById('sub_resolve_btn').addEventListener('click', async ()=>{
-    const nation = document.getElementById('sub_nation').value;
-    const fac = factionForNation(nation);
-    const sea = byId[parseInt(document.getElementById('sub_sector').value)];
-    const inv = (dashboards[fac].tokens[nation]||{}).Submarine || 0;
-    if(inv < 1){ notify(`${nation} has no Submarine tokens in inventory.`); return; }
-    const enemyNtfPresent = NTF_NATION_ORDER.some(n=>factionForNation(n)!==fac && (sea.ntf&&sea.ntf[n]>0));
-    if(enemyNtfPresent){
-      document.getElementById('sub_result').innerHTML = `<div class="winter-note">Enemy NTF present in ${sea.name} — Convoy Hunting has no effect this turn. Token still spent.</div>`;
-    } else {
-      const targetRC = sea.connections.map(cid=>byId[cid]).find(s=>s && s.rc>0 && factionForNation(s.occupier||s.owner)!==fac);
-      if(!targetRC){
-        document.getElementById('sub_result').innerHTML = `<div class="winter-note">No enemy RC adjacent to ${sea.name} — no effect. Token still spent.</div>`;
-      } else if(targetRC.status==='ACTIVE'){
-        targetRC.status = 'Damaged';
-        document.getElementById('sub_result').innerHTML = `<div class="winter-note">${targetRC.name} is now Damaged (Convoy Hunting).</div>`;
-        logAction(fac, 'Submarine Warfare', `${nation} Convoy Hunting in ${sea.name} damages ${targetRC.name}`, []);
-      } else {
-        document.getElementById('sub_result').innerHTML = `<div class="winter-note">${targetRC.name} is already ${targetRC.status} — no further effect.</div>`;
-      }
-    }
-    dashboards[fac].tokens[nation].Submarine = inv - 1;
-    await saveState(true, true);
-    render();
-  });
+  const viewer = playerRole || 'Observer';
+  const entries = actionLog.filter(e=>e.type==='Submarine Warfare');
+  const rows = entries.length ? entries.map(e=>{
+    const canSeeFull = viewer==='Observer' || e.faction===viewer || e.revealed;
+    const desc = canSeeFull ? e.description : `A ${e.faction} Battle Group took a Sealed action (§5.2) — hidden until it moves adjacent to the enemy, is targeted, or fights.`;
+    return `<div class="log-entry">
+      <div class="log-turn">${e.turn} · ${e.faction}${e.sealed && !canSeeFull ? ' · SEALED' : ''}</div>
+      <div class="log-sides">${desc}</div>
+    </div>`;
+  }).join('') : `<div class="winter-note">No patrols logged yet this campaign.</div>`;
+  const fleetRows = ['Germany','USA'].map(n=>`<tr><td>${n}</td>${[1941,1942,1943,1944,1945].map(y=>`<td>${SUBMARINE_FLEET_GROWTH[n][y]}</td>`).join('')}<td><b>${dashboards[factionForNation(n)].submarineFleet[n]||0}</b></td></tr>`).join('');
+  openModal('Submarine Warfare (§8.4)', `
+    <div class="winter-note">Patrols are deployed and resolved from a sea sector's own panel — this is a running summary of what's happened so far, and the reinforcement schedule the Submarine Fleet grows from each Winter.</div>
+    <div class="cr-side-title" style="margin-top:4px;">Submarine Fleet reinforcement schedule (§8.4) — starting value, then +growth per year</div>
+    <table class="econ-table"><thead><tr><th>Nation</th><th>1941</th><th>1942</th><th>1943</th><th>1944</th><th>1945</th><th>Current</th></tr></thead><tbody>${fleetRows}</tbody></table>
+    <div class="cr-side-title" style="margin-top:14px;">Patrol log (${entries.length})</div>
+    ${rows}
+  `);
 }
 
 // §1 Sequence of Play checklist — a per-turn reminder, not enforcement.
+// §7.2 Alternating Movement: each turn is a sequence of individual
+// activations (move a BG, assign an NTF, deploy or resolve a submarine
+// patrol, strike with the Bomber Force, etc.), not a fixed phase order —
+// so rather than a generic phase checklist, this shows what's actually
+// available to spend an activation on RIGHT NOW, for whichever faction
+// the viewer is playing as, with live counts pulled from the same state
+// every other panel reads. Read-only — nothing here is itself an action;
+// each item points to where you'd actually take it (a sector's own
+// panel, in every case).
+function computeAvailableActivations(faction){
+  const nations = faction==='Axis' ? ['Germany','Japan','Italy'] : ['USA','UK','USSR','China'];
+  const thisTurn = `${clock.season} ${clock.year}`;
+  const items = [];
+
+  const unmoved = bgs.filter(b=>factionForNation(b.nation)===faction && !b.movedThisTurn && !b.shattered && !b.emergencyReserve && !b.isKampfgruppe).length;
+  items.push({label:'Move a Battle Group', ref:'§7.2', detail:`${unmoved} not yet moved this turn`, sectionId:'sec-7-2'});
+
+  nations.filter(n=>NTF_ALLOTMENT[n]).forEach(n=>{
+    const allotted = ntfAllotmentFor(n);
+    const assigned = ntfAssignedFor(n);
+    if(allotted>0 || assigned>0) items.push({label:`Assign NTFs — ${n}`, ref:'§8.3', detail:`${Math.max(0,allotted-assigned)} of ${allotted} remaining this year`, sectionId:'sec-8-3'});
+  });
+
+  nations.filter(n=>dashboards[faction].submarineFleet[n]!==undefined).forEach(n=>{
+    const avail = dashboards[faction].submarineFleet[n]||0;
+    items.push({label:`Deploy Submarine Patrol — ${n}`, ref:'§8.4', detail:`${avail} submarine(s) available`, sectionId:'sec-8-4'});
+  });
+
+  const resolvable = sectors.filter(s=>s.submarinePatrol && factionForNation(s.submarinePatrol.nation)===faction && !s.submarinePatrol.lockedForActivation).length;
+  const justDeployed = sectors.filter(s=>s.submarinePatrol && factionForNation(s.submarinePatrol.nation)===faction && s.submarinePatrol.lockedForActivation).length;
+  if(resolvable>0 || justDeployed>0) items.push({label:'Resolve Submarine Patrol', ref:'§8.4', detail:`${resolvable} ready to resolve${justDeployed>0 ? `, ${justDeployed} just deployed (needs a separate activation first)` : ''}`, sectionId:'sec-8-4'});
+
+  nations.filter(n=>dashboards[faction].airForces[n] && dashboards[faction].airForces[n].bomberForce!==undefined).forEach(n=>{
+    const af = dashboards[faction].airForces[n];
+    const avail = Math.max(0, (af.bomberForce||0) - (af.committedThisTurn||0));
+    items.push({label:`Resolve Bomber Strike Mission — ${n}`, ref:'§8.5', detail:`${avail} bomber(s) available this turn`, sectionId:'sec-8-5'});
+  });
+
+  if(faction==='Allied'){
+    const eligibleReserveSectors = sectors.filter(s=>EMERGENCY_RESERVE_SECTORS.has(s.name) && !s.emergencyReserveUsed && emergencyReserveTriggerMet(s));
+    if(eligibleReserveSectors.length) items.push({label:'Raise Emergency Soviet Reserves', ref:'§11.4', detail:`Triggered at: ${eligibleReserveSectors.map(s=>s.name).join(', ')}`, sectionId:'sec-11-4'});
+  }
+
+  const reconCount = dashboards[faction].reconstitution.filter(r=>r.eligibleTurn===thisTurn).length;
+  if(reconCount>0) items.push({label:'Reconstitute a destroyed Battle Group', ref:'§3.7', detail:`${reconCount} opportunity(ies) — this turn only, from ${faction}'s dashboard`, sectionId:'sec-3-7'});
+
+  return items;
+}
 function openSequenceChecklist(){
   const thisTurn = `${clock.season} ${clock.year}`;
-  if(sequenceChecklist.turn !== thisTurn){
-    sequenceChecklist = {turn:thisTurn, naval:false, bombing:false, movement:false, partisan:false};
-  }
-  const items = [
-    {key:'naval', label:'Naval Assignment — NTFs may be assigned any time during Movement (§1, §11.4)'},
-    {key:'bombing', label:'Strategic Bombing declared, if any (§11.3)'},
-    {key:'movement', label:'Alternating Movement complete — both players passed in succession (§7.2)'},
-    {key:'partisan', label:'Partisan Activation — happens automatically on Advance Turn (§1)'},
-  ];
-  const rows = items.map(it=>`
-    <label style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--panel-border);cursor:pointer;">
-      <input type="checkbox" class="seq-check" data-key="${it.key}" ${sequenceChecklist[it.key]?'checked':''}>
-      <span style="${sequenceChecklist[it.key]?'color:var(--ink-faint);text-decoration:line-through;':''}">${it.label}</span>
-    </label>`).join('');
-  openModal(`Sequence of Play — ${thisTurn}`, `
-    <div class="winter-note">A reminder checklist, not an enforced gate — nothing here blocks you from advancing the turn. Resets automatically each turn.</div>
-    ${rows}
+  const viewer = playerRole || 'Observer';
+  const factions = viewer==='Observer' ? ['Axis','Allied'] : [viewer];
+  const body = factions.map(fac=>{
+    const items = computeAvailableActivations(fac);
+    const rows = items.length ? items.map(it=>`
+      <div class="stat-line rule-link" data-section="${it.sectionId}" style="cursor:pointer;padding:6px 0;border-bottom:1px solid var(--panel-border);">
+        <span>${it.label} <span style="color:var(--ink-faint);">(${it.ref})</span></span>
+        <b style="font-weight:400;color:var(--ink-dim);">${it.detail}</b>
+      </div>`).join('') : `<div class="winter-note">Nothing currently available to activate for ${fac}.</div>`;
+    return `<div class="cr-side-title" style="margin-top:${fac==='Axis'&&factions.length>1?'0':'14px'};">${fac}</div>${rows}`;
+  }).join('');
+  openModal(`Available Activations — ${thisTurn}`, `
+    <div class="winter-note">§7.2 — Alternating Movement is a sequence of individual activations, not a fixed phase order. This shows what's actually available right now, from live state; it doesn't take any action itself — each item's own control lives on the relevant sector's panel. Read-only, refreshes each time you open it.</div>
+    ${body}
   `);
-  document.querySelectorAll('.seq-check').forEach(cb=>{
-    cb.addEventListener('change', ()=>{
-      sequenceChecklist[cb.dataset.key] = cb.checked;
-      openSequenceChecklist();
-    });
-  });
 }
 
 function openMinorNationsModal(){
@@ -10362,6 +10431,14 @@ document.getElementById('toggleEditPositions').addEventListener('click', ()=>{
   render();
 });
 
+document.getElementById('toggleGmMode').addEventListener('click', ()=>{
+  gmMode = !gmMode;
+  document.getElementById('toggleGmMode').textContent = 'GAME MASTER MODE: ' + (gmMode?'ON':'OFF');
+  if(gmMode) notify('Game Master Mode is ON — bypasses NTF range/allotment/decrease-lock checks, submarine fleet availability and the deploy/resolve activation split, bomber commitment caps, weather grounding, reconstitution\'s below-cap check, and undo\'s faction restriction. Every change still saves and syncs normally, and Fog of War visibility is unaffected — this is about being able to act, not about seeing hidden information. Turn this off when you\'re done correcting or overriding something.');
+  render();
+  if(selectedId!=null) renderPanel();
+});
+
 document.getElementById('createNewSector').addEventListener('click', openCreateSectorModal);
 
 document.getElementById('resetNodePositions').addEventListener('click', async ()=>{
@@ -10378,7 +10455,7 @@ document.getElementById('resetNodePositions').addEventListener('click', async ()
 
 document.getElementById('undoLastAction').addEventListener('click', async ()=>{
   const viewer = playerRole || 'Observer';
-  if(!undoSnapshot || (viewer!=='Observer' && viewer!==undoFaction)) return;
+  if(!undoSnapshot || (!gmMode && viewer!=='Observer' && viewer!==undoFaction)) return;
   const ok = await confirmDialog(`Undo ${undoFaction}'s last saved action? This restores the campaign to how it looked just before that action, for everyone. Cannot be undone itself.`);
   if(!ok) return;
   const restored = undoSnapshot;
