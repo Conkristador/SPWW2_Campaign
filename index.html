@@ -668,17 +668,18 @@ Recalculate at the end of any movement phase in which control or tracing
 could have changed.</p>
 <ul>
 <li><strong>An RC that cannot trace to its controller’s capital becomes
-Damaged</strong> — same effects as a successful strategic bombing strike
-(§8.5): no Support Token next Winter, and doesn’t count toward the Cap
-Audit RC total (§2.1) while cut off.</li>
-<li><strong>This kind of Damaged clears automatically</strong>, no token
-cost, the instant the trace is reconnected. Bomb- or submarine-inflicted
+Isolated</strong> — no Support Token next Winter, and doesn’t count
+toward the Cap Audit RC total (§2.1) while cut off. A deliberately
+distinct status from Damaged/Destroyed (§8.5) — same practical effect,
+different cause and different recovery.</li>
+<li><strong>Isolated clears automatically</strong>, no token cost, the
+instant the trace is reconnected. Bomb- or submarine-inflicted
 Damaged/Destroyed status still requires the normal token repair
 (§8.5).</li>
 <li>If an RC is already Damaged or Destroyed from bombing or submarines
-when it also loses its capital trace, the worse status applies;
-regaining the trace only clears the isolation cause, not bomb or
-submarine damage.</li>
+when it also loses its capital trace, both statuses apply simultaneously
+— regaining the trace only clears Isolated, not the bomb or submarine
+damage underneath it.</li>
 </ul>
 <h2 id="sec-3">3. Force Structure &amp; Experience</h2>
 <h3 id="sec-3-1">3.1. Battle Group Types</h3>
@@ -765,6 +766,13 @@ disbands; it never retreats.</li>
 province and the defender lacks RCs to support its BGs, excess BGs may
 convert to full-strength MIL instead of taking attrition. They lose all
 special status; experience resets to 40.</li>
+<li><strong>Sustained Chinese resistance (China only).</strong> During
+Partisan Activation (§4.3), if a Chinese sector’s Partisan Level is
+already at its cap (4) and would have increased again this turn — no
+Axis CAV present to block it (§3.4) — that continued pressure spawns a
+Chinese MIL BG in the sector, on top of the Level’s own ongoing effects.
+Not a one-time event: recurs every turn the condition persists, since
+MIL BGs don’t count against the BG Cap.</li>
 </ul>
 <h3 id="sec-3-4">3.4. Cavalry</h3>
 <p>Cavalry BGs have the following capabilities:</p>
@@ -886,6 +894,17 @@ tactical budget (temporary):</p>
 <li>Not engaged this turn: <strong>+500 points</strong>.</li>
 <li>Not engaged this turn <strong>and</strong> in a home province:
 <strong>+1,000 points</strong>.</li>
+<li><strong>Reconstitution.</strong> If a BG is destroyed between Winter
+Audits while its faction is currently below its RC-derived BG Cap (§2.1)
+— the loss opened a gap that would otherwise sit empty until the next
+Winter Mobilization — the faction may reconstitute a BG of the
+<strong>same type</strong> at <strong>half strength</strong> (1,250 pts)
+during the very next strategic turn only. Miss that window and the
+opportunity is gone; waiting for the normal Winter Mobilization path
+(any type, full strength) is always available regardless. Deployed under
+the same eligibility as Mobilization (§4.4) — an Owned RC, not
+Damaged/Destroyed/Isolated, currently tracing supply to the
+capital.</li>
 </ul>
 <hr />
 <h1 id="part-ii-sequence-of-play">PART II: SEQUENCE OF PLAY</h1>
@@ -1459,6 +1478,12 @@ own Alternating Movement (§7.2), up to that year’s allotment above. Once
 an NTF is assigned to a sector, that assignment is fixed for the rest of
 the strategic turn — it cannot be reassigned or withdrawn until the next
 turn.</p>
+<p><strong>Naval production supplement.</strong> Beyond the fixed yearly
+table, a nation may spend 3 currently-banked Support Tokens (any
+combination of types) to add +1 NTF for the remainder of that year — a
+way for an economy that’s outperforming its historical allotment to
+invest in extra naval strength. Capped at +2 above the table per year;
+the fixed table itself never changes, this only adds on top of it.</p>
 <ul>
 <li><strong>Sea Control</strong> (only one side present): the other side
 cannot trace supply or move BGs through the sector.</li>
@@ -1470,24 +1495,159 @@ BGs <em>moving</em> through lose <strong>250 points per NTF</strong> of
 the superior side’s margin.</li>
 </ul>
 <h3 id="sec-8-4">8.4. Submarine Warfare</h3>
-<p>Spend a Submarine token during Movement on one of:</p>
+<p>Not token-driven — a standing <strong>Submarine Fleet</strong>,
+tracked per nation (Germany, USA only; no other nation’s WWII submarine
+campaign was significant enough to warrant one), separate from NTFs.
+Reflects real history: Germany’s U-boat arm remained substantial even as
+its surface navy shrank to almost nothing after 1941.</p>
+<p><strong>Starting strength and growth.</strong> The 1941 column is
+each fleet’s starting size at scenario start. Every subsequent year adds
+that year’s growth figure (below) to the fleet’s current size —
+automatic, no purchase, during the Winter Logistics Phase (§4.4).
+Additive, not a reset to a cap: losses taken during the year persist
+into the next one if that year’s growth doesn’t fully cover them.</p>
+<table>
+<thead>
+<tr class="header">
+<th></th>
+<th>1941</th>
+<th>1942</th>
+<th>1943</th>
+<th>1944</th>
+<th>1945</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Germany</td>
+<td>3</td>
+<td>3</td>
+<td>2</td>
+<td>1</td>
+<td>0</td>
+</tr>
+<tr class="even">
+<td>USA</td>
+<td>1</td>
+<td>2</td>
+<td>3</td>
+<td>3</td>
+<td>2</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Deployment is an activation</strong>, spent in place of
+moving a BG during Alternating Movement (§7.2) — not a token spend. A
+player may commit any portion of their current fleet (partial
+commitment, no requirement to go all-in on one activation); the
+committed portion leaves the standing fleet entirely for the rest of
+that turn, freeing it up again only once the patrol resolves. Range:
+<strong>4 sectors</strong> from the deploying nation’s home capital, any
+sector type counted as a hop — tunable, no strong historical anchor for
+the exact figure, proposed as a starting point.</p>
+<p><strong>Effect, chosen at deployment:</strong></p>
 <ul>
-<li><strong>Interdiction</strong> — as Naval Superiority above.</li>
-<li><strong>Convoy Hunting</strong> — in an ocean sector with no enemy
-NTF and adjacent to an enemy RC, that RC becomes Damaged. No effect if
-already Damaged.</li>
+<li><strong>Interdiction</strong> — as Naval Superiority (§8.3) above,
+applied at that sea sector.</li>
+<li><strong>Convoy Hunting</strong> — if no enemy NTF is present and an
+enemy or Neutral RC is adjacent, that RC becomes Damaged. If more than
+one qualifying RC is adjacent, one is selected at random. No effect if
+already Damaged. Hitting a Neutral RC specifically costs Germany a
+standing, cumulative <strong>+0.25 RC</strong> to the USA — same
+mechanism as §12.5’s Neutrality Violation, at half that rule’s
+magnitude, since sinking a ship in passing is a lesser act than invading
+a neutral’s actual territory. No cost for the USA doing the same to
+Germany or Japan; the asymmetry reflects that the USA’s Pacific
+submarine campaign against Japan didn’t carry the same neutral-adjacent
+diplomatic risk that Germany’s Atlantic U-boat war did.</li>
 <li><strong>Convoy Raiding</strong> — if the USA assigns a Lend-Lease
 token (§10.1) to a non-US Allied BG this turn, and the delivery route
 (Arctic to USSR, Atlantic to UK) passes through a sea sector where
-Germany holds Naval Superiority or Sea Control, Germany may spend a
-Submarine token to sink the convoy, cancelling the Lend-Lease token’s
-effect entirely.</li>
+Germany holds Naval Superiority or Sea Control, Germany may deploy a
+submarine patrol there to sink the convoy, cancelling the Lend-Lease
+token’s effect entirely.</li>
 </ul>
+<p><strong>The NTF counter-attack.</strong> A deployed patrol persists
+at its sea sector for the rest of that strategic turn, same duration
+rule as an NTF assignment. If an enemy NTF is <em>subsequently</em>
+deployed to that same sector later in the same turn, it automatically
+ambushes the already-present patrol — anti-submarine forces hunting down
+a patrol whose presence is now known. Losses: 20% of the patrol base,
+plus 1 per NTF committed to the counter-attack, capped at the patrol’s
+own size. Order matters and this is deliberately asymmetric: a patrol
+deployed <em>after</em> an NTF is already sitting there doesn’t trigger
+this (it’s sneaking into contested waters, not being hunted) — only the
+reverse does.</p>
+<p><strong>Resolution.</strong> Whichever applies — the NTF
+counter-attack if an opposing NTF is present, or the patrol’s own chosen
+effect if not — resolves from that sea sector’s own panel. A patrol
+that’s never manually resolved and never ambushed still resolves
+automatically as the uncontested case the instant the strategic turn
+advances; it can never sit deployed indefinitely.</p>
+<p><strong>Stacking with NTF-based Interdiction.</strong> Where both a
+submarine patrol’s own Interdiction effect and an NTF-based Naval
+Superiority margin apply to the same sea sector in the same turn, they
+add together rather than one overriding the other — different threats to
+the same shipping lane compound, they don’t compete.</p>
 <h3 id="sec-8-5">8.5. Strategic Bombing</h3>
-<p>Declared before Movement. Allies assign STRAT tokens to Axis RCs;
-Axis may assign Fighter tokens to defend; Allies may assign Fighter
-tokens to escort.</p>
-<p><strong>Basing requirements:</strong></p>
+<p>Not token-driven either — a player activation, spent in place of
+moving a BG, using two standing forces per side: the Allied
+<strong>Bomber Force</strong> (USA, UK) and the Axis <strong>Fighter
+Defense Force</strong> (Germany, Japan).</p>
+<p><strong>Starting strength and growth</strong>, same shape as the
+Submarine Fleet above — the 1941 column is each force’s starting size at
+scenario start, not a first year of growth; every subsequent year’s
+figure is added automatically each Winter Logistics Phase, on top of
+whatever the force’s current (possibly loss-reduced) size already
+is:</p>
+<table>
+<thead>
+<tr class="header">
+<th></th>
+<th>1941</th>
+<th>1942</th>
+<th>1943</th>
+<th>1944</th>
+<th>1945</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>USA Bomber Force</td>
+<td>1</td>
+<td>2</td>
+<td>4</td>
+<td>5</td>
+<td>3</td>
+</tr>
+<tr class="even">
+<td>UK Bomber Force</td>
+<td>2</td>
+<td>2</td>
+<td>3</td>
+<td>3</td>
+<td>1</td>
+</tr>
+<tr class="odd">
+<td>Germany Fighter Defense</td>
+<td>2</td>
+<td>2</td>
+<td>3</td>
+<td>5</td>
+<td>1</td>
+</tr>
+<tr class="even">
+<td>Japan Fighter Defense</td>
+<td>1</td>
+<td>2</td>
+<td>3</td>
+<td>5</td>
+<td>1</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Basing requirements</strong> (unchanged from the target’s
+controlling nation):</p>
 <ul>
 <li>German RCs — Allies must hold <strong>Southern England</strong></li>
 <li>Italian RCs — Allies must hold <strong>Tunisia</strong></li>
@@ -1495,20 +1655,87 @@ tokens to escort.</p>
 Marianas</strong>, or a Mobile Staging Anchorage (§8.6) within 2 sea
 sectors of the target RC</li>
 </ul>
-<p><strong>Resolution.</strong> Count tokens. Each Allied Fighter
-cancels one Axis Fighter. Each surviving Axis Fighter cancels one STRAT
-token. If at least one bomber survives, the strike succeeds.</p>
-<p><strong>Effects</strong> (same regardless of surviving bomber
-count):</p>
+<p><strong>Range.</strong> Target RC must be within <strong>6
+sectors</strong> of the required basing sector (any sector type counts
+as a hop) — larger than NTF Deployment Range’s 2-sea-sector figure since
+aircraft cover ground surface fleets can’t; tunable, no strong
+historical anchor for the exact number.</p>
+<p><strong>RC diffusion.</strong> Germany and Japan each hold several
+RCs simultaneously; the Allies can mass a strike against any single one
+of them. Rather than the full national Fighter Defense Force defending
+every RC at once, each strike only ever contests against that force
+divided by the defending nation’s current count of active RCs — a nation
+holding 10 RCs with a Fighter Defense Force of 20 has, in effect,
+roughly 2 defending any one of them, not 20. More RCs held means thinner
+coverage everywhere; losing RCs concentrates what defense remains onto
+fewer targets.</p>
+<p><strong>Fighter Defense Posture</strong>, set per nation on the Axis
+dashboard, layered on top of RC diffusion above — a standing strategic
+choice, not a per-engagement one:</p>
 <ul>
-<li>1st hit — <strong>Damaged</strong>: RC generates no Support Token
-next Winter.</li>
-<li>2nd hit — <strong>Destroyed</strong>: RC generates no Support Token
-and no BG next Winter.</li>
+<li><strong>Concentrated</strong> — fewer, larger formations. Lower
+chance any given raid meets defenders at all, but a real punishing loss
+rate on the raids that do run into them.</li>
+<li><strong>Dispersed</strong> (the default) — thin coverage spread
+across every RC. Higher chance of contact, but each contact is a weaker
+formation that inflicts lighter losses.</li>
 </ul>
-<p><strong>Repair</strong> (during the Winter Logistics Phase, §4.4):
-Damaged to Active costs 1 token of any type. Destroyed to Active costs 2
-tokens (one may be spent to step it down to Damaged instead).</p>
+<p><strong>Resolution — an odds-ratio roll, not a deterministic margin
+check.</strong> Compare committed Bomber Force to the target nation’s
+diffused, posture-adjusted Fighter Defense Force, plus a flat baseline
+of <strong>3</strong> representing ground-based flak and AA independent
+of the standing fighter force — applied <strong>automatically</strong>
+the instant a strike resolves, no waiting on the Axis player to respond,
+since defense is standing infrastructure (fighter bases, radar, flak),
+not a per-battle decision. Force size <em>influences</em> the outcome
+rather than dictating it: success chance is bombers ÷ (bombers +
+effective fighters + 3). The flat baseline exists specifically so RC
+diffusion alone can’t push success chance too high for a nation holding
+a lot of territory, and so a nation that’s ever driven its Fighter
+Defense Force to 0 doesn’t thereby guarantee every future strike —
+there’s always some friction from ground defenses even with no standing
+air force left.</p>
+<ul>
+<li><strong>Success:</strong> RC takes Damaged (1st hit) or Destroyed
+(2nd hit). Bombers take a flat <strong>10%</strong> loss. Fighters take
+a loss scaled by how outmatched they were <em>at this specific
+engagement</em> — a ratio of committed bombers to the diffused fighter
+force actually present, capped at 2× — rather than an unbounded margin
+against the nation’s full total. This keeps a single strike from being
+able to wipe out a large share of the whole Fighter Defense Force just
+because RC diffusion made the local defense small; losses stay
+proportional to what was actually there to lose.</li>
+<li><strong>Failure:</strong> no RC damage. Fighters take a flat 10%
+loss. Bombers take the same capped-ratio loss instead, further scaled by
+the defending posture’s loss multiplier (heavier under Concentrated,
+lighter under Dispersed).</li>
+<li><strong>The ratio still matters even when the roll goes the other
+way.</strong> An outnumbered raid that gets lucky and succeeds anyway
+still takes extra bomber losses for how outnumbered it was; a favored
+raid that gets unlucky and fails anyway still inflicts extra fighter
+losses for the fight it put up. Force size shapes both the odds and the
+cost of the outcome, it just doesn’t lock either one in advance, and
+neither side’s losses can run away unboundedly regardless of how
+lopsided the underlying numbers are.</li>
+<li><strong>Weather</strong> (§6.2): Heavy Rain/Snow or Storm/Blizzard
+at the target sector grounds the mission entirely — no launch, no losses
+either side.</li>
+</ul>
+<p><strong>Partial commitment</strong>, same as submarine patrols — a
+player may split their Bomber Force across multiple strikes in one turn
+(each still costing its own activation), as long as the total committed
+across all of that turn’s activations doesn’t exceed the force’s current
+total size.</p>
+<p><strong>Replacing losses.</strong> No purchase decision — the growth
+table above is both “replace losses” and “accept reduced strength” at
+once, depending on how the year went. If growth covers that year’s
+losses, the force is effectively restored; if not, the shortfall carries
+forward as the new baseline.</p>
+<p><strong>Repairing a struck RC</strong> (during the Winter Logistics
+Phase, §4.4) is separate from Bomber/Fighter Force losses above — it’s
+the RC’s own status, not the attacking or defending force. Damaged to
+Active costs 1 token of any type. Destroyed to Active costs 2 tokens
+(one may be spent to step it down to Damaged instead).</p>
 <h3 id="sec-8-6">8.6. NTF Deployment Range</h3>
 <p>All NTFs deployed during Movement must trace a viable line of
 communication back to an active RC controlled by that same nation — not
@@ -1738,52 +1965,16 @@ of one enemy BG it’s used against (§5.1).</td>
 the FoW Tier of one enemy BG (§5.1).</td>
 </tr>
 <tr class="odd">
-<td><strong>STRAT</strong> (US/UK)</td>
-<td>Strategic bombers (§8.5)</td>
-</tr>
-<tr class="even">
 <td><strong>Fighter</strong> (GER/JPN/USA/UK)</td>
-<td>Bombing defense (Axis) or escort (Allies)</td>
-</tr>
-<tr class="odd">
-<td><strong>Submarine</strong></td>
-<td>Submarine warfare (§8.4)</td>
-</tr>
-</tbody>
-</table>
-<p>Air-dependent tokens (AIR, STRAT, Fighter) are grounded by Heavy
-Rain/Snow or Storm/Blizzard weather at the engagement sector (§6.2).</p>
-<p><strong>Strategic bomber build cap per year:</strong></p>
-<table>
-<thead>
-<tr class="header">
-<th></th>
-<th>1941</th>
-<th>1942</th>
-<th>1943</th>
-<th>1944</th>
-<th>1945</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>USA</td>
-<td>0</td>
-<td>1</td>
-<td>2</td>
-<td>4</td>
-<td>4</td>
-</tr>
-<tr class="even">
-<td>UK</td>
-<td>1</td>
-<td>1</td>
-<td>2</td>
-<td>2</td>
-<td>2</td>
+<td>Bombing defense (Axis) or escort (Allies) in ordinary combat
+engagements. Distinct from the standing Fighter Defense Force (§8.5),
+which is Strategic Bombing’s own dedicated system and doesn’t touch this
+token.</td>
 </tr>
 </tbody>
 </table>
+<p>Air-dependent tokens (AIR, Fighter) are grounded by Heavy Rain/Snow
+or Storm/Blizzard weather at the engagement sector (§6.2).</p>
 <h3 id="sec-10-2">10.2. National Tokens</h3>
 <p>Bought by spending <strong>2</strong> currently-banked Support Tokens
 (any type, or two of the same type). Maximum one each.</p>
@@ -3220,9 +3411,37 @@ const YEAR_RATIO = {
 // cap. Same coming-year convention as YEAR_RATIO (§2): the cap that applies
 // during a given year was set by the Winter audit at the END of the
 // previous year.
-const STRAT_BUILD_CAP = {
-  USA: {1941:0, 1942:1, 1943:2, 1944:4, 1945:4},
-  UK:  {1941:1, 1942:1, 1943:2, 1944:2, 1945:2},
+// Historically-derived growth tables for the three standing forces below —
+// each nation's year-by-year share of its own WWII aircraft/U-boat
+// production, normalized to small integers. Bomber Force and Fighter
+// Defense Force: derived from Army Air Forces Historical Studies
+// production totals (USA/UK/Germany/Japan, 1941-45), converting each
+// year's % of that nation's 5-year total into the growth curve — e.g.
+// Germany's real fighter output actually peaked in 1944 (39.7% of its
+// wartime total) even under sustained bombing, only collapsing in 1945
+// once fuel and trained pilots ran out rather than airframes themselves;
+// the table's sharp 1944 peak/1945 crash reflects that specific pattern.
+// Submarine Fleet: not a clean production-share calculation the way
+// aircraft were — sourced from the operational history instead. German
+// U-boat strength peaked around 400-500 boats in April 1943; critically,
+// fewer became operational from Jan 1944 onward than had joined in 1941
+// alone, despite 1944 being the single highest production year, because
+// losses were outpacing replacements by then. The table reflects net
+// effective growth, not raw construction, which is why it declines even
+// as real shipyard output was still rising. Italy/UK/Japan are
+// deliberately absent — none had a submarine campaign historically
+// significant enough to justify a growth curve of their own.
+const BOMBER_FORCE_GROWTH = {
+  USA: {1941:1, 1942:2, 1943:4, 1944:5, 1945:3},
+  UK:  {1941:2, 1942:2, 1943:3, 1944:3, 1945:1},
+};
+const FIGHTER_DEFENSE_GROWTH = {
+  Germany: {1941:2, 1942:2, 1943:3, 1944:5, 1945:1},
+  Japan:   {1941:1, 1942:2, 1943:3, 1944:5, 1945:1},
+};
+const SUBMARINE_FLEET_GROWTH = {
+  Germany: {1941:3, 1942:3, 1943:2, 1944:1, 1945:0},
+  USA:     {1941:1, 1942:2, 1943:3, 1944:3, 1945:2},
 };
 const MAJORS = ['Germany','Japan','Italy','USA','UK','USSR','China'];
 const HOME_CAPITAL = {Germany:'Berlin',Japan:'Japan (Tokyo)',Italy:'Rome',USA:'USA (East Coast)',UK:'London',USSR:'Moscow',China:'Chongqing'};
@@ -3246,7 +3465,7 @@ let battleLog = [];
 let pendingEngagement = null;
 let actionLog = [];
 let playerRole = null; // 'Axis' | 'Allied' | 'Observer' — personal, not shared
-const TOKEN_TYPES = ['AIR','ART','HVY','ENG','AMPH','NAVGUN','ABN','REC','INL','STRAT','Fighter','Submarine'];
+const TOKEN_TYPES = ['AIR','ART','HVY','ENG','AMPH','NAVGUN','ABN','REC','INL','Fighter'];
 // Lend-Lease (§9.1) is unlike every other National Token — it's a
 // per-engagement spend ("+500 points to a non-US Allied BG this turn"),
 // exactly the same shape as AIR/ART/etc., not a held "max one" special
@@ -3413,14 +3632,16 @@ function doctrineBenefitFor(nation, key){
 // silently wouldn't apply there.
 function ntfAllotmentFor(nation){
   const base = (NTF_ALLOTMENT[nation] && NTF_ALLOTMENT[nation][clock.year]) || 0;
-  return Math.max(0, base + doctrineCostFor(nation, 'ntf'));
+  const fac = factionForNation(nation);
+  const extra = (dashboards[fac] && dashboards[fac].extraNtf && dashboards[fac].extraNtf[nation]) || 0;
+  return Math.max(0, base + extra + doctrineCostFor(nation, 'ntf'));
 }
 // §9.1/§9.2.1 — STRAT build cap with Arsenal of Democracy's permanent +1
 // folded in as a live benefit (so it vanishes immediately if switched away
 // from, per §9.5).
-function stratCapFor(nation){
-  if(!STRAT_BUILD_CAP[nation]) return null;
-  const base = STRAT_BUILD_CAP[nation][clock.year];
+function bomberForceGrowthFor(nation){
+  if(!BOMBER_FORCE_GROWTH[nation]) return null;
+  const base = BOMBER_FORCE_GROWTH[nation][clock.year];
   if(base === undefined) return undefined;
   return base + doctrineBenefitFor(nation, 'stratCap');
 }
@@ -3940,6 +4161,7 @@ function mergeSectorsWithSeed(saved){
       airborneLodgement: prev.airborneLodgement || false,
       weather: prev.weather || null,
       emergencyReserveUsed: prev.emergencyReserveUsed || false,
+      submarinePatrol: prev.submarinePatrol || null,
       lodgementTurn: prev.lodgementTurn || null,
       lodgementRotationTurn: prev.lodgementRotationTurn || null,
       faction: prev.faction!==undefined ? prev.faction : seed.faction,
@@ -3969,12 +4191,23 @@ function defaultDashboards(){
       doctrineCosts:{Germany:{}, Japan:{}, Italy:{}},
       tokens:{Germany:{},Japan:{},Italy:{}}, mobilizationSlack:{Germany:0,Japan:0,Italy:0},
       flags:{'Oil War trace active — Germany':'No','Oil War trace active — Japan':'No','Ketsu-Go declared':'No','Italian Armistice triggered':'No','General Winter active':'No','Atlantic Wall triggered':'No'},
+      airForces:{Germany:{fighterDefense:FIGHTER_DEFENSE_GROWTH.Germany[1941]}, Japan:{fighterDefense:FIGHTER_DEFENSE_GROWTH.Japan[1941]}},
+      submarineFleet:{Germany:SUBMARINE_FLEET_GROWTH.Germany[1941]},
+      submarineCommitted:{Germany:0},
+      fighterPosture:{Germany:'Dispersed', Japan:'Dispersed'},
+      extraNtf:{Germany:0, Japan:0, Italy:0},
+      reconstitution:[],
       notes:'' },
     Allied: { doctrine:{USA:{active:'None',token:'None',activated:'',expires:''},UK:{active:'None',token:'None',activated:'',expires:''},USSR:{active:'None',token:'None',activated:'',expires:''},China:{active:'None',token:'None',activated:'',expires:''}},
       doctrineCosts:{USA:{}, UK:{}, USSR:{}, China:{}},
       tokens:{USA:{},UK:{},USSR:{},China:{}}, mobilizationSlack:{USA:0,UK:0,USSR:0,China:0},
       flags:{'Free France Legitimacy count (0-3)':'0','Vichy Legitimacy count (0-3)':'0','Italian Armistice triggered':'No','Flying Tigers active':'No','Burma Road / Hump Lend-Lease active':'No','China Alpha Force unlocked':'No'},
       intel:{ultraTurn:'', ultraTargets:[], ultraRevealTurn:'', ultraRevealCount:0, magicRevealTurn:'', magicRevealDone:false},
+      airForces:{USA:{bomberForce:BOMBER_FORCE_GROWTH.USA[1941], committedThisTurn:0}, UK:{bomberForce:BOMBER_FORCE_GROWTH.UK[1941], committedThisTurn:0}},
+      submarineFleet:{USA:SUBMARINE_FLEET_GROWTH.USA[1941]},
+      submarineCommitted:{USA:0},
+      extraNtf:{USA:0, UK:0, USSR:0, China:0},
+      reconstitution:[],
       notes:'' },
   };
 }
@@ -3988,6 +4221,12 @@ function normalizeDashboards(saved){
     Object.keys(b.doctrineCosts).forEach(n=>{ b.doctrineCosts[n] = {...b.doctrineCosts[n], ...((s.doctrineCosts&&s.doctrineCosts[n])||{})}; });
     Object.keys(b.tokens).forEach(n=>{ b.tokens[n] = {...b.tokens[n], ...((s.tokens&&s.tokens[n])||{})}; });
     Object.keys(b.mobilizationSlack).forEach(n=>{ b.mobilizationSlack[n] = (s.mobilizationSlack&&s.mobilizationSlack[n]) || 0; });
+    Object.keys(b.airForces).forEach(n=>{ b.airForces[n] = {...b.airForces[n], ...((s.airForces&&s.airForces[n])||{})}; });
+    Object.keys(b.submarineFleet).forEach(n=>{ b.submarineFleet[n] = (s.submarineFleet&&s.submarineFleet[n]) ?? b.submarineFleet[n]; });
+    Object.keys(b.submarineCommitted).forEach(n=>{ b.submarineCommitted[n] = (s.submarineCommitted&&s.submarineCommitted[n]) || 0; });
+    b.reconstitution = Array.isArray(s.reconstitution) ? s.reconstitution : [];
+    if(b.fighterPosture) Object.keys(b.fighterPosture).forEach(n=>{ b.fighterPosture[n] = (s.fighterPosture&&s.fighterPosture[n]) || b.fighterPosture[n]; });
+    Object.keys(b.extraNtf).forEach(n=>{ b.extraNtf[n] = (s.extraNtf&&s.extraNtf[n]) || 0; });
     b.flags = {...b.flags, ...(s.flags||{})};
     delete b.flags['ULTRA active']; delete b.flags['MAGIC active']; // superseded by the live National Token state
     if(b.intel) b.intel = {...b.intel, ...(s.intel||{})};
@@ -4351,6 +4590,7 @@ function render(){
 
   renderBGs(nodeById, bgLayer, 6, null, -12);
   renderNTFMarkers(nodeById, ntfLayer);
+  renderSubmarinePatrolMarkers(nodeById, ntfLayer);
   renderPartisanMarkers(nodeById, partisanLayer);
   renderEvacuationMarkers(nodeById, partisanLayer);
   renderEvacuationSummary(scaleX, scaleY);
@@ -4601,6 +4841,67 @@ function seaControlBlocks(seaId, faction){
   return enemyNTF>0 && friendlyNTF===0;
 }
 
+// Generic hop-distance BFS (land or sea, no distinction — bombers and
+// submarine patrols both overfly/transit anything in a way NTF surface
+// range never did). Returns hop count if reachable within maxHops, else
+// null. Shared by Bomber Force and Submarine Fleet range checks below.
+function sectorHopDistance(fromId, toId, maxHops){
+  if(fromId===toId) return 0;
+  const visited = new Set([fromId]);
+  let frontier = [fromId];
+  for(let hop=1; hop<=maxHops; hop++){
+    const next = [];
+    for(const cur of frontier){
+      const curSector = byId[cur];
+      if(!curSector) continue;
+      for(const cid of (curSector.connections||[])){
+        if(visited.has(cid)) continue;
+        if(cid===toId) return hop;
+        visited.add(cid);
+        next.push(cid);
+      }
+    }
+    frontier = next;
+    if(!frontier.length) break;
+  }
+  return null;
+}
+// Bomber range: a larger radius than NTF's 2-sea-sector range, since
+// aircraft cover ground surface fleets can't — tunable, no strong
+// historical anchor for the exact figure, proposed as a starting point.
+const BOMBER_RANGE = 6;
+const SUBMARINE_RANGE = 4;
+// §8.5 basing requirements, reused for the range check itself — the
+// specific sector(s) a bombing run against a given target nation must
+// originate from. NOTE: the rulebook text says "Southern England" and
+// "Tunisia" — neither exists as an actual sector name on this map (only
+// London/Midlands and Tunis do), a discrepancy this build surfaced that
+// predates this change. Using London (UK's actual Home Capital) and Tunis
+// (the real sector) as the working stand-ins; worth a rulebook wording
+// fix to match, flagged separately.
+function bomberBasingSectors(targetNation){
+  if(targetNation==='Germany') return sectors.filter(s=>s.name==='London' && factionForNation(s.occupier||s.owner)==='Allied');
+  if(targetNation==='Italy') return sectors.filter(s=>s.name==='Tunis' && factionForNation(s.occupier||s.owner)==='Allied');
+  if(targetNation==='Japan') return sectors.filter(s=>(s.name==='Formosa'||s.name==='Marianas') && factionForNation(s.occupier||s.owner)==='Allied');
+  return [];
+}
+// True if the target sector is within Bomber Force range of a valid
+// basing point for its controlling nation — includes the Mobile Staging
+// Anchorage path for Japan (§8.6), checked at its own tighter 2-sea-
+// sector range rather than the full Bomber Range.
+function bomberTargetInRange(targetSector){
+  const targetNation = targetSector.occupier || targetSector.owner;
+  const bases = bomberBasingSectors(targetNation);
+  for(const base of bases){
+    if(sectorHopDistance(base.id, targetSector.id, BOMBER_RANGE) !== null) return true;
+  }
+  if(targetNation==='Japan'){
+    for(const msa of usnMobileAnchorages()){
+      if(sectorHopDistance(msa.id, targetSector.id, 2) !== null) return true;
+    }
+  }
+  return false;
+}
 function ntfDeploymentRange(nation){
   return 2; // §11.8.2 — flat USN bonus removed; range projection now comes from Mobile Staging Anchorages
 }
@@ -4686,7 +4987,6 @@ function seaSectorHopsBetween(originId, targetId, maxHops, blockNation){
   }
   return null;
 }
-// §11.2 Airborne range: plain sector-to-sector hop count (any type), 1 or 2.
 function sectorHopsBetween(originId, targetId, maxHops){
   if(originId===targetId) return 0;
   const visited = new Set([originId]);
@@ -4795,12 +5095,85 @@ function advanceWeather(){
   });
 }
 
+// Clears per-turn commitment tracking for Bomber Force and Submarine
+// Fleet — same shape as bgs' movedThisTurn, letting a player split their
+// force across multiple activations in one turn (§10.1 partial
+// commitment) while still capping the total at what's actually available.
+// House rule: emergency replacement for a BG lost between Winter Audits.
+// If the losing faction is currently below its RC-derived BG Cap (§2.1) —
+// meaning the loss opened a gap that would otherwise just sit empty until
+// the next Winter Mobilization — they may reconstitute a BG of the same
+// type at half strength (1,250 pts) during the very next strategic turn
+// only. Miss that window and the opportunity is gone; the normal path
+// (any type, full strength, at Winter) is always still available
+// regardless. Deliberately not automatic — recorded as a dashboard
+// opportunity the player chooses whether to use.
+function nextTurnOf(season, year){
+  const order=['Spring','Summer','Fall','Winter'];
+  const idx = order.indexOf(season);
+  if(idx===3) return {season:'Spring', year:year+1};
+  return {season:order[idx+1], year};
+}
+function recordReconstitutionOpportunity(bg){
+  if(!bg || bg.emergencyReserve || bg.isKampfgruppe) return; // both already outside the normal cap system entirely
+  const nation = bg.nation;
+  const econ = computeEconomy();
+  const e = econ[nation];
+  if(!e || e.fielded >= e.bgCap) return; // at or over cap — nothing opened up, no opportunity
+  const fac = factionForNation(nation);
+  const eligible = nextTurnOf(clock.season, clock.year);
+  dashboards[fac].reconstitution.push({
+    id: Date.now() + Math.random(),
+    nation, type: bg.type,
+    destroyedTurn: `${clock.season} ${clock.year}`,
+    eligibleTurn: `${eligible.season} ${eligible.year}`,
+  });
+}
+// Called once per turn-advance: any opportunity whose eligible window was
+// the turn that's now ending expires unused — by rule this is a single-
+// turn window, not "eventually." Runs BEFORE the clock itself advances.
+function expireReconstitutionOpportunities(){
+  const thisTurn = `${clock.season} ${clock.year}`;
+  ['Axis','Allied'].forEach(fac=>{
+    dashboards[fac].reconstitution = dashboards[fac].reconstitution.filter(r=>r.eligibleTurn !== thisTurn);
+  });
+}
+
+function resetForceCommitment(){
+  ['Axis','Allied'].forEach(fac=>{
+    const af = dashboards[fac].airForces;
+    Object.keys(af).forEach(n=>{ if(af[n].committedThisTurn!==undefined) af[n].committedThisTurn = 0; });
+    const sc = dashboards[fac].submarineCommitted;
+    Object.keys(sc).forEach(n=>{ sc[n] = 0; });
+  });
+}
+
+
 function advancePartisans(){
   sectors.forEach(s=>{
     if(partisanEligible(s)){
       const hasCavalry = bgs.some(b=>b.sectorId===s.id && b.type==='CAV');
       if(hasCavalry) return; // §3.4 Anti-Partisan Operations
-      s.partisan = Math.min(partisanCapFor(s), (s.partisan||0)+1);
+      const before = s.partisan||0;
+      s.partisan = Math.min(partisanCapFor(s), before+1);
+      // §11.3/§12.1 China (house rule): when the level is already at its
+      // cap (4) and would have increased again this turn but for the cap
+      // itself — no CAV present to block it, resistance pressure still
+      // rising — that continued pressure manifests as an actual Chinese
+      // MIL BG spawning in the sector, on top of the level effects
+      // already in place. A separate spawn trigger from §3.3's other
+      // two (Spontaneous Defense, Home-front conversion); can recur every
+      // turn the condition persists, since MIL BGs don't count against
+      // the BG Cap and this represents ongoing, not one-time, escalation.
+      if(s.owner==='China' && before===partisanCapFor(s)){
+        const maxId = bgs.reduce((m,b)=>Math.max(m,b.id),0);
+        bgs.push({
+          faction:'Allied', nation:'China', name:`${s.name} Partisan Levy`, type:'MIL', fow:null,
+          location:s.name, points:2500, fatigue:0, experience:40, orders:'Hold', in_supply:'Yes',
+          elite:null, id:maxId+1, sectorId:s.id, shattered:false, movedThisTurn:false,
+        });
+        logAction('Allied', 'Purchase', `China: sustained Level 4 Partisan resistance at ${s.name} (no Axis CAV present) spawns a Chinese MIL BG (§12.1)`, [s]);
+      }
     }
   });
 }
@@ -5120,6 +5493,30 @@ function renderNTFMarkers(nodeById, layer){
   sel.attr('transform', d=>`translate(${d.cx-5},${d.cy-4.5})`);
   sel.select('rect').attr('fill', d=>FACTION_HEX[factionForNation(d.nation)] || FACTION_HEX.Neutral);
   sel.select('text').attr('x',5).attr('y',4.8).text(d=>d.count);
+}
+// §8.4 Submarine Patrol count — deliberately distinct from the NTF marker
+// above (dark navy circle vs. faction-colored rectangle, positioned above
+// the node instead of below) so the two are never mistaken for each
+// other at a glance, especially since a sea sector can carry both at
+// once (a patrol waiting to see if an NTF shows up to ambush it).
+function renderSubmarinePatrolMarkers(nodeById, layer){
+  const placed = [];
+  sectors.forEach(s=>{
+    if(s.type!=='Sea' || !s.submarinePatrol) return;
+    const node = nodeById[s.id];
+    if(!node) return;
+    placed.push({key:`sub-${s.id}`, nation:s.submarinePatrol.nation, count:s.submarinePatrol.count, cx:node.x, cy:node.y-9});
+  });
+  const sel = layer.selectAll('g.submarine-marker').data(placed, d=>d.key)
+    .join(enter=>{
+      const g = enter.append('g').attr('class','submarine-marker');
+      g.append('circle').attr('r',6.5).attr('fill','#0F1E2E').attr('stroke','#fff').attr('stroke-width',0.8);
+      g.append('text').attr('font-size',7.5).attr('text-anchor','middle').attr('dominant-baseline','central').attr('fill','#fff').attr('font-weight',700);
+      return g;
+    });
+  sel.attr('transform', d=>`translate(${d.cx},${d.cy})`);
+  sel.select('text').text(d=>d.count);
+  sel.select('circle').attr('stroke', d=>FACTION_HEX[factionForNation(d.nation)] || '#fff');
 }
 
 function factionForNation(nation){
@@ -5468,6 +5865,11 @@ function renderPanel(){
         <div class="winter-note">Reads the Battle Groups actually present here and works out the exact parameters to type into WinSPWW2's own "Playing a one off battle" screen — nations, date, water conditions, map size, visibility, and terrain generator variables — so nothing has to be re-derived by hand.</div>
         <button class="cr-roll-btn" id="f_match_setup_btn" style="margin-top:8px;width:100%;">Generate WinSPWW2 Match Setup</button>
       </div>` : ''}
+      ${(s.type!=='Sea' && s.rc>0 && factionForNation(s.occupier||s.owner)==='Axis' && s.status!=='Destroyed' && bomberTargetInRange(s)) ? `<div class="field-group">
+        <div class="fg-label rule-link" data-section="sec-8-5">Strategic Bombing (§8.5)</div>
+        <div class="winter-note">Valid target — Axis RC within Bomber Force range. Spends an activation, same as moving a BG. Fighter defense resolves automatically.</div>
+        <button class="cr-roll-btn" id="f_bomber_strike_btn" style="margin-top:8px;width:100%;">Resolve Bomber Strike Mission</button>
+      </div>` : ''}
       ${stackWarnings.length ? `<div class="moved-banner" style="border-color:var(--danger);color:var(--danger);">⚠ Stack limit exceeded (§6) — more than ${effectiveStackCap(s)} ${stackWarnings.join(', ')} Battle Group(s) here. ${s.smallIslandOutpost ? 'This is a Small Island Outpost, capped at 1 BG per faction.' : 'Non-capital sectors are normally capped at 2.'} Move one out or resolve the excess.</div>` : ''}
       ${mixed ? `<div class="moved-banner">⚔ Both Axis and Allied Battle Groups are present in this sector.
         <button class="cr-roll-btn" id="resolveHereBtn" style="margin-top:8px;width:100%;">Resolve Engagement</button>
@@ -5554,7 +5956,8 @@ function renderPanel(){
         const isAnchorage = usnCount >= 3;
         return `
       <div class="field-group">
-        <div class="fg-label rule-link" data-section="sec-8-3" title="One side present = Sea Control (blocks enemy supply/movement). Both present, one outnumbered = Naval Superiority: the smaller side suffers Interdiction — supply capped at 2,000 pts, moving BGs lose 250 pts per NTF of margin.">Naval Task Forces Assigned Here (§11.4)</div>
+        ${(s.rc>0 && s.status==='ACTIVE' && s.owner && !tracesSupplyToCapital(s.id, s.owner)) ? `<div class="fg-label" style="color:var(--gold);" title="§2.4 — this RC cannot currently trace a contiguous friendly-controlled line back to its controller's capital. No Support Token, doesn't count toward the Cap Audit RC total, while cut off. Clears automatically the instant the trace reconnects — no token cost, unlike bombing/submarine Damaged/Destroyed.">⚠ Isolated (§2.4) — cut off from capital</div>` : ''}
+        <div class="fg-label rule-link" data-section="sec-8-3" title="One side present = Sea Control (blocks enemy supply/movement). Both present, one outnumbered = Naval Superiority: the smaller side suffers Interdiction — supply capped at 2,000 pts, moving BGs lose 250 pts per NTF of margin.">Naval Task Forces Assigned Here (§8.3)</div>
         <div class="winter-note" style="margin-bottom:6px;">Assignable any time during your Movement (§1). Once played at a sector this turn, that assignment locks until Advance Turn.
         ${homeWaters ? ' UK has a standing +1 Naval Superiority margin here as long as it holds home territory (§11.6) — always on, not something you need to assign.' : ''}</div>
         ${isAnchorage ? `<div class="stat-line"><span class="rule-link" data-section="sec-8-6">USN Mobile Staging Anchorage</span><b class="pill-ok">Active (${usnCount} NTF) — acts as a virtual RC for USN range tracing, and a valid Amphibious Invasion staging point / carrier basing for Strategic Bombing</b></div>` : ''}
@@ -5567,7 +5970,7 @@ function renderPanel(){
           return `
           <div class="field-row">
             <div style="flex:0 0 90px;padding-top:8px;font-size:12px;color:var(--ink-dim);">${n}${locked?' 🔒':''}</div>
-            <div><input class="txtfield f-ntf" data-nation="${n}" type="number" min="0" max="${remaining}" value="${(s.ntf&&s.ntf[n])||0}" ${locked?'disabled title="Locked — already played this turn (§11.4)"':`title="${remaining} of ${allotted} remaining this year, not counting what's already here"`}></div>
+            <div><input class="txtfield f-ntf" data-nation="${n}" type="number" min="0" max="${remaining}" value="${(s.ntf&&s.ntf[n])||0}" ${locked?'disabled title="Locked — already played this turn (§8.3)"':`title="${remaining} of ${allotted} remaining this year, not counting what's already here"`}></div>
           </div>`;}).join('')}
         ${s.id===181 ? `
         <div class="fg-label rule-link" data-section="sec-8-1" style="margin-top:10px;">UK Garrison (special, not a BG)</div>
@@ -5575,22 +5978,26 @@ function renderPanel(){
           <option value="Yes" ${s.ukGarrison?'selected':''}>Held — strait closed to Axis navy</option>
           <option value="No" ${!s.ukGarrison?'selected':''}>Not held — open</option>
         </select>` : ''}
+        <div class="fg-label rule-link" data-section="sec-8-4" style="margin-top:12px;">Submarine Patrol (§8.4)</div>
+        ${s.submarinePatrol ? `<div class="stat-line"><span>${s.submarinePatrol.nation} patrol here</span><b>${s.submarinePatrol.count} subs — ${s.submarinePatrol.effect}</b></div>
+        <button class="cr-roll-btn" id="f_resolve_sub_zone_btn" style="margin-top:8px;width:100%;">Resolve Submarine Interdiction / NTF Combat</button>` : `
+        <button class="cr-roll-btn" id="f_deploy_sub_btn" style="margin-top:8px;width:100%;">Deploy Submarine Patrol</button>`}
       </div>`;
       })() : ''}
 
-      <div class="field-group">
+      ${s.type!=='Sea' ? `<div class="field-group">
         <div class="fg-label rule-link" data-section="sec-12-1" title="1: -10% pts. 2: -20% pts, RC Damaged, no Strategic Movement. 3: -20% pts, supply disrupted. 4: -20% pts, supply disrupted, RC Destroyed. Auto-increments +1/turn while occupied (§1), capped by region — USSR/China/Yugoslavia to 4, Western Europe to 2.">Partisan Level (§12.0)</div>
         <select id="f_partisan">
           ${[0,1,2,3,4].map(v=>`<option value="${v}" ${s.partisan==v?'selected':''}>${v}</option>`).join('')}
         </select>
-      </div>
+      </div>` : ''}
 
-      <div class="field-group">
+      ${s.type!=='Sea' ? `<div class="field-group">
         <div class="fg-label rule-link" data-section="sec-9-3" title="Normally set automatically by a Stalemate (§8.1) — loser's score was >70% of the winner's, or tied. Set this manually for any other circumstance the automated resolvers don't cover (a WinSPWW2 result you're recording by hand, correcting a mistake, etc.). While Contested: both BGs stay, neither retreats, and — for coastal sectors — this is one of the two triggers for showing the Lodgement Rotation controls.">Contested (§8.1)</div>
         <select id="f_contested">
           ${['No','Yes'].map(v=>`<option value="${v}" ${(s.contested?'Yes':'No')===v?'selected':''}>${v}</option>`).join('')}
         </select>
-      </div>
+      </div>` : ''}
 
       <div class="field-group">
         <div class="fg-label rule-link" data-section="sec-6-3">Connections (${(s.connections||[]).length})</div>
@@ -5675,19 +6082,19 @@ function renderPanel(){
         </label>
       </div>` : ''}
 
-      <div class="field-group">
+      ${s.type!=='Sea' ? `<div class="field-group">
         <label style="display:flex;align-items:center;gap:8px;font-family:var(--font-mono);font-size:12px;color:var(--ink-dim);">
           <input type="checkbox" id="f_airborne_lodgement" ${s.airborneLodgement?'checked':''}>
           Airborne Lodgement active (§11.2) — a successful Airborne Insertion here. The next immediate combat in this sector, whether an ordinary Coordinated Attack or a paired Amphibious Beach Assault, blocks the defender's ART tokens and Mobile Reserve and waives a required river crossing. Manually toggled, since this can now span separate file exchanges rather than resolving in one sitting.
         </label>
-      </div>
+      </div>` : ''}
 
-      <div class="field-group">
+      ${s.type!=='Sea' ? `<div class="field-group">
         <label style="display:flex;align-items:center;gap:8px;font-family:var(--font-mono);font-size:12px;color:var(--ink-dim);">
           <input type="checkbox" id="f_lodgement_active" ${s.lodgementTurn===`${clock.season} ${clock.year}`?'checked':''}>
           Amphibious Lodgement active this turn (§8.1) — normally set automatically by a winning Beach Assault in the Combat Resolver. Check this to set it manually for the current turn (e.g. recording a WinSPWW2 result by hand); uncheck to clear it. This is "this turn only" by rule — it won't stay checked once the turn advances, same as the automatic version.
         </label>
-      </div>
+      </div>` : ''}
 
       ${EMERGENCY_RESERVE_SECTORS.has(s.name) ? (()=>{
         const used = !!s.emergencyReserveUsed;
@@ -5789,7 +6196,8 @@ function renderPanel(){
       if(statusEl) s.status = statusEl.value;
       const evacEl = document.getElementById('f_evac');
       if(evacEl) s.evacuated = evacEl.value;
-      s.partisan = parseInt(document.getElementById('f_partisan').value);
+      const partisanEl = document.getElementById('f_partisan');
+      if(partisanEl) s.partisan = parseInt(partisanEl.value);
       s.faction = deriveFaction(s.occupier || s.owner);
       const contestedEl = document.getElementById('f_contested');
       if(contestedEl) s.contested = contestedEl.value === 'Yes';
@@ -5857,6 +6265,15 @@ function renderPanel(){
 
   const matchSetupBtn = document.getElementById('f_match_setup_btn');
   if(matchSetupBtn) matchSetupBtn.addEventListener('click', ()=>openMatchSetupModal(s));
+
+  const bomberStrikeBtn = document.getElementById('f_bomber_strike_btn');
+  if(bomberStrikeBtn) bomberStrikeBtn.addEventListener('click', ()=>openBomberStrikeModal(s));
+
+  const deploySubBtn = document.getElementById('f_deploy_sub_btn');
+  if(deploySubBtn) deploySubBtn.addEventListener('click', ()=>openSubmarineDeployModal(s));
+
+  const resolveSubZoneBtn = document.getElementById('f_resolve_sub_zone_btn');
+  if(resolveSubZoneBtn) resolveSubZoneBtn.addEventListener('click', ()=>resolveSubmarineSeaZone(s));
 
   const emergencyReserveBtn = document.getElementById('f_emergency_reserve_btn');
   if(emergencyReserveBtn) emergencyReserveBtn.addEventListener('click', async ()=>{
@@ -6823,6 +7240,7 @@ function runInvasionPhase0(state){
     `;
     document.getElementById('inv_continue_btn').addEventListener('click', async ()=>{
       if(!won){
+        recordReconstitutionOpportunity(state.airborneBg);
         bgs = bgs.filter(b=>b.id!==state.airborneBg.id);
         logAction(state.airborneBg.faction||factionForNation(state.airborneBg.nation), 'Airborne Invasion',
           `${state.airborneBg.name} destroyed — Airborne Vanguard failed at ${state.sector.name}`, [state.sector]);
@@ -7042,7 +7460,7 @@ async function runInvasionPhase2(state){
         });
       } else {
         state.sector.contested = false;
-        if(state.useAirborne){ bgs = bgs.filter(b=>b.id!==state.airborneBg.id); }
+        if(state.useAirborne){ recordReconstitutionOpportunity(state.airborneBg); bgs = bgs.filter(b=>b.id!==state.airborneBg.id); }
       }
       logAction(state.attackerBGs[0].faction||factionForNation(state.attackerBGs[0].nation), 'Amphibious Invasion',
         `Inland Breakout at ${state.sector.name} — ${outcome}`, [state.sector]);
@@ -7120,6 +7538,328 @@ function recommendVisibility(weather){
     default: return {value:'40-55', note:'No Weather rolled for this sector yet (advance a turn to roll one) — a moderate placeholder.'};
   }
 }
+
+// §8.5 Strategic Bombing — activation-based, standing-force resolution.
+// Weather-gated at the target sector (§6.2, the same conditions that
+// ground AIR/Fighter tokens for ordinary combat). Fighter defense is
+// always automatic — no waiting on the other player to respond, since the
+// Fighter Defense Force represents standing infrastructure (bases, radar,
+// flak), not a per-battle decision. Loss formula: winner (whichever side
+// is larger) takes a flat 10% baseline loss; loser takes 30% base plus 1
+// per point of margin against them, capped at their own force size —
+// same "loser suffers more, scaled by the gap" shape as NTF Interdiction's
+// existing 250-pts-per-margin rule, proposed as a starting point and
+// explicitly tunable later.
+// How many active RCs a nation must spread its Fighter Defense Force
+// across — Germany and Japan each hold several RCs simultaneously, while
+// the Allies can mass a strike against any single one of them. Without
+// this, the same raw Fighter Defense Force number would defend every RC
+// at full strength regardless of how many there are, which understates
+// how thin real air defense gets spread across a whole country's worth of
+// targets.
+function activeRcCount(nation){
+  return sectors.filter(s=>s.rc>0 && s.status==='ACTIVE' && (s.occupier===nation || (!s.occupier && s.owner===nation))).length;
+}
+// Fighter Defense Posture (Axis dashboard, per nation): a strategic choice
+// about how that diffused force is postured, layered on top of the RC
+// diffusion above. Concentrated masses fighters at fewer points — lower
+// chance any given raid even meets defenders, but a real punishing loss
+// rate on bombers on the raids that do run into them. Dispersed spreads
+// thin coverage everywhere — higher chance of contact, but each contact
+// is a weaker formation that inflicts lighter losses. Tunable figures,
+// not derived from a historical source.
+const FIGHTER_POSTURE = {
+  Concentrated: { interceptMult: 0.6, lossMult: 1.5 },
+  Dispersed:    { interceptMult: 1.4, lossMult: 0.7 },
+};
+// Flat baseline ground defense (flak, AA), independent of the Fighter
+// Defense Force itself — shared between resolveBomberStrike() and the
+// modal's own live odds preview so the two can never drift out of sync.
+// Without this, RC diffusion alone could push success chance
+// uncomfortably high for any nation holding enough territory (Germany's
+// raw 20 fighters spread across 20 RCs works out to only ~1 effectively
+// defending any single one), and a nation that ever hits 0 fighters
+// would otherwise guarantee every future strike.
+const FLAK_BASE = 3;
+function resolveBomberStrike(targetSector, committedBombers){
+  const targetNation = targetSector.occupier || targetSector.owner;
+  const rawFighterForce = (dashboards.Axis.airForces[targetNation] && dashboards.Axis.airForces[targetNation].fighterDefense) || 0;
+  if(WEATHER_BLOCKS_STRATEGIC_MOVEMENT.has(targetSector.weather)){
+    return {blocked:true, reason:`Weather (${targetSector.weather}) at ${targetSector.name} grounds the mission — no launch attempted, no losses either side.`};
+  }
+  const rcCount = Math.max(1, activeRcCount(targetNation));
+  const posture = (dashboards.Axis.fighterPosture && dashboards.Axis.fighterPosture[targetNation]) || 'Dispersed';
+  const postureMods = FIGHTER_POSTURE[posture] || FIGHTER_POSTURE.Dispersed;
+  // The diffused, posture-adjusted force actually available to contest
+  // THIS specific strike — never the full national total in one place.
+  const fighterForce = (rawFighterForce / rcCount) * postureMods.interceptMult;
+  // Flat baseline ground defense (flak, AA), independent of the Fighter
+  // Defense Force itself — see FLAK_BASE's own definition above for why.
+  const effectiveDefense = fighterForce + FLAK_BASE;
+  const total = committedBombers + effectiveDefense;
+  const successChance = total > 0 ? committedBombers / total : 0.5;
+  const success = Math.random() < successChance;
+  // How outmatched the losing side was, as a ratio capped at 2x rather
+  // than an unbounded absolute difference. The old formula computed
+  // margin = bombers - fighterForce directly and used it uncapped to
+  // scale fighterLosses against the RAW (undiffused) pool — with
+  // fighterForce diffused down to a small fraction, that margin could
+  // balloon into double-digit losses off a single strike, wiping out a
+  // large share of the whole national Fighter Defense Force in one raid.
+  // Capping the ratio keeps losses proportional to the force that was
+  // actually present in this specific engagement.
+  const bomberFighterRatio = fighterForce > 0 ? Math.min(2, committedBombers / fighterForce) : 2;
+  const fighterBomberRatio = committedBombers > 0 ? Math.min(2, effectiveDefense / committedBombers) : 2;
+  let bomberLosses, fighterLosses;
+  if(success){
+    fighterLosses = Math.min(rawFighterForce, Math.round(fighterForce * (0.2 + 0.15*bomberFighterRatio)));
+    bomberLosses = Math.min(committedBombers, Math.round(committedBombers*0.1));
+  } else {
+    // Posture's loss multiplier only applies here — to bombers, specifically
+    // when the fighters are the ones who won this engagement.
+    bomberLosses = Math.min(committedBombers, Math.round(committedBombers * (0.2 + 0.15*fighterBomberRatio) * postureMods.lossMult));
+    fighterLosses = Math.min(rawFighterForce, Math.round(fighterForce*0.1));
+  }
+  return {blocked:false, success, committedBombers, fighterForce, rawFighterForce, rcCount, posture, successChance, bomberLosses, fighterLosses, targetNation};
+}
+
+function openBomberStrikeModal(sector){
+  const targetNation = sector.occupier || sector.owner;
+  const sources = ['USA','UK'].filter(n => (dashboards.Allied.airForces[n] && dashboards.Allied.airForces[n].bomberForce) > 0);
+  if(!sources.length){
+    openModal('Strategic Bombing', `<div class="winter-note">No Bomber Force available — USA and UK both currently hold 0. Grows automatically each Winter Logistics Phase (§10.1).</div>`);
+    return;
+  }
+  openModal(`Strategic Bombing — ${sector.name}`, `
+    <div class="winter-note">Target: ${sector.name} (${targetNation}). Fighter Defense applied automatically — no need to wait for the Axis player.</div>
+    <div class="winter-note" id="bomber_diffusion_note" style="margin-top:4px;"></div>
+    <div class="field-group">
+      <div class="fg-label">Bomber Force source</div>
+      <select id="bomber_nation">${sources.map(n=>`<option>${n}</option>`).join('')}</select>
+    </div>
+    <div class="field-group">
+      <div class="fg-label">Bombers to commit (partial commitment allowed — §10.1)</div>
+      <input class="txtfield" id="bomber_commit" type="number" min="1" value="1">
+      <div class="winter-note" id="bomber_commit_max" style="margin-top:4px;"></div>
+      <div class="winter-note" id="bomber_odds_preview" style="margin-top:4px;"></div>
+    </div>
+    <button class="cr-roll-btn" id="bomber_strike_go" style="margin-top:10px;">Resolve Bomber Strike Mission</button>
+  `);
+  const rawFighterForceNow = (dashboards.Axis.airForces[targetNation]&&dashboards.Axis.airForces[targetNation].fighterDefense)||0;
+  const rcCountNow = Math.max(1, activeRcCount(targetNation));
+  const postureNow = (dashboards.Axis.fighterPosture && dashboards.Axis.fighterPosture[targetNation]) || 'Dispersed';
+  const postureModsNow = FIGHTER_POSTURE[postureNow] || FIGHTER_POSTURE.Dispersed;
+  const fighterForceNow = (rawFighterForceNow / rcCountNow) * postureModsNow.interceptMult;
+  document.getElementById('bomber_diffusion_note').textContent = `${targetNation} Fighter Defense Force: ${rawFighterForceNow} total, spread across ${rcCountNow} active RC(s), posture ${postureNow} — ${fighterForceNow.toFixed(1)} effectively contesting this specific strike.`;
+  const updateMax = () => {
+    const n = document.getElementById('bomber_nation').value;
+    const af = dashboards.Allied.airForces[n];
+    const max = Math.max(0, ((af&&af.bomberForce)||0) - ((af&&af.committedThisTurn)||0));
+    document.getElementById('bomber_commit_max').textContent = `${n} Bomber Force available this turn: ${max} (${(af&&af.bomberForce)||0} total, ${(af&&af.committedThisTurn)||0} already committed to other strikes this turn)`;
+    document.getElementById('bomber_commit').max = max;
+    updateOdds();
+  };
+  const updateOdds = () => {
+    const commit = Math.max(0, parseInt(document.getElementById('bomber_commit').value)||0);
+    const effectiveDefenseNow = fighterForceNow + FLAK_BASE;
+    const total = commit + effectiveDefenseNow;
+    const chance = total > 0 ? Math.round((commit/total)*100) : 0;
+    document.getElementById('bomber_odds_preview').textContent = `${commit} bombers vs ${fighterForceNow.toFixed(1)} effective defending fighters + ${FLAK_BASE} baseline flak — ${chance}% success chance (odds-ratio, not guaranteed either way).`;
+  };
+  document.getElementById('bomber_commit').addEventListener('input', updateOdds);
+  document.getElementById('bomber_nation').addEventListener('change', updateMax);
+  updateMax();
+  document.getElementById('bomber_strike_go').addEventListener('click', async ()=>{
+    const n = document.getElementById('bomber_nation').value;
+    const af = dashboards.Allied.airForces[n];
+    const max = Math.max(0, ((af&&af.bomberForce)||0) - ((af&&af.committedThisTurn)||0));
+    const commit = Math.max(1, Math.min(max, parseInt(document.getElementById('bomber_commit').value)||0));
+    if(commit<=0 || max<=0){ notify('No uncommitted Bomber Force available this turn.'); return; }
+    af.committedThisTurn = (af.committedThisTurn||0) + commit;
+    const r = resolveBomberStrike(sector, commit);
+    if(r.blocked){
+      logAction('Allied', 'Strategic Bombing', `${n} attempts a strike on ${sector.name} — ${r.reason}`, [sector]);
+      await saveState(true, true);
+      closeModal();
+      notify(r.reason);
+      return;
+    }
+    af.bomberForce = Math.max(0, af.bomberForce - r.bomberLosses);
+    const defenderAf = dashboards.Axis.airForces[r.targetNation];
+    if(defenderAf) defenderAf.fighterDefense = Math.max(0, (defenderAf.fighterDefense||0) - r.fighterLosses);
+    let outcomeText;
+    if(r.success){
+      if(sector.status==='ACTIVE'){ sector.status='Damaged'; outcomeText = `${sector.name} is now Damaged.`; }
+      else if(sector.status==='Damaged'){ sector.status='Destroyed'; outcomeText = `${sector.name} is now Destroyed.`; }
+      else outcomeText = `${sector.name} is already Destroyed — no further effect.`;
+    } else {
+      outcomeText = 'Mission failed — fighters turned the raid back, no RC damage.';
+    }
+    logAction('Allied', 'Strategic Bombing', `${n} strikes ${sector.name} (${r.targetNation}): ${commit} bombers vs ${r.rawFighterForce} total Fighter Defense (${r.fighterForce.toFixed(1)} effective — ${r.rcCount} active RCs, ${r.posture} posture; ${Math.round(r.successChance*100)}% success chance) — ${r.success?'SUCCESS':'FAILED'}. ${n} loses ${r.bomberLosses} bombers (now ${af.bomberForce}); ${r.targetNation} loses ${r.fighterLosses} fighters (now ${defenderAf?defenderAf.fighterDefense:0}). ${outcomeText}`, [sector]);
+    await saveState(true, true);
+    render();
+    closeModal();
+  });
+}
+
+// §8.4 Submarine Warfare — replaces the old Submarine token entirely with
+// a standing Submarine Fleet (§10.1), activation-based like Strategic
+// Bombing. Deployment persists at the sea sector until resolved, same
+// duration rule as an NTF assignment. If an enemy NTF is subsequently
+// deployed to that same sector later in the same turn, it automatically
+// engages the already-present patrol — anti-submarine forces hunting down
+// a patrol whose presence is now known. Order matters and is asymmetric
+// by design: a sub deployed AFTER an NTF is already sitting there doesn't
+// trigger this (sneaking into contested waters), only the reverse.
+function submarineTargetInRange(targetSector, nation){
+  const home = sectors.find(s=>s.name===HOME_CAPITAL[nation]);
+  if(!home) return false;
+  return sectorHopDistance(home.id, targetSector.id, SUBMARINE_RANGE) !== null;
+}
+function openSubmarineDeployModal(sector){
+  const sources = ['Germany','USA'].filter(n => (dashboards[factionForNation(n)].submarineFleet[n]||0) > 0);
+  const inRangeSources = sources.filter(n=>submarineTargetInRange(sector, n));
+  if(!inRangeSources.length){
+    openModal('Submarine Patrol', `<div class="winter-note">No nation with an available, in-range Submarine Fleet (§${SUBMARINE_RANGE}-sector range from home capital). Germany and USA are the only nations tracked (§10.1) — fleet grows automatically each Winter.</div>`);
+    return;
+  }
+  openModal(`Submarine Patrol — ${sector.name}`, `
+    <div class="winter-note">Deploying here persists for the rest of this strategic turn, same as an NTF assignment. If an enemy NTF is later deployed to this same sector this turn, your patrol will be automatically counter-attacked (resolve that from this sector's own button once it happens).</div>
+    <div class="field-group">
+      <div class="fg-label">Submarine Fleet source</div>
+      <select id="sub_nation">${inRangeSources.map(n=>`<option>${n}</option>`).join('')}</select>
+    </div>
+    <div class="field-group">
+      <div class="fg-label">Submarines to commit (partial commitment allowed — §10.1)</div>
+      <input class="txtfield" id="sub_commit" type="number" min="1" value="1">
+      <div class="winter-note" id="sub_commit_max" style="margin-top:4px;"></div>
+    </div>
+    <div class="field-group">
+      <div class="fg-label">Patrol mission (§8.4)</div>
+      <select id="sub_effect">
+        <option value="Interdiction">Interdiction — contest this sea sector</option>
+        <option value="Convoy Hunting">Convoy Hunting — damage an adjacent enemy RC</option>
+        <option value="Convoy Raiding">Convoy Raiding — sink a Lend-Lease shipment</option>
+      </select>
+      <div class="winter-note" id="sub_effect_desc" style="margin-top:6px;"></div>
+    </div>
+    <button class="cr-roll-btn" id="sub_deploy_go" style="margin-top:10px;">Deploy Submarine Patrol</button>
+  `);
+  const SUB_MISSION_DESC = {
+    'Interdiction': 'Acts as Naval Superiority (§8.3) at this sea sector: the enemy\'s supply tracing through here is capped at 2,000 points and can\'t recover losses, and any enemy BG moving through loses points per submarine committed. Useful in any sea sector an enemy relies on, whether or not an RC sits nearby.',
+    'Convoy Hunting': `Requires no enemy NTF currently present here, and an enemy or Neutral RC adjacent to ${sector.name}. If more than one qualifies, one is picked at random; the chosen RC becomes Damaged (no effect if already Damaged or Destroyed). Hitting a Neutral specifically costs Germany a modest, cumulative +0.25 RC to the USA (§12.5-style, half that rule's magnitude) — no such cost for any other nation. Does nothing if no qualifying RC is adjacent — check the map before committing to this one.`,
+    'Convoy Raiding': 'Germany only, and only when the USA has assigned a Lend-Lease token this turn on a route (Arctic \u2192 USSR or Atlantic \u2192 UK) passing through a sea sector where Germany holds Naval Superiority or Sea Control. Sinks that shipment, cancelling the Lend-Lease token\'s effect entirely. Has no effect if no qualifying convoy is actually in transit this turn.',
+  };
+  const updateEffectDesc = () => {
+    const eff = document.getElementById('sub_effect').value;
+    document.getElementById('sub_effect_desc').textContent = SUB_MISSION_DESC[eff] || '';
+  };
+  document.getElementById('sub_effect').addEventListener('change', updateEffectDesc);
+  updateEffectDesc();
+  const updateMax = () => {
+    const n = document.getElementById('sub_nation').value;
+    const max = dashboards[factionForNation(n)].submarineFleet[n]||0;
+    document.getElementById('sub_commit_max').textContent = `${n} Submarine Fleet available: ${max}`;
+    document.getElementById('sub_commit').max = max;
+  };
+  document.getElementById('sub_nation').addEventListener('change', updateMax);
+  updateMax();
+  document.getElementById('sub_deploy_go').addEventListener('click', async ()=>{
+    const n = document.getElementById('sub_nation').value;
+    const fac = factionForNation(n);
+    const max = dashboards[fac].submarineFleet[n]||0;
+    const commit = Math.max(1, Math.min(max, parseInt(document.getElementById('sub_commit').value)||0));
+    const effect = document.getElementById('sub_effect').value;
+    if(commit<=0 || max<=0){ notify('No Submarine Fleet available to commit.'); return; }
+    sector.submarinePatrol = {nation:n, count:commit, effect, turn:`${clock.season} ${clock.year}`};
+    // The committed portion leaves the standing fleet count while deployed
+    // — not lost, just temporarily out on patrol and unavailable for a
+    // second, separate deployment this same turn until this one resolves
+    // and any survivors return.
+    dashboards[fac].submarineFleet[n] = max - commit;
+    logAction(fac, 'Submarine Warfare', `${n} deploys ${commit} submarines to ${sector.name} — ${effect} (§8.4)`, [sector]);
+    await saveState(true, true);
+    render();
+    closeModal();
+  });
+}
+// Resolves whichever applies: a counter-attack if an opposing-faction NTF
+// is present at a sector already holding a deployed patrol (the ambush
+// case — sub losses = 20% base + 1 per NTF committed to the counter-
+// attack, capped at the patrol's own size), or the patrol's own chosen
+// effect if no opposing NTF has shown up.
+// Any submarine patrol still deployed and unresolved when the turn
+// advances — no enemy NTF ever showed up to trigger a counter-attack, and
+// the player never manually resolved its own effect either — resolves
+// automatically here as the uncontested case (same logic
+// resolveSubmarineSeaZone already uses), so a patrol can never sit
+// deployed indefinitely and its submarines never get permanently stuck
+// outside the standing fleet. Matches "persists for the rest of this
+// strategic turn" (§8.4) — by definition, that means it can't still be
+// pending once the turn is over.
+function autoResolvePendingSubmarinePatrols(){
+  sectors.forEach(s=>{
+    if(s.submarinePatrol) resolveSubmarineSeaZone(s, true);
+  });
+}
+
+function resolveSubmarineSeaZone(sector, auto){
+  const patrol = sector.submarinePatrol;
+  if(!patrol){ if(!auto) notify('No submarine patrol currently deployed here.'); return; }
+  const patrolFaction = factionForNation(patrol.nation);
+  const enemyNtfCount = Object.entries(sector.ntf||{}).reduce((sum,[n,c])=>
+    factionForNation(n)!==patrolFaction ? sum+c : sum, 0);
+  if(enemyNtfCount > 0){
+    const subLosses = Math.min(patrol.count, Math.round(patrol.count*0.2) + enemyNtfCount);
+    const survivors = patrol.count - subLosses;
+    logAction(patrolFaction, 'Submarine Warfare', `Counter-attack at ${sector.name}: ${enemyNtfCount} enemy NTF ambush ${patrol.nation}'s ${patrol.count}-submarine patrol — ${subLosses} lost, ${survivors} survive.`, [sector]);
+    // Survivors return to the standing fleet (they left it entirely at
+    // deployment, not just conceptually) — losses simply don't return.
+    dashboards[patrolFaction].submarineFleet[patrol.nation] = (dashboards[patrolFaction].submarineFleet[patrol.nation]||0) + survivors;
+    delete sector.submarinePatrol;
+  } else {
+    let effectText;
+    if(patrol.effect==='Convoy Hunting'){
+      // Targets the opposing faction's RCs, and Neutral-owned RCs too —
+      // a submarine campaign plausibly catches neutral shipping in the
+      // same waters, intentionally or not. Picks randomly among every
+      // qualifying adjacent RC rather than always the first one in
+      // connection order — a real patrol wouldn't deterministically
+      // prefer whichever sector happens to be listed first in the map
+      // data. Hitting a Neutral specifically carries a modest diplomatic
+      // cost for Germany (the historically relevant case — U-boat
+      // incidents involving neutral shipping had real consequences;
+      // the USA's Pacific submarine campaign against Japan didn't carry
+      // the same neutral-adjacent risk) — a small standing RC bonus to
+      // the USA, same mechanism as §12.5's Neutrality Violation, just at
+      // half that rule's magnitude since sinking a ship in passing is a
+      // lesser act than invading a neutral's actual territory.
+      const enemyFaction = patrolFaction==='Axis' ? 'Allied' : 'Axis';
+      const candidates = (sector.connections||[]).map(cid=>byId[cid])
+        .filter(s=>s && s.rc>0 && s.status==='ACTIVE' && ['Neutral', enemyFaction].includes(factionForNation(s.occupier||s.owner)));
+      const adjEnemyRC = candidates.length ? candidates[Math.floor(Math.random()*candidates.length)] : null;
+      if(adjEnemyRC){
+        const wasNeutral = factionForNation(adjEnemyRC.occupier||adjEnemyRC.owner)==='Neutral';
+        adjEnemyRC.status = 'Damaged';
+        effectText = `${adjEnemyRC.name} is now Damaged${candidates.length>1 ? ` (randomly selected from ${candidates.length} eligible adjacent RCs: ${candidates.map(c=>c.name).join(', ')})` : ''}.`;
+        if(wasNeutral && patrol.nation==='Germany'){
+          nationRcBonus.USA = (nationRcBonus.USA||0) + 0.25;
+          effectText += ` ${adjEnemyRC.name} was Neutral — USA gains a standing +0.25 RC in response (cumulative, §12.5-style, half that rule's magnitude).`;
+        }
+      } else {
+        effectText = 'No eligible adjacent RC to target (already Damaged/Destroyed, or none present) — no effect.';
+      }
+    } else {
+      effectText = `${patrol.effect} in effect at ${sector.name} — apply its Interdiction/convoy consequences per §8.4 where relevant elsewhere on the map.`;
+    }
+    logAction(patrolFaction, 'Submarine Warfare', `${patrol.nation}'s patrol at ${sector.name} resolves uncontested: ${patrol.effect}. ${effectText}`, [sector]);
+    // Uncontested — the full committed force returns to the standing fleet.
+    dashboards[patrolFaction].submarineFleet[patrol.nation] = (dashboards[patrolFaction].submarineFleet[patrol.nation]||0) + patrol.count;
+    delete sector.submarinePatrol;
+  }
+  if(!auto){ saveState(true, true); render(); }
+}
+
 
 function openMatchSetupModal(sector){
   const here = bgs.filter(b=>b.sectorId===sector.id);
@@ -7222,7 +7962,7 @@ function openCombatResolverModal(attackerBGs, defenderBGs, sector, moverBgId, or
   // support doesn't fly in a blizzard any more than a supply convoy drives
   // through one. Shown disabled with the reason rather than hidden
   // entirely, so it doesn't read as a bug.
-  const AIR_DEPENDENT_TOKENS = new Set(['AIR', 'STRAT', 'Fighter']);
+  const AIR_DEPENDENT_TOKENS = new Set(['AIR', 'Fighter']);
   const tokenOptionsFor = (nation)=>{
     const fac = factionForNation(nation);
     const dash = dashboards[fac];
@@ -7457,6 +8197,7 @@ async function applyCombatResult(){
     const remainingLosers = loserBGs.filter(b=>!donRiverDestroyed.includes(b));
     if(donRiverDestroyed.length){
       const destroyedIds = new Set(donRiverDestroyed.map(b=>b.id));
+      donRiverDestroyed.forEach(b=>recordReconstitutionOpportunity(b));
       bgs = bgs.filter(b=>!destroyedIds.has(b.id));
       notify(`§13.1 Second Army on the Don: ${donRiverDestroyed.map(b=>b.name).join(', ')} Shattered in a USSR sector — destroyed outright, no retreat.`);
     }
@@ -7473,6 +8214,7 @@ async function applyCombatResult(){
       }
     } else {
       const loserIds = new Set(remainingLosers.map(b=>b.id));
+      remainingLosers.forEach(b=>recordReconstitutionOpportunity(b));
       bgs = bgs.filter(b=>!loserIds.has(b.id));
       if(bystanders.length){
         notify(`Decisive Victory collapse at ${pe.sector.name}: ${bystanders.map(b=>b.name).join(', ')} were not part of the engagement and have no retreat destination — holding in place rather than being Annihilated, since they were never defeated.`);
@@ -8175,6 +8917,24 @@ function buildDashboardHtml(faction){
       <button class="cr-roll-btn" data-mob-nation="${n}" style="margin-top:8px;" ${eligible.length?'':'disabled'}>Create</button>
     </div>`;}).join('');
 
+  // House rule: emergency reconstitution (§3.7) for a BG lost between
+  // Winter Audits, while the faction is below its BG Cap — one-turn
+  // window only, same type as what was lost, half strength. Filtered to
+  // this turn's eligible entries; anything else has already expired via
+  // expireReconstitutionOpportunities() at the last turn-advance.
+  const thisTurnForRecon = `${clock.season} ${clock.year}`;
+  const reconRows = dash.reconstitution.filter(r=>r.eligibleTurn===thisTurnForRecon).map(r=>{
+    const eligible = eligibleMobilizationSectors(r.nation);
+    return `
+    <div class="moved-banner" style="border-color:var(--gold);color:var(--gold);">★ ${r.nation}'s ${r.type} BG destroyed at ${r.destroyedTurn} — reconstitution window open this turn only (§3.7), while below the RC-derived BG Cap.
+      <div class="fg-label" style="margin-top:8px;">Deploy at (Owned RC, supply-connected to ${HOME_CAPITAL[r.nation]}, §2.4)</div>
+      <select id="recon_sector_${r.id}">
+        ${eligible.length ? eligible.map(s=>`<option value="${s.id}">${s.name}${s.name===HOME_CAPITAL[r.nation]?' (Capital)':''}</option>`).join('')
+          : `<option value="">No eligible RC — supply trace to capital is broken everywhere</option>`}
+      </select>
+      <button class="cr-roll-btn" data-recon-id="${r.id}" style="margin-top:8px;width:100%;" ${eligible.length?'':'disabled'}>Reconstitute ${r.type} at Half Strength (1,250 pts)</button>
+    </div>`;}).join('');
+
   const econRows = majors.map(n=>{
     const e = econ[n];
     const over = e.fielded > e.bgCap;
@@ -8252,9 +9012,7 @@ function buildDashboardHtml(faction){
   const tokenGrid = `<table class="econ-table"><thead><tr><th>Token</th>${majors.map(n=>`<th>${n}</th>`).join('')}</tr></thead><tbody>
     ${TOKEN_TYPES.map(tt=>`<tr><td>${tt}</td>${majors.map(n=>{
       const count = dash.tokens[n][tt]||0;
-      const cap = tt==='STRAT' ? stratCapFor(n) : null;
-      const over = cap!=null && count>cap;
-      return `<td style="text-align:right;${over?'color:var(--danger);font-weight:700;':''}" ${over?`title="Exceeds the §9.1 build cap for ${n} in ${clock.year} (max ${cap})"`:''}>${count}${over?' ⚠':''}</td>`;
+      return `<td style="text-align:right;">${count}</td>`;
     }).join('')}</tr>`).join('')}
     ${majors.includes('USA') ? `<tr><td>Lend-Lease <span style="color:var(--ink-faint);font-size:10px;">(USA only, §9.1)</span></td>${majors.map(n=>`<td style="text-align:right;">${n==='USA' ? (dash.tokens.USA['Lend-Lease']||0) : '—'}</td>`).join('')}</tr>` : ''}
   </tbody></table>
@@ -8269,7 +9027,8 @@ function buildDashboardHtml(faction){
   const ntfRows = ntfMajors.map(n=>{
     const allotted = ntfAllotmentFor(n);
     const assigned = ntfAssignedFor(n);
-    return `<tr><td>${n}</td><td>${allotted}</td><td class="${assigned>allotted?'pill-over':'pill-ok'}">${assigned}</td></tr>`;
+    const hasSubs = dash.submarineFleet[n]!==undefined;
+    return `<tr><td>${n}</td><td>${allotted}</td><td class="${assigned>allotted?'pill-over':'pill-ok'}">${assigned}</td><td>${hasSubs ? dash.submarineFleet[n] : '—'}</td></tr>`;
   }).join('');
 
   const FLAG_SECTIONS = {
@@ -8308,6 +9067,7 @@ function buildDashboardHtml(faction){
     ${armisticeBanner}
     ${alphaForceBanner}
     ${warnRows}
+    ${reconRows}
 
     <div class="cr-side-title" style="margin-top:6px;">Economy At-A-Glance</div>
     <table class="econ-table"><thead><tr><th>Nation</th><th>Owned RC</th><th>Occ. RC</th><th>Minor RC</th>
@@ -8333,9 +9093,36 @@ function buildDashboardHtml(faction){
     <div class="winter-note">Collected automatically at each Winter Logistics Phase (§2, §10) — 1 token per 2 RCs, type chosen at collection. Spent by Combat Resolver assignments and National Token purchases elsewhere in this tool.</div>
     ${tokenGrid}
 
-    <div class="cr-side-title rule-link" data-section="sec-8-3" style="margin-top:18px;cursor:pointer;" title="Fixed yearly allotment (§11.4) — NTFs cannot be built. Assign them to sea sectors from that sector's panel on the map; this total sums automatically.">Naval Task Forces</div>
-    <table class="econ-table"><thead><tr><th>Nation</th><th>Allotted (§11.4)</th><th>Assigned (from map)</th></tr></thead><tbody>${ntfRows}</tbody></table>
-    <div class="winter-note">Assign NTFs to specific sea sectors from that sector's panel on the map — this total updates automatically.</div>
+    <div class="cr-side-title rule-link" data-section="sec-8-3" style="margin-top:18px;cursor:pointer;" title="Fixed yearly allotment (§8.3) — plus any extra purchased below. Assign them to sea sectors from that sector's panel on the map; this total sums automatically. Submarine Fleet (§8.4) shown alongside — same theater of naval production, tracked separately since it's a standing activation-based force, not deployed the same way.">Naval Task Forces &amp; Submarine Fleet</div>
+    <table class="econ-table"><thead><tr><th>Nation</th><th>NTF Allotted (§8.3)</th><th>NTF Assigned (from map)</th><th>Submarine Fleet (§8.4)</th></tr></thead><tbody>${ntfRows}</tbody></table>
+    <div class="winter-note">Assign NTFs to specific sea sectors from that sector's panel on the map — this total updates automatically. Submarine Fleet is deployed the same way, as an activation, from a sea sector's own panel.</div>
+    <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;align-items:center;">
+      <select id="ntf_extra_nation">${ntfMajors.map(n=>`<option>${n}</option>`).join('')}</select>
+      <button class="ctrl-btn" id="ntf_extra_buy">Spend 3 tokens → +1 NTF (cap +2/year)</button>
+      <span class="winter-note" style="margin:0;">Naval production supplement — an economy that's doing well can invest in extra hulls beyond the historical schedule above.</span>
+    </div>
+
+    <div class="cr-side-title rule-link" data-section="sec-8-5" style="margin-top:18px;cursor:pointer;" title="Standing forces (§8.5) — grow automatically each Winter Logistics Phase, take losses from Strategic Bombing activations. Not token-driven.">Air Forces</div>
+    <table class="econ-table"><thead><tr><th>Nation</th><th>Bomber Force</th><th>Fighter Defense (raw)</th></tr></thead><tbody>
+      ${majors.filter(n=>dash.airForces[n]).map(n=>{
+        const af = dash.airForces[n];
+        return `<tr><td>${n}</td>
+          <td>${af.bomberForce!==undefined ? af.bomberForce : '—'}</td>
+          <td>${af.fighterDefense!==undefined ? af.fighterDefense : '—'}</td>
+        </tr>`;
+      }).join('')}
+    </tbody></table>
+    <div class="winter-note">Committed portions leave these totals temporarily while a strike is in progress this turn — see that sector's own panel for anything currently deployed.</div>
+    ${faction==='Axis' ? `
+    <div class="fg-label" style="margin-top:10px;">Fighter Defense Posture (§8.5)</div>
+    <div class="winter-note">Concentrated: fewer, larger formations — lower chance any given raid meets defenders, but heavier losses on the raids that do. Dispersed: thin coverage everywhere — higher contact chance, lighter losses per contact. Applies on top of RC diffusion (raw Fighter Defense split across every active RC the nation holds — the more RCs, the thinner any single one's real coverage).</div>
+    ${Object.keys(dash.fighterPosture||{}).map(n=>`
+    <div class="field-row" style="margin-top:6px;align-items:center;">
+      <div style="flex:0 0 90px;font-size:12px;color:var(--ink-dim);">${n}</div>
+      <select id="posture_${n}" data-posture-nation="${n}">
+        ${['Dispersed','Concentrated'].map(p=>`<option value="${p}" ${dash.fighterPosture[n]===p?'selected':''}>${p}</option>`).join('')}
+      </select>
+    </div>`).join('')}` : ''}
 
     <div class="cr-side-title" style="margin-top:18px;">Special Rule Status</div>
     ${flagRows}
@@ -8392,12 +9179,6 @@ function wireDashboardInputs(faction){
       const d = dashboards[faction];
       d.tokens[nation] = d.tokens[nation] || {};
       d.tokens[nation][type] = (d.tokens[nation][type]||0) + 1;
-      if(type==='STRAT' && STRAT_BUILD_CAP[nation]){
-        const cap = stratCapFor(nation);
-        if(d.tokens[nation][type] > cap){
-          notify(`${nation} now holds ${d.tokens[nation][type]}× STRAT — over the §9.1 build cap for ${clock.year} (max ${cap}). Added anyway since this is a manual override; flagged in the table.`);
-        }
-      }
       logAction(faction, 'Support Tokens', `${nation} manually gains 1× ${type} (now ${d.tokens[nation][type]})`, []);
       await saveState(true, true);
       openDashboard(faction);
@@ -8425,6 +9206,44 @@ function wireDashboardInputs(faction){
     }
   });
   const thisTurn = `${clock.season} ${clock.year}`;
+
+  const ntfExtraBuy = document.getElementById('ntf_extra_buy');
+  if(ntfExtraBuy) ntfExtraBuy.addEventListener('click', async ()=>{
+    try{
+      const nation = document.getElementById('ntf_extra_nation').value;
+      const d = dashboards[faction];
+      const current = d.extraNtf[nation] || 0;
+      if(current >= 2){ notify(`${nation} is already at the +2/year cap for extra NTFs.`); return; }
+      const held = d.tokens[nation] || {};
+      const total = Object.values(held).reduce((a,v)=>a+v, 0);
+      if(total < 3){ notify(`${nation} needs 3 banked Support Tokens of any combination to purchase an extra NTF — only ${total} held.`); return; }
+      // Spend greedily from whichever types are most plentiful first, so
+      // this never fails on a technicality if the tokens are just spread
+      // across several types rather than stacked in one.
+      let toSpend = 3;
+      Object.keys(held).sort((a,b)=>held[b]-held[a]).forEach(t=>{
+        if(toSpend<=0) return;
+        const take = Math.min(held[t], toSpend);
+        held[t] -= take;
+        toSpend -= take;
+      });
+      d.extraNtf[nation] = current + 1;
+      logAction(faction, 'Naval Production', `${nation} spends 3 Support Tokens on an extra NTF for ${clock.year} (now +${d.extraNtf[nation]} above the historical allotment, cap +2)`, []);
+      await saveState(true, true);
+      openDashboard(faction);
+    }catch(err){
+      console.error('NTF purchase failed:', err);
+      notify(`⚠ Couldn't save that NTF purchase — ${err.message}. Please try again.`);
+    }
+  });
+  document.querySelectorAll('[data-posture-nation]').forEach(sel=>{
+    sel.addEventListener('change', async ()=>{
+      const n = sel.dataset.postureNation;
+      dashboards.Axis.fighterPosture[n] = sel.value;
+      logAction('Axis', 'Strategic Bombing', `${n} sets Fighter Defense Posture to ${sel.value} (§8.5)`, []);
+      await saveState(true, true);
+    });
+  });
 
   const ultraApplyBtn = document.getElementById('ultra_apply_btn');
   if(ultraApplyBtn) ultraApplyBtn.addEventListener('click', async ()=>{
@@ -8529,6 +9348,29 @@ function wireDashboardInputs(faction){
       });
       logAction(faction, 'Purchase', `${name} (${n}, ${type}) mobilized at ${deploySector.name}`, [deploySector]);
       dashboards[faction].mobilizationSlack[n] = Math.max(0, (dashboards[faction].mobilizationSlack[n]||0) - 1);
+      await saveState(true, true);
+      render();
+      openDashboard(faction);
+    });
+  });
+  document.querySelectorAll('[data-recon-id]').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      const reconId = btn.dataset.reconId;
+      const entry = dashboards[faction].reconstitution.find(r=>String(r.id)===String(reconId));
+      if(!entry) return;
+      const sectorSel = document.getElementById(`recon_sector_${entry.id}`);
+      const chosenId = sectorSel ? parseInt(sectorSel.value) : null;
+      const deploySector = chosenId ? byId[chosenId] : sectors.find(s=>s.name===HOME_CAPITAL[entry.nation]);
+      if(!deploySector){ notify('No eligible deployment sector — supply trace to the capital is broken everywhere.'); return; }
+      const maxId = bgs.reduce((m,b)=>Math.max(m,b.id),0);
+      bgs.push({
+        faction, nation:entry.nation, name:`${entry.nation} Reconstituted ${entry.type}`, type:entry.type, fow:null,
+        location:deploySector.name, points:1250, fatigue:0,
+        experience: experienceBaseline(entry.nation, entry.type), orders:'Hold', in_supply:'Yes', elite:null, id:maxId+1,
+        sectorId: deploySector.id, shattered:false, movedThisTurn:false
+      });
+      logAction(faction, 'Purchase', `${entry.nation} reconstitutes a ${entry.type} BG at half strength (1,250 pts) at ${deploySector.name} — replacing the one destroyed at ${entry.destroyedTurn} (§3.7)`, [deploySector]);
+      dashboards[faction].reconstitution = dashboards[faction].reconstitution.filter(r=>r.id!==entry.id);
       await saveState(true, true);
       render();
       openDashboard(faction);
@@ -9098,6 +9940,7 @@ function openBattleLogModal(){
           loserBgs.forEach(b=>{ b.sectorId = dest.id; b.location = dest.name; });
         } else if(loserBgs.length){
           const loserIds = new Set(loserBgs.map(b=>b.id));
+          loserBgs.forEach(b=>recordReconstitutionOpportunity(b));
           bgs = bgs.filter(b=>!loserIds.has(b.id));
         }
       }
@@ -9169,6 +10012,42 @@ function openWinterLogisticsModal(){
 }
 document.getElementById('openWinter').addEventListener('click', openWinterLogisticsModal);
 
+// Applies each year's Bomber Force / Fighter Defense Force / Submarine
+// Fleet growth (BOMBER_FORCE_GROWTH / FIGHTER_DEFENSE_GROWTH /
+// SUBMARINE_FLEET_GROWTH above) on top of whatever the force's current
+// size is — additive, not a reset to a cap, so losses taken during the
+// year genuinely persist into the next one if growth doesn't cover them.
+function applyStandingForceGrowth(comingYear){
+  const summary = [];
+  Object.entries(BOMBER_FORCE_GROWTH).forEach(([nation, table])=>{
+    const fac = factionForNation(nation);
+    const growth = (table[comingYear]||0) + doctrineBenefitFor(nation, 'stratCap');
+    if(growth>0){
+      const af = dashboards[fac].airForces[nation];
+      af.bomberForce = (af.bomberForce||0) + growth;
+      summary.push(`${nation} Bomber Force +${growth} (now ${af.bomberForce})`);
+    }
+  });
+  Object.entries(FIGHTER_DEFENSE_GROWTH).forEach(([nation, table])=>{
+    const fac = factionForNation(nation);
+    const growth = table[comingYear]||0;
+    if(growth>0){
+      const af = dashboards[fac].airForces[nation];
+      af.fighterDefense = (af.fighterDefense||0) + growth;
+      summary.push(`${nation} Fighter Defense Force +${growth} (now ${af.fighterDefense})`);
+    }
+  });
+  Object.entries(SUBMARINE_FLEET_GROWTH).forEach(([nation, table])=>{
+    const fac = factionForNation(nation);
+    const growth = table[comingYear]||0;
+    if(growth>0){
+      dashboards[fac].submarineFleet[nation] = (dashboards[fac].submarineFleet[nation]||0) + growth;
+      summary.push(`${nation} Submarine Fleet +${growth} (now ${dashboards[fac].submarineFleet[nation]})`);
+    }
+  });
+  if(summary.length) logAction('Axis', 'Standing Forces', `Winter reinforcement for ${comingYear}: ${summary.join('; ')}`, []);
+  return summary;
+}
 async function applyWinterLogistics(plan, comingYear){
   const beforeSnap = snapshotForChangeSummary();
   MAJORS.forEach(n=>{
@@ -9195,6 +10074,14 @@ async function applyWinterLogistics(plan, comingYear){
     dashboards[fac].mobilizationSlack = dashboards[fac].mobilizationSlack || {};
     dashboards[fac].mobilizationSlack[n] = slack>0 ? slack : 0;
   });
+  // Bomber Force / Fighter Defense Force / Submarine Fleet growth for the
+  // coming year — automatic, no purchase decision. If losses taken during
+  // the year exceeded this figure, the force enters the new year smaller
+  // than it started; if not, this simply restores it. Either way there's
+  // nothing to choose here, which is the point — "replace losses or
+  // accept reduced strength" isn't a separate decision, this number is
+  // both outcomes depending on how the year went.
+  applyStandingForceGrowth(comingYear);
   // §2 house rule: unspent Support Tokens clear at year-end rather than
   // carrying forward indefinitely — shown here before the fresh Winter
   // collection replaces them, so it's never a silent loss.
@@ -9243,12 +10130,15 @@ async function finishWinterLogistics(beforeSnap, comingYear){
     }
   });
   bgs.forEach(b=>{ b.movedThisTurn = false; });
+  resetForceCommitment();
+  autoResolvePendingSubmarinePatrols();
   sectors.forEach(s=>{ if(s.type==='Sea') s.ntfLocked = {}; });
   advancePartisans();
   const supplyChanges = advanceSupplyStatus();
   const recoveryChanges = advanceRecovery();
   const interceptResult = advanceAxisIntercept();
   if(interceptResult) supplyChanges.push(interceptResult);
+  expireReconstitutionOpportunities();
   clock = {year: comingYear, season:'Spring'};
   advanceWeather();
   await saveState(true, true);
@@ -9320,9 +10210,12 @@ document.getElementById('advanceTurn').addEventListener('click', async ()=>{
   const ok = await confirmDialog(`Advance from ${clock.season} ${clock.year} to ${next.season} ${next.year}?\n\nThis clears every Battle Group's "moved this turn" flag and cannot be undone.`);
   if(!ok) return;
   const beforeSnap = snapshotForChangeSummary();
+  expireReconstitutionOpportunities();
   clock = next;
   advanceWeather();
   bgs.forEach(b=>{ b.movedThisTurn = false; });
+  resetForceCommitment();
+  autoResolvePendingSubmarinePatrols();
   sectors.forEach(s=>{ if(s.type==='Sea') s.ntfLocked = {}; });
   advancePartisans();
   const supplyChanges = advanceSupplyStatus();
