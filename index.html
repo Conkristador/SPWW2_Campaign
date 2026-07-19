@@ -7437,6 +7437,20 @@ async function applyCombatResult(){
     if(r.outcome==='Decisive Victory'){
       loserBGs.forEach(b=>{ b.experience = Math.max(0,b.experience-5); b.shattered = true; });
     }
+    // Overstacked-space retreat rule: a Decisive Victory (Shatter) is a
+    // collapse of the whole position, not just the BGs that fought — every
+    // other same-faction BG sitting in the sector retreats too, but clean:
+    // no point loss, no fatigue, since they were never in the fight. A
+    // Standard Victory is a narrower setback — only the engaged BGs pull
+    // back; anyone else present holds their ground. Emergency Reserves
+    // (§11.4) are excluded even from the Shatter sweep — their own rule
+    // ("may never leave their home province") is more specific and wins.
+    const loserFaction = loserBGs[0] ? (loserBGs[0].faction||factionForNation(loserBGs[0].nation)) : null;
+    const engagedIds = new Set(loserBGs.map(b=>b.id));
+    const bystanders = r.outcome==='Decisive Victory'
+      ? bgs.filter(b=>b.sectorId===pe.sector.id && !engagedIds.has(b.id) && !b.isKampfgruppe &&
+          (b.faction||factionForNation(b.nation))===loserFaction && !b.emergencyReserve)
+      : [];
     // Same rule, other half: a Shattered Hungarian BG in a USSR sector is
     // destroyed outright, no retreat, before the normal retreat/removal path.
     const donRiverDestroyed = inUSSR ? loserBGs.filter(b=>b.nation==='Hungary' && b.shattered) : [];
@@ -7449,9 +7463,20 @@ async function applyCombatResult(){
     if(retreatSel && retreatSel.value){
       const dest = byId[parseInt(retreatSel.value)];
       remainingLosers.forEach(b=>{ b.sectorId = dest.id; b.location = dest.name; });
+      // Bystanders move with the collapse if there's somewhere for them to
+      // go — but never Annihilated for lack of a destination, since they
+      // were never actually defeated. If no destination was chosen (or
+      // none exists), they simply hold in place.
+      bystanders.forEach(b=>{ b.sectorId = dest.id; b.location = dest.name; });
+      if(bystanders.length){
+        notify(`Decisive Victory collapse at ${pe.sector.name}: ${bystanders.map(b=>b.name).join(', ')} — not part of the engagement, but swept up in the retreat to ${dest.name}. No point loss or fatigue applied.`);
+      }
     } else {
       const loserIds = new Set(remainingLosers.map(b=>b.id));
       bgs = bgs.filter(b=>!loserIds.has(b.id));
+      if(bystanders.length){
+        notify(`Decisive Victory collapse at ${pe.sector.name}: ${bystanders.map(b=>b.name).join(', ')} were not part of the engagement and have no retreat destination — holding in place rather than being Annihilated, since they were never defeated.`);
+      }
     }
   }
 
