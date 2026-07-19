@@ -3939,6 +3939,7 @@ function mergeSectorsWithSeed(saved){
       activeAmphibiousOp: prev.activeAmphibiousOp || false,
       airborneLodgement: prev.airborneLodgement || false,
       weather: prev.weather || null,
+      emergencyReserveUsed: prev.emergencyReserveUsed || false,
       lodgementTurn: prev.lodgementTurn || null,
       lodgementRotationTurn: prev.lodgementRotationTurn || null,
       faction: prev.faction!==undefined ? prev.faction : seed.faction,
@@ -5684,9 +5685,23 @@ function renderPanel(){
       <div class="field-group">
         <label style="display:flex;align-items:center;gap:8px;font-family:var(--font-mono);font-size:12px;color:var(--ink-dim);">
           <input type="checkbox" id="f_lodgement_active" ${s.lodgementTurn===`${clock.season} ${clock.year}`?'checked':''}>
-          Amphibious Lodgement active this turn (§11.1.3) — normally set automatically by a winning Beach Assault in the Combat Resolver. Check this to set it manually for the current turn (e.g. recording a WinSPWW2 result by hand); uncheck to clear it. This is "this turn only" by rule — it won't stay checked once the turn advances, same as the automatic version.
+          Amphibious Lodgement active this turn (§8.1) — normally set automatically by a winning Beach Assault in the Combat Resolver. Check this to set it manually for the current turn (e.g. recording a WinSPWW2 result by hand); uncheck to clear it. This is "this turn only" by rule — it won't stay checked once the turn advances, same as the automatic version.
         </label>
       </div>
+
+      ${EMERGENCY_RESERVE_SECTORS.has(s.name) ? (()=>{
+        const used = !!s.emergencyReserveUsed;
+        const triggered = emergencyReserveTriggerMet(s);
+        return `<div class="field-group">
+          <div class="fg-label rule-link" data-section="sec-11-4">Emergency Soviet Reserves (§11.4)</div>
+          <div class="winter-note">${used
+            ? 'Already raised here — one-time per sector, max 3 uses total across the campaign.'
+            : (triggered
+              ? 'Trigger condition met — an Axis BG is in or adjacent to this sector.'
+              : 'Not yet triggered — requires an Axis BG in or adjacent to this sector.')}</div>
+          <button class="cr-roll-btn" id="f_emergency_reserve_btn" style="margin-top:8px;width:100%;" ${(used||!triggered)?'disabled':''}>Raise Emergency Reserves (2× INF, Militia baseline)</button>
+        </div>` ;
+      })() : ''}
 
       <div class="save-note" id="saveNote">✓ Saved to shared campaign state</div>
     </div>
@@ -5842,6 +5857,30 @@ function renderPanel(){
 
   const matchSetupBtn = document.getElementById('f_match_setup_btn');
   if(matchSetupBtn) matchSetupBtn.addEventListener('click', ()=>openMatchSetupModal(s));
+
+  const emergencyReserveBtn = document.getElementById('f_emergency_reserve_btn');
+  if(emergencyReserveBtn) emergencyReserveBtn.addEventListener('click', async ()=>{
+    if(!(await confirmDialog(`Raise Emergency Soviet Reserves at ${s.name}? Creates 2 free INF BGs (Militia experience baseline, exempt from the BG Cap, never eligible for tokens or Elite, restricted to this province). One-time per sector — cannot be undone.`))) return;
+    const maxId = bgs.reduce((m,b)=>Math.max(m,b.id),0);
+    // Numbered globally across all three trigger sectors, not per-sector —
+    // max 3 uses total (§11.4) x 2 BGs each caps this at exactly 6, so
+    // 1st-6th Reserve Army covers every possible instance without collision.
+    const ORDINALS = ['1st','2nd','3rd','4th','5th','6th'];
+    const alreadyRaised = bgs.filter(b=>b.emergencyReserve).length;
+    for(let i=0;i<2;i++){
+      const ordinal = ORDINALS[alreadyRaised+i] || `${alreadyRaised+i+1}th`;
+      bgs.push({
+        faction:'Allied', nation:'USSR', name:`${ordinal} Reserve Army`, type:'INF', fow:null,
+        location:s.name, points:2500, fatigue:0, experience:40, orders:'Hold', in_supply:'Yes',
+        elite:null, id:maxId+1+i, sectorId:s.id, shattered:false, movedThisTurn:false, emergencyReserve:true,
+      });
+    }
+    s.emergencyReserveUsed = true;
+    logAction('Allied', 'Purchase', `USSR raises 2× Emergency Reserve INF BGs at ${s.name} (§11.4) — outside the BG Cap, Militia baseline, restricted to this province`, [s]);
+    await saveState(true, true);
+    render();
+    renderPanel();
+  });
 
   const addConnBtn = document.getElementById('f_add_conn_btn');
   if(addConnBtn) addConnBtn.addEventListener('click', async ()=>{
@@ -6062,6 +6101,11 @@ function renderBGPanel(){
       </div>
 
       ${isOwnUnit ? `
+      ${b.emergencyReserve ? `
+      <div class="field-group">
+        <div class="fg-label rule-link" data-section="sec-11-4">Move to Sector</div>
+        <div class="winter-note">Restricted — an Emergency Soviet Reserve (§11.4) may never leave its home province. No move options offered.</div>
+      </div>` : `
       <div class="field-group">
         <div class="fg-label rule-link" data-section="sec-7-4">Move to Sector ${moved?'— locked (already activated)':''}</div>
         <select id="f_move" ${moved?'disabled':''}>
@@ -6094,7 +6138,7 @@ function renderBGPanel(){
         ${moved ? `<button class="link-btn" id="f_undo_move">Undo — clear activation flag manually</button>` : ''}
         ${(sector && WEATHER_BLOCKS_STRATEGIC_MOVEMENT.has(sector.weather)) ? `<div class="winter-note" style="margin-top:6px;color:var(--gold);">⚠ Strategic Movement unavailable — ${sector.weather} at ${sector.name} (house rule). Tactical Movement still works.</div>` : ''}
         ${(b.type==='Airborne' && sector && WEATHER_BLOCKS_AIRBORNE_INSERTION.has(sector.weather)) ? `<div class="winter-note" style="margin-top:6px;color:var(--gold);">⚠ Airborne Insertion grounded — ${sector.weather} at ${sector.name} (house rule). Needs Clear or Light Cloud.</div>` : ''}
-      </div>
+      </div>`}
 
       ${(b.nation==='Germany' && (b.type==='ARM'||b.type==='MECH') && !b.isKampfgruppe) ? `
       <div class="field-group">
@@ -6903,11 +6947,37 @@ function effectiveStackCap(sector){
   if(activeLodgementHub(sector)) return null; // pooled — see stackWarningFactions
   return 2;
 }
+// Surfaces the same stack-cap logic the sector panel's warning banner uses,
+// but at the point of *choosing* a retreat destination rather than only
+// after the fact. Doesn't know which faction is retreating yet at render
+// time in the manual-entry flows (Outcome/Winner are entered in the same
+// form) — shows total BG count at the candidate sector against its cap
+// rather than guessing a side, which is enough to flag "this one's already
+// full" without needing that information. A reminder, not a block —
+// retreating there is still allowed; §1/§8.1's existing grace-period-then-
+// attrition rule is what actually governs the consequence, unchanged.
+function retreatOptionLabel(sector){
+  const cap = effectiveStackCap(sector);
+  const count = bgs.filter(b=>b.sectorId===sector.id && !b.isKampfgruppe && !b.emergencyReserve).length;
+  if(cap === Infinity) return sector.name;
+  if(cap === null){
+    const hub = activeLodgementHub(sector);
+    return hub ? `${sector.name} (Lodgement Rotation zone — §8.1, shared 6-BG pool)` : sector.name;
+  }
+  return `${sector.name} (${count}/${cap}${count>=cap ? ' — already at cap' : ''})`;
+}
 // Which factions are over their stacking limit at this sector, accounting
 // for the Lodgement Rotation pool spanning multiple sectors at once.
 function stackWarningFactions(sector){
   if(sector.type==='Home Capital') return [];
-  const factionsPresent = new Set(bgs.filter(b=>b.sectorId===sector.id && !b.isKampfgruppe).map(b=>b.faction||factionForNation(b.nation)));
+  // §11.4 Emergency Soviet Reserves are excluded here the same way they're
+  // excluded from the BG Cap and Winter Attrition — deliberately created
+  // outside the normal stacking system, at a fixed sector, with no choice
+  // in the matter. Flagging them as "overstacked" would be a false
+  // positive for units that were always meant to be there; the BGs
+  // themselves, once created, already make clear what happened.
+  const countable = (b) => b.sectorId===sector.id && !b.isKampfgruppe && !b.emergencyReserve;
+  const factionsPresent = new Set(bgs.filter(countable).map(b=>b.faction||factionForNation(b.nation)));
   if(!sector.smallIslandOutpost){
     const hub = activeLodgementHub(sector);
     if(hub){
@@ -6916,7 +6986,7 @@ function stackWarningFactions(sector){
   }
   const cap = effectiveStackCap(sector);
   return Array.from(factionsPresent).filter(f=>
-    bgs.filter(b=>b.sectorId===sector.id && !b.isKampfgruppe && (b.faction||factionForNation(b.nation))===f).length > cap);
+    bgs.filter(b=>countable(b) && (b.faction||factionForNation(b.nation))===f).length > cap);
 }
 
 async function runInvasionPhase2(state){
@@ -7238,7 +7308,7 @@ function showManualResultForm(){
       <div><div class="fg-label">Defender Points Lost</div><input class="txtfield" id="mr_def_loss" type="number" value="0"></div>
     </div>
     <div class="fg-label" style="margin-top:8px;">Retreat sector for the loser (leave blank for Annihilation; ignored on a Stalemate)</div>
-    <select id="cr_retreat_select"><option value="">— Annihilation / not applicable —</option>${retreatOptions.map(o=>`<option value="${o.id}">${o.name}</option>`).join('')}</select>
+    <select id="cr_retreat_select"><option value="">— Annihilation / not applicable —</option>${retreatOptions.map(o=>`<option value="${o.id}">${retreatOptionLabel(o)}</option>`).join('')}</select>
     <button id="mr_apply_btn" class="cr-roll-btn" style="margin-top:12px;">Apply Manual Result</button>
     <button id="mr_cancel_btn" class="ctrl-btn" style="margin-left:8px;">Back</button>
   `;
@@ -7297,7 +7367,7 @@ function runCombatResolver(){
     const options = (pe.sector.connections||[]).map(cid=>byId[cid]).filter(Boolean);
     if(options.length){
       retreatHtml = `<div class="field-group"><div class="fg-label">Retreat sector for the loser</div>
-        <select id="cr_retreat_select">${options.map(o=>`<option value="${o.id}">${o.name}</option>`).join('')}</select></div>`;
+        <select id="cr_retreat_select">${options.map(o=>`<option value="${o.id}">${retreatOptionLabel(o)}</option>`).join('')}</select></div>`;
     } else {
       retreatHtml = `<div class="winter-note">No adjacent sector available — Annihilation will apply on Apply (§8.3).</div>`;
     }
@@ -7661,6 +7731,19 @@ function turnAtLeast(season, year){
 // contributes its RC (§2) to the USA once its date arrives — the natural
 // sponsor given Pan-American geography and diplomacy — matching how
 // Sweden's standing RC bonus for Germany already works below.
+// §11.4 Emergency Soviet Reserves: the first time an Axis BG enters or
+// becomes adjacent to Moscow, Leningrad, or Stalingrad, USSR may raise 2
+// free INF BGs there — outside Winter Mobilization, not counted against
+// the RC-derived BG Cap (enforced in computeEconomy() and Winter
+// Attrition via the emergencyReserve flag on the BG itself). Each of the
+// three sectors is an independent, one-time trigger — max 3 total uses
+// across the campaign, tracked per-sector via s.emergencyReserveUsed.
+const EMERGENCY_RESERVE_SECTORS = new Set(['Moscow', 'Leningrad', 'Stalingrad']);
+function emergencyReserveTriggerMet(sector){
+  const check = (sec) => bgs.some(b => (b.faction||factionForNation(b.nation))==='Axis' && b.sectorId===sec.id);
+  if(check(sector)) return true;
+  return (sector.connections||[]).some(cid => byId[cid] && check(byId[cid]));
+}
 const LATAM_ACTIVATION = {
   'Cuba':      {season:'Winter', year:1941},
   'Mexico':    {season:'Summer', year:1942},
@@ -7919,10 +8002,14 @@ function computeEconomy(){
     const bgCap = owned*ratio + occ + doctrineCostFor(nation, 'bgCap');
     const majorCap = bgCap - minorRC;
     const nationSet = new Set([nation, ...bgMinors]);
-    const fielded = bgs.filter(b=>nationSet.has(b.nation)).length;
-    const minorFielded = bgs.filter(b=>bgMinors.includes(b.nation)).length;
+    // §11.4 Emergency Soviet Reserves: flagged BGs sit entirely outside the
+    // RC-derived cap system — never counted toward fielded/majorFielded,
+    // never subject to Winter Attrition (§4.4) as a result.
+    const cappedBgs = bgs.filter(b=>!b.emergencyReserve);
+    const fielded = cappedBgs.filter(b=>nationSet.has(b.nation)).length;
+    const minorFielded = cappedBgs.filter(b=>bgMinors.includes(b.nation)).length;
     const majorFielded = fielded - minorFielded;
-    const infCount = bgs.filter(b=>nationSet.has(b.nation)&&b.type==='INF').length;
+    const infCount = cappedBgs.filter(b=>nationSet.has(b.nation)&&b.type==='INF').length;
     out[nation] = {nation, ownedRC:owned, occupiedRC:occ, minorRC, ratio, bgCap, majorCap,
       fielded, minorFielded, majorFielded, infPct: fielded?infCount/fielded:0, infMin: INF_MIN[nation] + doctrineCostFor(nation, 'infMin'),
       eliteCap: Math.max(0, Math.min(3,Math.floor((owned+occ)/6)) + doctrineCostFor(nation, 'eliteCap')),
@@ -8920,7 +9007,7 @@ function openBattleLogModal(){
     const sec = byId[parseInt(sectorSel.value)];
     const here = bgs.filter(b=>b.sectorId===sec.id);
     const retreatOptions = (sec.connections||[]).map(cid=>byId[cid]).filter(Boolean)
-      .map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
+      .map(s=>`<option value="${s.id}">${retreatOptionLabel(s)}</option>`).join('');
     document.getElementById('mb_sector_dependent').innerHTML = `
       <div class="field-row" style="margin-top:8px;">
         <div><div class="fg-label">Attacker BG(s) here</div>
@@ -9068,7 +9155,7 @@ async function applyWinterLogistics(plan, comingYear){
       let remaining = excess;
       for(const type of ATTRITION_PRIORITY){
         if(remaining<=0) break;
-        const candidates = bgs.filter(b=>nationSet.has(b.nation) && b.type===type && !b.shattered);
+        const candidates = bgs.filter(b=>nationSet.has(b.nation) && b.type===type && !b.shattered && !b.emergencyReserve);
         for(const b of candidates){
           if(remaining<=0) break;
           b.points = Math.round(b.points * 0.8);
