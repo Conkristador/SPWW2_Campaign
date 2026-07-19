@@ -1007,6 +1007,55 @@ version.</p></li>
 This isn’t a purchase or a standing ability — it simply may or may not
 happen, automatically, as part of advancing the turn.</p></li>
 </ul>
+<h3 id="sec-5-4">5.4. Weather (house rule)</h3>
+<p>Every sector rolls one of five conditions each strategic turn —
+<strong>Clear, Light Cloud, Overcast/Rain, Heavy Rain/Snow,
+Storm/Blizzard</strong> — shown next to Terrain in the sector panel.
+Supersedes the old fixed “Winter weather sector” map designation
+entirely: this applies to every sector, every season, not just a handful
+of pre-marked ones in Winter.</p>
+<ul>
+<li><p><strong>Weighted by season and region, not uniform.</strong>
+Summer skews toward Clear; Winter skews toward the two worst conditions.
+Arid regions (North Africa, Middle East) skew Clear regardless of
+season. Tropical regions (Africa, Asia, Pacific) run wetter year-round.
+Cold regions (USSR, Eastern Europe) skew hardest toward Storm/Blizzard
+specifically in Winter.</p></li>
+<li><p><strong>Influenced by its own recent history and its neighbors’ —
+never determined by either.</strong> A sector coming out of severe
+weather is more likely to roll severe weather again next turn than a
+sector coming out of Clear, and a sector surrounded by bad-weather
+neighbors leans the same way — but every condition stays reachable from
+every other one, no lockouts.</p></li>
+<li><p><strong>Heavy Rain/Snow or Storm/Blizzard blocks Strategic
+Movement</strong> (§7.4) at the origin sector — ordinary Tactical
+Movement (1 sector) is unaffected.</p></li>
+<li><p><strong>Overcast/Rain, Heavy Rain/Snow, or Storm/Blizzard blocks
+Airborne Insertion</strong> (§11.2) at the origin sector — a lower bar
+than Strategic Movement’s, since accurate parachute and glider drops
+need real visibility and calm air in a way ground movement through the
+same rain doesn’t.</p></li>
+<li><p><strong>Heavy Rain/Snow or Storm/Blizzard applies −20% tactical
+budget to the attacker</strong> in any sector, regardless of nation or
+region — replaces an earlier version of this rule that fired for every
+sector in every Winter turn regardless of actual local conditions; now
+genuinely tied to the sector’s own rolled weather instead of the
+campaign calendar. Stacks with Rasputitsa (§7.6) where both
+apply.</p></li>
+<li><p><strong>Storm/Blizzard cuts a supply trace</strong> (§4) — a
+sector in Storm/Blizzard can’t be crossed while tracing to an active RC,
+and can’t itself serve as the RC endpoint that turn. Doesn’t affect a
+BG’s own sector if it’s already sitting there; this only blocks
+extending the trace into a new sector.</p></li>
+<li><p><strong>Heavy Rain/Snow or Storm/Blizzard grounds AIR, STRAT, and
+Fighter tokens</strong> — real air support doesn’t fly in conditions
+that would also block Strategic Movement. Shown disabled with the reason
+in the Combat Resolver rather than silently removed.</p></li>
+<li><p><strong>Feeds the WinSPWW2 Match Setup tool’s Visibility
+recommendation directly</strong> — each condition maps to its own hex
+range, anchored to the guide’s own stated threshold that visibility
+below 40 hexes makes air support unlikely.</p></li>
+</ul>
 <h2 id="sec-6">6. Stacking</h2>
 <ul>
 <li><p><strong>Max 2 friendly BGs per sector</strong> at the end of any
@@ -1137,9 +1186,9 @@ Strategic Sealift.</p></li>
 <ul>
 <li><p>Spring/Summer/Fall: 1 land sector, or the enhanced options above
 (Strategic Movement, Swap, Strategic Sealift).</p></li>
-<li><p><strong>Winter weather sectors:</strong> max 1 sector, no
-strategic rail, no Strategic Movement through a weather sector, and −20%
-tactical budget if attacking.</p></li>
+<li><p><strong>Weather</strong> can also restrict movement, on a
+per-sector, per-turn basis rather than a fixed map designation — see
+§5.4.</p></li>
 <li><p><strong>Coordinated Attack. </strong>When a player’s movement
 into an enemy sector triggers an engagement with an opposing BG (not a
 spawned MIL BG), the attacking player may activate a second BG not
@@ -1151,10 +1200,15 @@ player has only 1 BG in the sector, the defending player may activate an
 adjacent ARM or MECH BG not previously activated to join the engagement.
 This counts as the second BG’s activation. The engagement automatically
 becomes a Meeting Engagement.</p></li>
-<li><p><strong>Rasputitsa (Mud Season).</strong> Spring and Fall turns,
-any sector in the Eastern Europe region: max 1 sector move, no Strategic
-Movement, and <strong>−10%</strong> tactical budget if
-attacking.</p></li>
+<li><p><strong>Rasputitsa (Mud Season).</strong> Any sector in the
+Eastern Europe region rolling Overcast/Rain or worse (§5.4) — a
+recurring climate pattern, so driven by the sector’s actual rolled
+weather rather than a fixed Spring/Fall check: max 1 sector move, no
+Strategic Movement, and <strong>−10%</strong> tactical budget if
+attacking. Stacks with §5.4’s own generic severe-weather attack penalty
+rather than replacing it — mud bogging down vehicles and a general storm
+disrupting the attack are different problems, both plausibly present on
+the same bad day.</p></li>
 </ul>
 <h3 id="sec-7-7">7.7. The Engagement Matrix</h3>
 <p>A BG not activated this turn defaults to <strong>Hold</strong>; if it
@@ -1828,10 +1882,11 @@ sector across one of these always resolves under this section, never a
 plain Engagement Check. This does not apply to genuinely contiguous
 mainland (e.g. Australia’s Sydney–Darwin–Perth) or to movement between
 the Japanese Home Islands, which follow their own rules (§12.2).</p>
-<p><strong>Pacific Typhoon Season.</strong> Fall turns, any Amphibious
-Invasion staged from or transiting a Pacific-region sea sector suffers
+<p><strong>Pacific Typhoon Season.</strong> Any Amphibious Invasion
+landing in a Pacific-region sector rolling Storm/Blizzard (§5.4) suffers
 Interdiction (−250 points, §11.4) as if contested by 1 enemy NTF, even
-if no enemy NTF is present.</p>
+if no enemy NTF is present — driven by the sector’s actual rolled
+weather rather than a fixed Fall-only check.</p>
 <p><strong>Western Europe: Post-Lodgement Stacking.</strong> A
 successful Amphibious Lodgement (§11.1.3) reaches the full 4-BG stacking
 cap <strong>for free, automatically, for the strategic turn of the
@@ -2282,7 +2337,14 @@ the Soviet interior. Inactive for the next Winter audit; reactivates
 after all purchases are complete.</p>
 <p><strong>General Winter.</strong> <strong>Winter 1941 only:</strong>
 German BGs in Soviet sectors attack at <strong>50%</strong> points and
-defend at <strong>80%</strong> points.</p>
+defend at <strong>80%</strong> points — a guaranteed floor, not
+weather-contingent, since this represents a specific historical failure
+(German unpreparedness for that one winter) rather than a recurring
+climate pattern. If the sector’s actual rolled Weather (§5.4) is
+Storm/Blizzard that turn, an additional penalty stacks on top: attack
+drops to <strong>40%</strong>, defend to <strong>72%</strong>. Motti
+Tactics (§13.1) exempts Finland from all of this, both floor and
+bonus.</p>
 <p><strong>Emergency Soviet Reserves.</strong> The first time an Axis BG
 enters or becomes adjacent to Moscow, Leningrad, or Stalingrad, USSR may
 immediately raise <strong>2 free INF BGs</strong> at that sector,
@@ -2997,6 +3059,10 @@ Submarine, Lend-Lease) as opposed to a nation-specific National Token.
 <p><strong>Support Token</strong> — the general currency spent on a
 specific battle or standing effect; collected at Winter Logistics (1 per
 2 RCs). §9.</p>
+<p><strong>Weather</strong> — one of five conditions rolled per sector
+each turn, influenced by season, region, and recent history; can block
+Strategic Movement or Airborne Insertion depending on severity.
+§5.4.</p>
 <h2 id="version-history">Version History</h2>
 <table>
 <colgroup>
@@ -3114,6 +3180,27 @@ for a paired Amphibious Beach Assault, now explicitly apply to whichever
 comes first — an ordinary Coordinated Attack or the Beach Assault — and
 added a third benefit, waiving a required river crossing (§7.9)
 entirely.</td>
+</tr>
+<tr class="even">
+<td>v22</td>
+<td>Added §5.4 Weather — five conditions rolled per sector each turn,
+weighted by season/region and influenced (not determined) by recent
+history and neighboring sectors. Supersedes the old fixed Winter weather
+sector designation. Heavy Rain/Snow and Storm/Blizzard block Strategic
+Movement; Overcast/Rain and worse also block Airborne Insertion. Feeds
+the WinSPWW2 Match Setup tool’s Visibility recommendation directly.</td>
+</tr>
+<tr class="odd">
+<td>v23</td>
+<td>General Winter (§12.4) becomes a floor rather than a full weather
+conversion — the guaranteed 1941 penalty stays, with an additional
+stacking penalty if a sector actually rolls Storm/Blizzard. Rasputitsa
+and Pacific Typhoon Season fully convert from fixed season checks to
+weather-driven ones. §5.4 gains three new effects: a generic
+severe-weather attack penalty replacing an over-broad blanket Winter
+check, Storm/Blizzard cutting supply traces, and AIR/STRAT/Fighter
+tokens grounded by the same conditions that block Strategic
+Movement.</td>
 </tr>
 </tbody>
 </table>
@@ -3728,6 +3815,7 @@ async function hydrateFromStorage(){
       sectors = mergeSectorsWithSeed(record.sectors);
       bgs = record.bgs || bgs;
       clock = record.clock || clock;
+      sectors.forEach(s=>{ if(!s.weather) s.weather = rollWeather(s.region, clock.season); });
       battleLog = record.battleLog || battleLog;
       actionLog = record.actionLog || actionLog;
       trimLogs(); // catch any array that was already oversized before this cap existed
@@ -3896,6 +3984,7 @@ function mergeSectorsWithSeed(saved){
       ukGarrison: prev.ukGarrison!==undefined ? prev.ukGarrison : seed.ukGarrison,
       activeAmphibiousOp: prev.activeAmphibiousOp || false,
       airborneLodgement: prev.airborneLodgement || false,
+      weather: prev.weather || null,
       lodgementTurn: prev.lodgementTurn || null,
       lodgementRotationTurn: prev.lodgementRotationTurn || null,
       faction: prev.faction!==undefined ? prev.faction : seed.faction,
@@ -4680,6 +4769,77 @@ function partisanCapFor(sector){
 }
 // §1 Partisan Activation: +1 Level per turn in every eligible occupied sector,
 // capped per region. Called on every turn transition (§10 Winter included).
+// Weather (house rule) — five conditions, Clear through Storm/Blizzard,
+// re-rolled per sector every strategic turn. Used both as flavor (shown
+// next to Terrain in the sector panel) and as the actual basis for the
+// Visibility recommendation in the WinSPWW2 Match Setup tool, replacing
+// the season-only heuristic that stood in for it before this existed.
+// Region categories are a real simplification of how coarse this map's
+// own region tags already are (e.g. "Asia" spans everything from Mongolia
+// to Malaya) — not a claim of hex-accurate climate modeling.
+const WEATHER_CONDITIONS = ['Clear', 'Light Cloud', 'Overcast/Rain', 'Heavy Rain/Snow', 'Storm/Blizzard'];
+const ARID_REGIONS = new Set(['North Africa', 'Middle East']);
+const TROPICAL_REGIONS = new Set(['Africa', 'Asia', 'Pacific']);
+const COLD_REGIONS = new Set(['USSR', 'Eastern Europe']);
+// Influence, not determination: both factors below reshape the season/
+// region weights toward nearby ordinal positions on the 5-point scale
+// rather than locking anything in — a sector coming out of Storm/Blizzard
+// is more likely to land on Storm/Blizzard or Heavy Rain/Snow next turn
+// than to jump straight to Clear, and a sector surrounded by Overcast/Rain
+// neighbors leans the same way, but neither ever removes an outcome from
+// the table entirely. PERSISTENCE_STRENGTH governs the sector's own prior
+// turn; SPATIAL_STRENGTH governs the average of its neighbors' prior turn.
+const PERSISTENCE_STRENGTH = 1.4;
+const SPATIAL_STRENGTH = 0.7;
+function rollWeather(region, season, prevWeather, neighborWeathers){
+  // Weights across the five conditions above, biased by season first,
+  // then overridden by region where the region's climate dominates the
+  // season's usual pattern (a desert doesn't get a "rainy season" just
+  // because the campaign calendar says Spring).
+  let weights;
+  if(season==='Summer') weights = [40, 30, 18, 9, 3];
+  else if(season==='Winter') weights = [15, 20, 25, 25, 15];
+  else weights = [25, 28, 25, 15, 7]; // Spring/Fall baseline
+
+  if(ARID_REGIONS.has(region)) weights = [60, 25, 10, 4, 1];
+  else if(TROPICAL_REGIONS.has(region)) weights = [20, 23, 27, 20, 10];
+  else if(COLD_REGIONS.has(region) && season==='Winter') weights = [8, 15, 22, 30, 25];
+
+  weights = weights.slice();
+  const prevIdx = prevWeather ? WEATHER_CONDITIONS.indexOf(prevWeather) : -1;
+  if(prevIdx >= 0){
+    weights = weights.map((w,i) => w * (1 + PERSISTENCE_STRENGTH / (1 + Math.abs(i - prevIdx))));
+  }
+  if(neighborWeathers && neighborWeathers.length){
+    const idxs = neighborWeathers.map(w => WEATHER_CONDITIONS.indexOf(w)).filter(i => i >= 0);
+    if(idxs.length){
+      const avgIdx = idxs.reduce((a,b)=>a+b, 0) / idxs.length;
+      weights = weights.map((w,i) => w * (1 + SPATIAL_STRENGTH / (1 + Math.abs(i - avgIdx))));
+    }
+  }
+
+  const total = weights.reduce((a,b)=>a+b, 0);
+  let roll = Math.random() * total;
+  for(let i=0; i<weights.length; i++){
+    if(roll < weights[i]) return WEATHER_CONDITIONS[i];
+    roll -= weights[i];
+  }
+  return WEATHER_CONDITIONS[WEATHER_CONDITIONS.length-1];
+}
+function advanceWeather(){
+  // Snapshot last turn's values for every sector BEFORE rolling any of
+  // them — rolling in place, sector by sector, would let whichever
+  // sectors happen to come first in the array bias their neighbors with
+  // already-new values instead of the prior turn's, an order-dependent
+  // asymmetry with no in-fiction justification.
+  const prevWeatherById = {};
+  sectors.forEach(s => { prevWeatherById[s.id] = s.weather; });
+  sectors.forEach(s => {
+    const neighborWeathers = (s.connections||[]).map(cid => prevWeatherById[cid]).filter(Boolean);
+    s.weather = rollWeather(s.region, clock.season, prevWeatherById[s.id], neighborWeathers);
+  });
+}
+
 function advancePartisans(){
   sectors.forEach(s=>{
     if(partisanEligible(s)){
@@ -5348,6 +5508,11 @@ function renderPanel(){
       ${adjacentRotationHub ? `<span class="faction-badge rule-link" data-section="sec-11-1" style="color:var(--gold);border-color:var(--gold-dim);cursor:pointer;" title="§11.1.6 — this sector shares ${adjacentRotationHub.name}'s active Lodgement Rotation pool this turn (6 BGs total across the whole zone, not 6 here alone).">Shares Lodgement Rotation pool (6 BG total)</span>` : ''}
     </div>
     <div class="panel-body">
+      ${s.type!=='Sea' ? `<div class="field-group">
+        <div class="fg-label">WinSPWW2 Match Setup</div>
+        <div class="winter-note">Reads the Battle Groups actually present here and works out the exact parameters to type into WinSPWW2's own "Playing a one off battle" screen — nations, date, water conditions, map size, visibility, and terrain generator variables — so nothing has to be re-derived by hand.</div>
+        <button class="cr-roll-btn" id="f_match_setup_btn" style="margin-top:8px;width:100%;">Generate WinSPWW2 Match Setup</button>
+      </div>` : ''}
       ${stackWarnings.length ? `<div class="moved-banner" style="border-color:var(--danger);color:var(--danger);">⚠ Stack limit exceeded (§6) — more than ${effectiveStackCap(s)} ${stackWarnings.join(', ')} Battle Group(s) here. ${s.smallIslandOutpost ? 'This is a Small Island Outpost, capped at 1 BG per faction.' : 'Non-capital sectors are normally capped at 2.'} Move one out or resolve the excess.</div>` : ''}
       ${mixed ? `<div class="moved-banner">⚔ Both Axis and Allied Battle Groups are present in this sector.
         <button class="cr-roll-btn" id="resolveHereBtn" style="margin-top:8px;width:100%;">Resolve Engagement</button>
@@ -5357,16 +5522,19 @@ function renderPanel(){
       ${s.type!=='Sea' ? (()=>{
         const ti = terrainInfo(s);
         const TERRAIN_TYPES = ['Plains','Mountain','Coastal','Steppe','Arctic/Tundra','Forest','Desert','Jungle'];
+        const weatherTitle = "House rule — re-rolled every strategic turn, weighted by season and region (§ terrainInfo climate categories). Feeds the Visibility recommendation in the WinSPWW2 Match Setup tool.";
         if(editPositionsMode){
           return `<div class="field-group">
             <div class="fg-label rule-link" data-section="sec-3-1-1" title="Major terrain type affects the Combat Resolver's terrain multiplier by BG type (§3.1.1). Urban/River are automatic (RC/river-link), not editable here.">Terrain (Map Editor)</div>
             <select id="f_terrain">${TERRAIN_TYPES.map(t=>`<option ${ti.major===t?'selected':''}>${t}</option>`).join('')}</select>
             <div class="stat-line" style="margin-top:4px;"><span>Auto modifiers</span><b>${ti.modifiers.length ? ti.modifiers.join(' · ') : '—'}</b></div>
+            <div class="stat-line" style="margin-top:4px;" title="${weatherTitle}"><span>Weather</span><b>${s.weather || '—'}</b></div>
           </div>`;
         }
         return `<div class="field-group">
           <div class="fg-label rule-link" data-section="sec-3-1-1" title="Major terrain type affects the Combat Resolver's terrain multiplier by BG type (§3.1.1). Urban/River are informational modifiers for setting up the actual WinSPWW2 battle map.">Terrain</div>
           <div class="stat-line"><span>${ti.major}</span><b>${ti.modifiers.length ? ti.modifiers.join(' · ') : '—'}</b></div>
+          <div class="stat-line" style="margin-top:4px;" title="${weatherTitle}"><span>Weather</span><b>${s.weather || '—'}</b></div>
         </div>`;
       })() : ''}
 
@@ -5718,6 +5886,9 @@ function renderPanel(){
   });
   el.querySelectorAll('.f-ntf').forEach(inp=>inp.addEventListener('change', commit));
 
+  const matchSetupBtn = document.getElementById('f_match_setup_btn');
+  if(matchSetupBtn) matchSetupBtn.addEventListener('click', ()=>openMatchSetupModal(s));
+
   const addConnBtn = document.getElementById('f_add_conn_btn');
   if(addConnBtn) addConnBtn.addEventListener('click', async ()=>{
     const targetId = parseInt(document.getElementById('f_add_conn').value);
@@ -5967,6 +6138,8 @@ function renderBGPanel(){
           })() : ''}
         </select>
         ${moved ? `<button class="link-btn" id="f_undo_move">Undo — clear activation flag manually</button>` : ''}
+        ${(sector && WEATHER_BLOCKS_STRATEGIC_MOVEMENT.has(sector.weather)) ? `<div class="winter-note" style="margin-top:6px;color:var(--gold);">⚠ Strategic Movement unavailable — ${sector.weather} at ${sector.name} (house rule). Tactical Movement still works.</div>` : ''}
+        ${(b.type==='Airborne' && sector && WEATHER_BLOCKS_AIRBORNE_INSERTION.has(sector.weather)) ? `<div class="winter-note" style="margin-top:6px;color:var(--gold);">⚠ Airborne Insertion grounded — ${sector.weather} at ${sector.name} (house rule). Needs Clear or Light Cloud.</div>` : ''}
       </div>
 
       ${(b.nation==='Germany' && (b.type==='ARM'||b.type==='MECH') && !b.isKampfgruppe) ? `
@@ -6247,6 +6420,53 @@ function engagementBonus(isAttacker, engType){
   return engType==='Advance/Delay' ? 250 : (engType==='Assault/Defend' ? 750 : 0);
 }
 
+// Weather-driven combat modifiers (house rule). Three effects layered
+// together, all attacker-side except General Winter's floor:
+//
+// 1. General Winter (§12.4) stays a FLOOR, not a full weather conversion —
+//    it's a specific, one-time historical beat (German unpreparedness in
+//    that exact winter), not a recurring climate pattern, so it stays
+//    guaranteed in Winter 1941 regardless of what any sector rolls. A
+//    sector that additionally rolls Storm/Blizzard that turn stacks an
+//    extra penalty on top — the guaranteed beat stays guaranteed, an
+//    actual blizzard makes a specific sector's Winter worse still.
+//
+// 2. The old blanket "it's Winter, -20% to attack" check that applied to
+//    every sector, every nation, every Winter turn regardless of what
+//    that sector's actual conditions were is replaced here by the
+//    sector's real rolled weather — Heavy Rain/Snow or Storm/Blizzard
+//    specifically, not the campaign calendar. This was a genuine
+//    over-application in the prior version: it fired everywhere in
+//    Winter even for sectors nowhere near bad weather.
+//
+// 3. Rasputitsa (Mud Season) converts fully from a fixed Spring/Fall +
+//    Eastern Europe check to Eastern Europe + actually-rolled Overcast/
+//    Rain or worse — unlike General Winter, this is a recurring climate
+//    pattern rather than a single historical event, so full conversion
+//    makes it more accurate to what it represents, not less. Stacks with
+//    #2 rather than replacing it — mud bogging down vehicles and a
+//    general storm disrupting an attack are different mechanisms, both
+//    plausibly active on the same bad day in Ukraine.
+function weatherCombatMult(bg, isAttacker, ctx){
+  if(bg.nation==='Finland') return 1; // §13.1 Motti Tactics — exempt from all of this
+  const sector = ctx.sector;
+  const weather = sector && sector.weather;
+  const isGeneralWinter = ctx.generalWinter && bg.nation==='Germany';
+
+  if(isGeneralWinter){
+    const floor = isAttacker ? 0.5 : 0.8;
+    const blizzardBonus = (weather==='Storm/Blizzard') ? (isAttacker ? 0.8 : 0.9) : 1;
+    return floor * blizzardBonus;
+  }
+
+  if(!isAttacker) return 1; // both remaining effects are attacker-only, per their original rule text
+
+  let mult = 1;
+  if(weather==='Heavy Rain/Snow' || weather==='Storm/Blizzard') mult *= 0.8;
+  if(sector && sector.region==='Eastern Europe' && (weather==='Overcast/Rain' || weather==='Heavy Rain/Snow' || weather==='Storm/Blizzard')) mult *= 0.9;
+  return mult;
+}
+
 function effectivePoints(bg, isAttacker, ctx){
   const bonus = engagementBonus(isAttacker, ctx.engagementType);
   // §13.1 Diggers: ANZAC never takes the FP1/FP2 penalty, still takes FP3.
@@ -6254,14 +6474,7 @@ function effectivePoints(bg, isAttacker, ctx){
     : (bg.fatigue>=3?0.5:bg.fatigue===2?0.3:bg.fatigue===1?0.1:0);
   const supplyPct = bg.in_supply==='No'?0.2:0;
   const combinedPct = Math.min(0.5, fatiguePct+supplyPct);
-  let seasonMult;
-  if(isAttacker){
-    // §13.1 Motti Tactics: Finland ignores the Winter-weather attack penalty.
-    if(bg.nation==='Finland') seasonMult = 1;
-    else seasonMult = (ctx.generalWinter && bg.nation==='Germany') ? 0.5 : (ctx.season==='Winter'?0.8:1);
-  } else {
-    seasonMult = (ctx.generalWinter && bg.nation==='Germany') ? 0.8 : 1;
-  }
+  const seasonMult = weatherCombatMult(bg, isAttacker, ctx);
   const terrainMult = (TERRAIN_MULT[bg.type]||{})[ctx.terrain] ?? 1;
   const expMult = 0.85 + (bg.experience/100)*0.3;
   let nationalFlat = 0;
@@ -6319,8 +6532,14 @@ function applyLossToSide(bgList, totalLoss){
 // destination sectors are friendly-controlled and not Contested. §13.1 Kra
 // Isthmus Corridor: a Japanese BG may Strategic-Move through Thailand even if
 // Thailand is Contested.
+// Weather (house rule): the two most severe conditions ground long-distance
+// road/rail movement outright — washed-out roads, snowbound routes. Ordinary
+// Tactical Movement (1 sector) is unaffected; only the extended 2-sector
+// Strategic Movement requires passable conditions at the origin.
+const WEATHER_BLOCKS_STRATEGIC_MOVEMENT = new Set(['Heavy Rain/Snow', 'Storm/Blizzard']);
 function roadMarchTargets(originSector, nation){
   if(!originSector) return [];
+  if(WEATHER_BLOCKS_STRATEGIC_MOVEMENT.has(originSector.weather)) return [];
   const faction = factionForNation(nation);
   const results = [];
   (originSector.connections||[]).forEach(midId=>{
@@ -6353,8 +6572,14 @@ function isEnemyControlled(sector, faction){
 // plain sector hops away (any terrain in the path — troops fly over it).
 // No restriction here beyond BG type (checked by the caller): any BG type
 // can be offered this by the function, but only Airborne BGs should call it.
+// Weather (house rule): airborne drops need real visibility and calm air —
+// grounded by anything worse than Light Cloud, a lower bar than Strategic
+// Movement's, since accurate parachute/glider drops are more
+// weather-sensitive than ground logistics moving through the same rain.
+const WEATHER_BLOCKS_AIRBORNE_INSERTION = new Set(['Overcast/Rain', 'Heavy Rain/Snow', 'Storm/Blizzard']);
 function airborneInsertionTargets(originSector, faction){
   if(!originSector) return [];
+  if(WEATHER_BLOCKS_AIRBORNE_INSERTION.has(originSector.weather)) return [];
   const results = [];
   const visited = new Set([originSector.id]);
   let frontier = [originSector.id];
@@ -6525,6 +6750,7 @@ function renderInvasionSetup(state){
   const airborneCandidates = bgs.filter(b=>(b.faction||factionForNation(b.nation))===attackerFaction && b.type==='Airborne' && !state.attackerBGs.includes(b));
   const html = `
     <div class="winter-note">§11.1. Landing at <b>${state.sector.name}</b>. Optionally coordinate an Airborne Vanguard first, then resolve Beach Assault → Inland Breakout.</div>
+    ${(state.sector.region==='Pacific' && state.sector.weather==='Storm/Blizzard') ? `<div class="winter-note" style="color:var(--gold);">⚠ Pacific Typhoon Season (weather-driven, replaces the old fixed Fall-only rule) — Storm/Blizzard rolled here suggests Interdiction (−250 points, §11.4) as if contested by 1 enemy NTF, even with none actually present. Not auto-applied — factor it into the attacker's Manual Modifier or National Bonus field yourself in the resolver.</div>` : ''}
     ${state.attackerBGs.map(bgSummaryRow).join('')}
     <div class="fg-label">vs.</div>
     ${state.defenderBGs.map(bgSummaryRow).join('')}
@@ -6804,19 +7030,189 @@ async function runInvasionPhase2(state){
   });
 }
 
+// Generates the exact parameters WinSPWW2's own "Playing a one off battle"
+// screen asks for, computed from what this sector's Battle Groups and
+// state already tell us — verified directly against the WinSPWW2 game
+// guide rather than assumed: two nationalities + battle date drive the
+// game's own "batloc" historical-terrain lookup (so "Random/Default Map"
+// is the right choice here, not something to compute ourselves — the
+// guide is explicit that this produces historically-appropriate terrain,
+// e.g. USSR vs Germany Dec '42 → Stalingrad); Water Conditions has three
+// real states (none / wide river / beach) that the guide ties directly to
+// specific battle setups; Battle Type genuinely can't be reliably inferred
+// here (Assault/Defend depends on fortification history this tool doesn't
+// track), so that stays a dropdown rather than a guess.
+//
+// Terrain generator variables, per the guide's own Map Generator screen
+// section — Urbanization, Hill Density, Max Hill Height, Hill Base Size,
+// Tree/Orchard/Grass/Rough/Field/Mud Level, Road Code, Terrain Mod Code,
+// Arid/Savannah Mod Code. The guide gives the valid range and meaning of
+// each but no "terrain X = value Y" table of its own — that's what the
+// game's internal batloc lookup does, which isn't something to replicate
+// exactly. What follows are defensible starting values grounded in this
+// tool's own per-sector SECTOR_TERRAIN data, offered explicitly as a
+// hand-tuning reference for when Random/Default Map isn't what's wanted,
+// not a claim of matching the game's exact historical batloc numbers.
+const TERRAIN_MAP_PARAMS = {
+  'Plains':        {urbanization:'2', hillDensity:'2', maxHillHeight:'4', hillBaseSize:'3', treeLevel:'3', orchardLevel:'1', grassLevel:'4', roughLevel:'1', fieldLevel:'4', mudLevel:'0', roadCode:'2', terrainModCode:'1', aridSavannah:null},
+  'Mountain':      {urbanization:'0', hillDensity:'10', maxHillHeight:'14', hillBaseSize:'2', treeLevel:'4', orchardLevel:'0', grassLevel:'1', roughLevel:'7', fieldLevel:'0', mudLevel:'0', roadCode:'0', terrainModCode:'0', aridSavannah:null},
+  'Coastal':       {urbanization:'3', hillDensity:'2', maxHillHeight:'4', hillBaseSize:'3', treeLevel:'2', orchardLevel:'1', grassLevel:'3', roughLevel:'1', fieldLevel:'3', mudLevel:'0', roadCode:'2', terrainModCode:'1', aridSavannah:null},
+  'Steppe':        {urbanization:'1', hillDensity:'0', maxHillHeight:'1', hillBaseSize:'3', treeLevel:'0', orchardLevel:'0', grassLevel:'7', roughLevel:'0', fieldLevel:'6', mudLevel:'0', roadCode:'0', terrainModCode:'0', aridSavannah:{code:'Savannah', value:'1'}},
+  'Arctic/Tundra': {urbanization:'0', hillDensity:'3', maxHillHeight:'5', hillBaseSize:'3', treeLevel:'1', orchardLevel:'0', grassLevel:'0', roughLevel:'3', fieldLevel:'0', mudLevel:'0', roadCode:'0', terrainModCode:'0', aridSavannah:null},
+  'Forest':        {urbanization:'1', hillDensity:'4', maxHillHeight:'6', hillBaseSize:'3', treeLevel:'8', orchardLevel:'0', grassLevel:'1', roughLevel:'2', fieldLevel:'1', mudLevel:'0', roadCode:'1', terrainModCode:'0', aridSavannah:null},
+  'Desert':        {urbanization:'0', hillDensity:'1', maxHillHeight:'2', hillBaseSize:'4', treeLevel:'0', orchardLevel:'0', grassLevel:'0', roughLevel:'0', fieldLevel:'0', mudLevel:'0', roadCode:'0', terrainModCode:'0', aridSavannah:{code:'Arid', value:'1'}},
+  'Jungle':        {urbanization:'0', hillDensity:'2', maxHillHeight:'3', hillBaseSize:'3', treeLevel:'11', orchardLevel:'0', grassLevel:'1', roughLevel:'3', fieldLevel:'1', mudLevel:'3', roadCode:'0', terrainModCode:'0', aridSavannah:null},
+};
+// Urban modifier (§ terrainInfo, sector.rc>0): an RC sector is a capital or
+// major city, not open countryside, regardless of its surrounding major
+// terrain — bump Urbanization to City-tier (6-8, per the guide's own scale
+// where 6-8 = City) and drop Field/Grass, which a real city map wouldn't
+// generate much of anyway.
+function applyUrbanModifier(params){
+  return {...params, urbanization:'7', fieldLevel:'0', grassLevel:Math.max(0, parseInt(params.grassLevel)-2).toString()};
+}
+
+// Map size: the guide gives no formula, only the existence of ~180 sizes
+// from 20x20 to 200x160 — this is a defensible heuristic based on total
+// Battle Groups actually present (more units need real room to maneuver,
+// not an immediate point-blank furball), not a value pulled from the game.
+function recommendMapSize(totalBGs){
+  if(totalBGs <= 2) return {size:'~40x30 to 60x40', note:'Small — 1-2 BGs a side rarely needs more room than this.'};
+  if(totalBGs <= 5) return {size:'~80x60 to 100x80', note:'Medium — enough depth for maneuver without empty dead space.'};
+  return {size:'~120x100 or larger', note:'Large — several BGs a side benefit from real frontage and depth.'};
+}
+// Visibility: the guide's own stated threshold is that below 40 hexes, air
+// strikes become unlikely even if otherwise available — used here as an
+// anchor point. Driven by the sector's actual rolled Weather now, not just
+// season — weather is the real proximate cause of visibility, season was
+// only ever a stand-in for it before Weather existed.
+function recommendVisibility(weather){
+  switch(weather){
+    case 'Clear': return {value:'70-99', note:'Clear skies — full visibility, air support reliably available.'};
+    case 'Light Cloud': return {value:'55-70', note:"Above the guide's 40-hex air-strike threshold — air support still generally available."};
+    case 'Overcast/Rain': return {value:'35-55', note:"Straddles the guide's 40-hex air-strike threshold — could go either way."};
+    case 'Heavy Rain/Snow': return {value:'20-35', note:"Below the guide's 40-hex threshold — air strikes plausibly unavailable."};
+    case 'Storm/Blizzard': return {value:'5-20', note:'Well below the air-strike threshold — near-zero air support, tough going for everyone.'};
+    default: return {value:'40-55', note:'No Weather rolled for this sector yet (advance a turn to roll one) — a moderate placeholder.'};
+  }
+}
+
+function openMatchSetupModal(sector){
+  const here = bgs.filter(b=>b.sectorId===sector.id);
+  const byNation = {};
+  here.forEach(b=>{ byNation[b.nation] = byNation[b.nation] || {faction: b.faction||factionForNation(b.nation), count:0}; byNation[b.nation].count++; });
+  const axisNations = Object.keys(byNation).filter(n=>byNation[n].faction==='Axis');
+  const alliedNations = Object.keys(byNation).filter(n=>byNation[n].faction==='Allied');
+
+  const monthFor = {Spring:'March', Summer:'June', Fall:'September', Winter:'December'}[clock.season];
+
+  const crossesRiver = (sector.connections||[]).some(cid=>{
+    const adj = byId[cid];
+    if(!adj) return false;
+    const adjFaction = factionForNation(adj.occupier || adj.owner);
+    const secFaction = factionForNation(sector.occupier || sector.owner);
+    return adjFaction !== secFaction && riverOnLink(sector.id, cid);
+  });
+  let waterConditions, waterNote;
+  if(sector.activeAmphibiousOp){
+    waterConditions = 'Beach';
+    waterNote = "Half the map (attacker's side) is ocean, attacker deploys in amphibious transport, naval artillery support instead of field artillery. (§11.1)";
+  } else if(sector.contested){
+    waterConditions = 'None';
+    waterNote = 'Sector already Contested — this is reinforcement into an ongoing fight, not a fresh crossing, so no river is present in the engagement map even if one exists on the connection (§7.9).';
+  } else if(crossesRiver){
+    waterConditions = 'Wide river, North to South';
+    waterNote = `Crosses a named river (§7.9) — a real crossing, not a reinforcement into an already-contested sector. Skip this if Airborne Lodgement (§11.2) is active here and this is that Lodgement's first following engagement — the crossing is waived.`;
+  } else {
+    waterConditions = 'None';
+    waterNote = 'No named river borders an enemy-held sector here, and this isn\'t an Amphibious Invasion.';
+  }
+
+  const nationList = (arr) => arr.length ? arr.map(n=>`${n} (${byNation[n].count} BG${byNation[n].count>1?'s':''})`).join(', ') : '— none —';
+  const mapSize = recommendMapSize(here.length);
+  const visibility = recommendVisibility(sector.weather);
+  const ti = terrainInfo(sector);
+  const base = TERRAIN_MAP_PARAMS[ti.major] || TERRAIN_MAP_PARAMS['Plains'];
+  const p = ti.modifiers.includes('Urban') ? applyUrbanModifier(base) : base;
+  const seasonOverride = clock.season==='Winter';
+  const seasonValue = seasonOverride ? 'Winter (2)' : (p.aridSavannah ? `Summer (1)*` : 'Summer (1)');
+
+  const warnings = [];
+  if(axisNations.length>1 || alliedNations.length>1) warnings.push('⚠ More than one nation on a side — the one-off battle screen takes only one per player.');
+  if(!axisNations.length || !alliedNations.length) warnings.push("⚠ Only one side has Battle Groups here — not an engagement yet.");
+  if(p.aridSavannah && seasonOverride) warnings.push(`⚠ ${p.aridSavannah.code} normally applies here but is unavailable with Winter selected — Season below is Winter instead.`);
+
+  const row = (label, value, tip) => `<tr><td style="padding:3px 10px 3px 0;color:var(--ink-dim);" title="${tip||''}">${label}</td><td style="padding:3px 0;text-align:right;font-weight:600;" title="${tip||''}">${value}</td></tr>`;
+
+  openModal(`WinSPWW2 Match Setup — ${sector.name}`, `
+    <div style="font-family:var(--font-mono);font-size:12px;">
+      ${warnings.length ? `<div style="color:var(--gold);margin-bottom:8px;">${warnings.join('<br>')}</div>` : ''}
+      <table style="width:100%;border-collapse:collapse;">
+        ${row('Axis', nationList(axisNations))}
+        ${row('Allied', nationList(alliedNations))}
+        ${row('Battle Date', `${monthFor} ${clock.year}`, `Midpoint of ${clock.season} ${clock.year} — nudge a month for a specific unit's in/out-of-service date.`)}
+        <tr><td style="padding:3px 10px 3px 0;color:var(--ink-dim);">Battle Type</td><td style="padding:3px 0;text-align:right;">
+          <select id="ms_battle_type" style="font-family:var(--font-mono);font-size:12px;" title="Defaulted from Contested status — this tool doesn't track fortification history, confirm against what actually happened.">
+            <option ${!sector.contested?'selected':''}>Meeting Engagement</option>
+            <option>Advance vs. Delay</option>
+            <option ${sector.contested?'selected':''}>Assault vs. Defend</option>
+          </select>
+        </td></tr>
+        ${row('Water Conditions', waterConditions, waterNote)}
+        ${row('Map', 'Random / Default Map', "WinSPWW2's own batloc system picks historically-appropriate terrain from the nations/date above — recommended over the hand-tuned parameters below.")}
+        ${row('Map Size', mapSize.size, `${mapSize.note} Based on ${here.length} BG${here.length===1?'':'s'} present. No exact formula in the guide — a starting point.`)}
+        ${row('Weather', sector.weather || '— not yet rolled —', 'House rule — re-rolled every strategic turn by season and region. Basis for the Visibility recommendation below.')}
+        ${row('Visibility (hexes)', visibility.value, visibility.note)}
+      </table>
+
+      <div style="margin:10px 0 4px;color:var(--ink-dim);" title="Hand-tuning reference if not using Random/Default Map. Grounded in this sector's own terrain (${ti.major}${ti.modifiers.length?' + '+ti.modifiers.join(' + '):''}), but the guide gives no official terrain-to-value table — defensible starting values, not the game's exact batloc numbers. Access via ',' in the Scenario Map Editor.">Terrain Generator Parameters — ${ti.major}${ti.modifiers.length ? ' + ' + ti.modifiers.join(' + ') : ''} ⓘ</div>
+      <table style="width:100%;border-collapse:collapse;">
+        ${row('Urbanization', p.urbanization)}
+        ${row('Hill Density', p.hillDensity)}
+        ${row('Max Hill Height', p.maxHillHeight)}
+        ${row('Hill Base Size', p.hillBaseSize)}
+        ${row('Tree Level', p.treeLevel)}
+        ${row('Orchard Level', p.orchardLevel)}
+        ${row('Grass Level', p.grassLevel)}
+        ${row('Rough Level', p.roughLevel)}
+        ${row('Field Level', p.fieldLevel)}
+        ${row('Mud Level', p.mudLevel)}
+        ${row('Road Code', p.roadCode)}
+        ${row('Terrain Mod Code', p.terrainModCode)}
+        ${row('Season', seasonValue)}
+        ${(p.aridSavannah && !seasonOverride) ? row(p.aridSavannah.code+' Mod Code', p.aridSavannah.value, 'Separate control from Season, not shown above.') : ''}
+      </table>
+      ${(p.aridSavannah && !seasonOverride) ? `<div style="margin-top:4px;color:var(--ink-faint);">* ${p.aridSavannah.code} Mod Code row above sets this terrain's dry look — Season itself stays Summer.</div>` : ''}
+      ${ti.modifiers.includes('River') ? `<div style="margin-top:4px;color:var(--ink-faint);">River on a connection here — consider River Trees/Rough ~1-2% for edging; Water Conditions above already covers the crossing itself.</div>` : ''}
+    </div>
+  `);
+}
+
+
 function openCombatResolverModal(attackerBGs, defenderBGs, sector, moverBgId, originSectorId){
   pendingEngagement = {attackerBGs, defenderBGs, sector, moverBgId, originSectorId, result:null};
   const atkNation = attackerBGs[0] ? attackerBGs[0].nation : null;
   const defNation = defenderBGs[0] ? defenderBGs[0].nation : null;
+  // Weather (§5.4, house rule): air-dependent tokens are grounded by the
+  // same severe conditions that block Strategic Movement — real air
+  // support doesn't fly in a blizzard any more than a supply convoy drives
+  // through one. Shown disabled with the reason rather than hidden
+  // entirely, so it doesn't read as a bug.
+  const AIR_DEPENDENT_TOKENS = new Set(['AIR', 'STRAT', 'Fighter']);
   const tokenOptionsFor = (nation)=>{
     const fac = factionForNation(nation);
     const dash = dashboards[fac];
     const inv = (dash && dash.tokens && dash.tokens[nation]) || {};
-    return `<option value="">— none —</option>` + TOKEN_TYPES.map(t=>`<option value="${t}">${t} (${inv[t]||0} in inventory)</option>`).join('');
+    const grounded = WEATHER_BLOCKS_STRATEGIC_MOVEMENT.has(sector.weather);
+    return `<option value="">— none —</option>` + TOKEN_TYPES.map(t=>{
+      const isGrounded = grounded && AIR_DEPENDENT_TOKENS.has(t);
+      return `<option value="${t}" ${isGrounded?'disabled':''}>${t} (${inv[t]||0} in inventory)${isGrounded?' — grounded, '+sector.weather:''}</option>`;
+    }).join('');
   };
   const html = `
     <div class="winter-note">Engagement at <b>${sector.name}</b>. Review context below, then Roll &amp; Resolve — nothing is written back to the map until you Apply.</div>
     ${sector.airborneLodgement ? `<div class="winter-note" style="color:var(--gold);">⚠ Airborne Lodgement active here (§11.2) — if this is the next immediate combat in this sector, the defender may not use ART tokens or Mobile Reserve, and a required river crossing is waived. Not auto-enforced below (the resolver doesn't know if this is genuinely the first following engagement) — apply it yourself if it qualifies.</div>` : ''}
+    ${sector.weather ? `<div class="winter-note">Weather at ${sector.name}: <b>${sector.weather}</b> (§5.4)${WEATHER_BLOCKS_STRATEGIC_MOVEMENT.has(sector.weather) ? ' — air-dependent tokens grounded this turn.' : ''}</div>` : ''}
     <div class="cr-grid">
       <div class="cr-side">
         <div class="cr-side-title">Attacker</div>
@@ -7134,6 +7530,12 @@ function bgTracesSupply(bg){
       if(visited.has(cid)) return;
       const adj = byId[cid];
       if(!adj) return;
+      // Weather (§5.4, house rule): a sector caught in Storm/Blizzard cuts
+      // the supply line — can't be crossed, and can't itself serve as the
+      // RC endpoint this turn. Doesn't affect the BG's own origin sector,
+      // since it's already physically there regardless of local weather;
+      // this only gates expansion to a NEW sector.
+      if(adj.weather==='Storm/Blizzard') return;
       if(adj.type==='Sea'){
         if(!seaTraceableForSupply(cid, faction)) return;
       } else {
@@ -8748,6 +9150,7 @@ async function finishWinterLogistics(beforeSnap, comingYear){
   const interceptResult = advanceAxisIntercept();
   if(interceptResult) supplyChanges.push(interceptResult);
   clock = {year: comingYear, season:'Spring'};
+  advanceWeather();
   await saveState(true, true);
   updateClockBadge();
   render();
@@ -8818,6 +9221,7 @@ document.getElementById('advanceTurn').addEventListener('click', async ()=>{
   if(!ok) return;
   const beforeSnap = snapshotForChangeSummary();
   clock = next;
+  advanceWeather();
   bgs.forEach(b=>{ b.movedThisTurn = false; });
   sectors.forEach(s=>{ if(s.type==='Sea') s.ntfLocked = {}; });
   advancePartisans();
@@ -9194,6 +9598,7 @@ function startApp(){
   // the first paint on a network/storage call.
   sectors = JSON.parse(JSON.stringify(SEED));
   bgs = JSON.parse(JSON.stringify(OOB_SEED));
+  sectors.forEach(s=>{ if(!s.weather) s.weather = rollWeather(s.region, clock.season); });
   render();
   clusterOffsets = computeClusterOffsets();
   populateRegionDropdown();
