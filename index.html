@@ -1849,14 +1849,14 @@ turn</td>
 <tr class="even">
 <td>Advance / Delay</td>
 <td>2,500/BG</td>
-<td>2,500/BG <strong>+250/BG</strong> — foxholes and basic wire
-only</td>
+<td>2,500/BG <strong>+250 total</strong> (not per-BG) — foxholes and
+basic wire only</td>
 </tr>
 <tr class="odd">
 <td>Assault / Defend</td>
 <td><strong>3,000/BG</strong></td>
-<td>2,500/BG <strong>+750/BG</strong> — Fortifications menu only
-(pillboxes, minefields, trenches)</td>
+<td>2,500/BG <strong>+750 total</strong> (not per-BG) — Fortifications
+menu only (pillboxes, minefields, trenches)</td>
 </tr>
 </tbody>
 </table>
@@ -7986,6 +7986,25 @@ function openMatchSetupModal(sector){
   if(!axisNations.length || !alliedNations.length) warnings.push("⚠ Only one side has Battle Groups here — not an engagement yet.");
   if(p.aridSavannah && seasonOverride) warnings.push(`⚠ ${p.aridSavannah.code} normally applies here but is unavailable with Winter selected — Season below is Winter instead.`);
 
+  const axisCount = axisNations.reduce((sum,n)=>sum+byNation[n].count, 0);
+  const alliedCount = alliedNations.reduce((sum,n)=>sum+byNation[n].count, 0);
+  // §9.2 Match Settings — flat WinSPWW2 tactical point budget per BG
+  // present, keyed by Match type and attacker/defender role. This is the
+  // rulebook's own per-BG rate, not the campaign BG's current (possibly
+  // loss-reduced) points value — the two are deliberately different
+  // things: campaign points track this specific BG's accumulated state
+  // for campaign-level combat resolution, while this is the fresh
+  // tactical budget WinSPWW2 itself uses to build a one-off battle's
+  // order of battle, independent of that history.
+  // defenderBonus is a FLAT addition to the defender's total, not
+  // multiplied by BG count — one pool of extra points to spend on
+  // fortifications for the side as a whole, not per formation.
+  const MATCH_RATES = {
+    'Meeting Engagement': {attacker:2500, defender:2500, defenderBonus:0},
+    'Advance vs. Delay':  {attacker:2500, defender:2500, defenderBonus:250},
+    'Assault vs. Defend': {attacker:3000, defender:2500, defenderBonus:750},
+  };
+
   const row = (label, value, tip) => `<tr><td style="padding:3px 10px 3px 0;color:var(--ink-dim);" title="${tip||''}">${label}</td><td style="padding:3px 0;text-align:right;font-weight:600;" title="${tip||''}">${value}</td></tr>`;
 
   openModal(`WinSPWW2 Match Setup — ${sector.name}`, `
@@ -8002,12 +8021,22 @@ function openMatchSetupModal(sector){
             <option ${sector.contested?'selected':''}>Assault vs. Defend</option>
           </select>
         </td></tr>
+        <tr><td style="padding:3px 10px 3px 0;color:var(--ink-dim);">Attacking Faction</td><td style="padding:3px 0;text-align:right;">
+          <select id="ms_attacker" style="font-family:var(--font-mono);font-size:12px;" title="No reliable way to infer this from sector state alone — confirm against who actually moved in.">
+            <option ${axisCount>=alliedCount?'selected':''}>Axis</option>
+            <option ${alliedCount>axisCount?'selected':''}>Allied</option>
+          </select>
+        </td></tr>
         ${row('Water Conditions', waterConditions, waterNote)}
         ${row('Map', 'Random / Default Map', "WinSPWW2's own batloc system picks historically-appropriate terrain from the nations/date above — recommended over the hand-tuned parameters below.")}
         ${row('Map Size', mapSize.size, `${mapSize.note} Based on ${here.length} BG${here.length===1?'':'s'} present. No exact formula in the guide — a starting point.`)}
         ${row('Weather', sector.weather || '— not yet rolled —', 'House rule — re-rolled every strategic turn by season and region. Basis for the Visibility recommendation below.')}
         ${row('Visibility (hexes)', visibility.value, visibility.note)}
       </table>
+
+      <div style="margin:10px 0 4px;color:var(--ink-dim);" title="§9.2's own flat per-BG rate for this Match Type and role — not the campaign BG's current points value.">Match Points (§9.2) ⓘ</div>
+      <table style="width:100%;border-collapse:collapse;" id="ms_points_table"></table>
+      <div style="margin-top:4px;color:var(--gold);">Support Tokens are not included here — add those yourself based on what's actually in inventory (§10.1).</div>
 
       <div style="margin:10px 0 4px;color:var(--ink-dim);" title="Hand-tuning reference if not using Random/Default Map. Grounded in this sector's own terrain (${ti.major}${ti.modifiers.length?' + '+ti.modifiers.join(' + '):''}), but the guide gives no official terrain-to-value table — defensible starting values, not the game's exact batloc numbers. Access via ',' in the Scenario Map Editor.">Terrain Generator Parameters — ${ti.major}${ti.modifiers.length ? ' + ' + ti.modifiers.join(' + ') : ''} ⓘ</div>
       <table style="width:100%;border-collapse:collapse;">
@@ -8030,6 +8059,24 @@ function openMatchSetupModal(sector){
       ${ti.modifiers.includes('River') ? `<div style="margin-top:4px;color:var(--ink-faint);">River on a connection here — consider River Trees/Rough ~1-2% for edging; Water Conditions above already covers the crossing itself.</div>` : ''}
     </div>
   `);
+  const updatePoints = () => {
+    const battleType = document.getElementById('ms_battle_type').value;
+    const attackingFaction = document.getElementById('ms_attacker').value;
+    const rates = MATCH_RATES[battleType] || MATCH_RATES['Meeting Engagement'];
+    const axisIsAttacker = attackingFaction==='Axis';
+    const axisRate = axisIsAttacker ? rates.attacker : rates.defender;
+    const alliedRate = axisIsAttacker ? rates.defender : rates.attacker;
+    const axisBonus = axisIsAttacker ? 0 : rates.defenderBonus;
+    const alliedBonus = axisIsAttacker ? rates.defenderBonus : 0;
+    const axisPoints = axisCount * axisRate + axisBonus;
+    const alliedPoints = alliedCount * alliedRate + alliedBonus;
+    document.getElementById('ms_points_table').innerHTML =
+      row('Axis', `${axisPoints.toLocaleString()} pts`, `${axisCount} BG × ${axisRate.toLocaleString()}/BG (${axisIsAttacker?'attacker':'defender'} rate, ${battleType})${axisBonus?` + ${axisBonus.toLocaleString()} flat defender bonus (not per-BG)`:''}`) +
+      row('Allied', `${alliedPoints.toLocaleString()} pts`, `${alliedCount} BG × ${alliedRate.toLocaleString()}/BG (${axisIsAttacker?'defender':'attacker'} rate, ${battleType})${alliedBonus?` + ${alliedBonus.toLocaleString()} flat defender bonus (not per-BG)`:''}`);
+  };
+  document.getElementById('ms_battle_type').addEventListener('change', updatePoints);
+  document.getElementById('ms_attacker').addEventListener('change', updatePoints);
+  updatePoints();
 }
 
 
