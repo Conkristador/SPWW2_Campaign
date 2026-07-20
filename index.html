@@ -5756,6 +5756,21 @@ function logAction(faction, type, description, relevantSectors, bgId, forceSeale
   // persisted indefinitely.
   if(actionLog.length > ACTION_LOG_CAP) actionLog.length = ACTION_LOG_CAP;
 }
+// A Sealed entry's placeholder text for a viewer who shouldn't see its
+// real description yet. "A Battle Group took a Sealed action... moves
+// adjacent... fights" only makes sense for something actually tied to a
+// specific BG's movement — an intelligence action (ULTRA, MAGIC) isn't,
+// and describing it that way would be actively misleading rather than
+// just vague. Kept as one shared function so every surface that renders
+// a Sealed entry picks the same wording for the same category, rather
+// than three separate copies that could drift.
+const INTEL_LOG_TYPES = new Set(['ULTRA', 'MAGIC']);
+function sealedEntryPlaceholder(e){
+  if(INTEL_LOG_TYPES.has(e.type)){
+    return `${e.faction} conducted intelligence operations this turn — details classified until revealed (§5.3).`;
+  }
+  return `A ${e.faction} Battle Group took a Sealed action (§5.2) — hidden until it moves adjacent to the enemy, is targeted, or fights.`;
+}
 
 // §5.2 "Reveal on trigger": a Sealed entry auto-reveals the instant its BG
 // stops qualifying for Tier 1 — moves adjacent to the enemy, gets
@@ -9024,7 +9039,7 @@ function openStrategicBombingModal(){
   const entries = actionLog.filter(e=>e.type==='Strategic Bombing');
   const rows = entries.length ? entries.map(e=>{
     const canSeeFull = viewer==='Observer' || e.faction===viewer || e.revealed;
-    const desc = canSeeFull ? e.description : `A ${e.faction} Battle Group took a Sealed action (§5.2) — hidden until it moves adjacent to the enemy, is targeted, or fights.`;
+    const desc = canSeeFull ? e.description : sealedEntryPlaceholder(e);
     return `<div class="log-entry">
       <div class="log-turn">${e.turn} · ${e.faction}${e.sealed && !canSeeFull ? ' · SEALED' : ''}</div>
       <div class="log-sides">${desc}</div>
@@ -9056,7 +9071,7 @@ function openSubmarineWarfareModal(){
   const entries = actionLog.filter(e=>e.type==='Submarine Warfare');
   const rows = entries.length ? entries.map(e=>{
     const canSeeFull = viewer==='Observer' || e.faction===viewer || e.revealed;
-    const desc = canSeeFull ? e.description : `A ${e.faction} Battle Group took a Sealed action (§5.2) — hidden until it moves adjacent to the enemy, is targeted, or fights.`;
+    const desc = canSeeFull ? e.description : sealedEntryPlaceholder(e);
     return `<div class="log-entry">
       <div class="log-turn">${e.turn} · ${e.faction}${e.sealed && !canSeeFull ? ' · SEALED' : ''}</div>
       <div class="log-sides">${desc}</div>
@@ -9689,7 +9704,7 @@ function wireDashboardInputs(faction){
     const ids = Array.from(sel.selectedOptions).map(o=>parseInt(o.value)).slice(0,3);
     dashboards.Allied.intel.ultraTurn = thisTurn;
     dashboards.Allied.intel.ultraTargets = ids;
-    logAction('Allied', 'ULTRA', `ULTRA FoW boost applied to ${ids.length} German BG(s) for ${thisTurn}`, []);
+    logAction('Allied', 'ULTRA', `ULTRA FoW boost applied to ${ids.length} German BG(s) for ${thisTurn}`, [], null, true);
     await saveState(true, true);
     render();
     openDashboard('Allied');
@@ -10400,7 +10415,7 @@ document.getElementById('openActionLog').addEventListener('click', ()=>{
   }
   const rows = actionLog.map(e=>{
     const canSeeFull = viewer==='Observer' || e.faction===viewer || e.revealed;
-    const desc = canSeeFull ? e.description : `A ${e.faction} Battle Group took a Sealed action (§5.2) — hidden until it moves adjacent to the enemy, is targeted, or fights.`;
+    const desc = canSeeFull ? e.description : sealedEntryPlaceholder(e);
     const typeLabel = canSeeFull ? e.type : 'Sealed';
     return `<div class="log-entry">
       <div class="log-turn">${e.turn} · ${e.faction}${e.sealed && !canSeeFull ? ' · SEALED' : ''}</div>
