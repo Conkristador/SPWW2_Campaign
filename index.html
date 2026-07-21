@@ -2010,12 +2010,15 @@ Anchorage also counts as a valid friendly staging point for an
 Amphibious Invasion (§8.1) even without nearby coastal territory, and as
 valid basing for Japan’s Strategic Bombing basing requirement (§8.5) if
 within 2 sea sectors of the target RC.</li>
-<li><strong>Forward Staging Bases.</strong> During any Alternating
-Movement phase, if a US Amphibious or Marine BG occupies a coastal land
-or island sector with an RC value of 0, the US may spend 1× ENG or AMPH
-token to instantly upgrade that sector into a Forward Staging Base: it
-generates no economic points and supports no extra BGs, but acts as an
-active RC solely for tracing NTF deployment range.</li>
+<li><strong>Forward Staging Bases.</strong> Pacific Theater only. During
+any Alternating Movement phase, if a US Amphibious or Marine BG occupies
+a coastal land or island sector with an RC value of 0, the US may spend
+1× ENG or AMPH token to instantly upgrade that sector into a Forward
+Staging Base: it generates no economic points and supports no extra BGs,
+but acts as an active RC solely for tracing NTF deployment range. The
+token cost is deducted automatically the moment it’s built, and it’s a
+<strong>one-time</strong> upgrade per base — once built, it’s permanent,
+and there’s no second construction to pay for at the same sector.</li>
 <li><strong>The Island-Hopping Supply Link.</strong> When tracing the
 path from a target sea sector back to an active RC (or Forward Staging
 Base / Mobile Staging Anchorage), the path may cross at most <strong>1
@@ -6691,15 +6694,22 @@ function renderPanel(){
       })() : ''}
 
       ${(s.type!=='Sea' && (s.rc||0)===0 && (s.connections||[]).some(cid=>byId[cid]&&byId[cid].type==='Sea')) ? (()=>{
-        const usMarine = bgs.some(b=>b.sectorId===s.id && b.nation==='USA' && (b.type==='Marine'||b.type==='Airborne'));
         if(s.forwardStagingBase){
+          // Status display isn't region-gated — an FSB already built (even
+          // from before this restriction existed) should still report its
+          // own state correctly, regardless of where it sits.
           return `<div class="field-group"><div class="fg-label rule-link" data-section="sec-8-6">Forward Staging Base (§11.6)</div>
             <div class="stat-line"><span>Status</span><b class="pill-ok">Active — extends ${s.forwardStagingNation}'s NTF range</b></div></div>`;
         }
+        // Building a new one is Pacific Theater only (§11.6) — this
+        // represents USN's island-hopping campaign specifically, not a
+        // general-purpose coastal upgrade available anywhere in the world.
+        if(s.region!=='Pacific') return '';
+        const usMarine = bgs.some(b=>b.sectorId===s.id && b.nation==='USA' && (b.type==='Marine'||b.type==='Airborne'));
         if(!usMarine) return '';
         return `<div class="field-group">
           <div class="fg-label rule-link" data-section="sec-8-6">Forward Staging Base (§11.6)</div>
-          <div class="winter-note">During any Alternating Movement phase, spend 1× ENG or AMPH token to instantly upgrade this sector into an NTF range anchor — no economic value, just extends USN reach.</div>
+          <div class="winter-note">Pacific Theater only. During any Alternating Movement phase, spend 1× ENG or AMPH token to instantly upgrade this sector into an NTF range anchor — no economic value, just extends USN reach. One-time only per base — once built, it's permanent.</div>
           <select id="fsb_token_type"><option>ENG</option><option>AMPH</option></select>
           <button class="cr-roll-btn" id="fsb_build_btn" style="margin-top:8px;">Construct Forward Staging Base</button>
         </div>`;
@@ -7184,6 +7194,8 @@ function renderPanel(){
   });
   const fsbBtn = document.getElementById('fsb_build_btn');
   if(fsbBtn) fsbBtn.addEventListener('click', async ()=>{
+    if(s.forwardStagingBase){ notify(`${s.name} already has a Forward Staging Base — one-time only, per base.`); return; }
+    if(s.region!=='Pacific'){ notify('Forward Staging Bases can only be built in the Pacific Theater (§11.6).'); return; }
     const tokType = document.getElementById('fsb_token_type').value;
     const inv = (dashboards.Allied.tokens.USA||{})[tokType] || 0;
     if(inv < 1){ notify(`USA has no ${tokType} tokens available.`); return; }
