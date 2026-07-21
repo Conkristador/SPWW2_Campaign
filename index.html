@@ -1090,12 +1090,13 @@ tactical budget (temporary):</p>
 </table>
 <p><strong>Rest.</strong> Spend a turn in a friendly, uncontested sector
 — FP resets to 0.</p>
-<h3 id="sec-3-7">3.7. Recovery</h3>
-<ul>
-<li>Not engaged this turn: <strong>+500 points</strong>.</li>
-<li>Not engaged this turn <strong>and</strong> in a home province:
-<strong>+1,000 points</strong>.</li>
-<li><strong>Reconstitution.</strong> If a BG is destroyed between Winter
+<h3 id="sec-3-7">3.7. Reconstitution</h3>
+<p>Automatic per-turn point recovery is retired — restoring a specific
+BG’s points is now always a deliberate, CP-funded action via Refit
+(§3.8), not a free flat gain every turn regardless of what happened. A
+BG that didn’t fight simply keeps whatever points it has; nothing heals
+on its own.</p>
+<p><strong>Reconstitution.</strong> If a BG is destroyed between Winter
 Audits while its faction is currently below its RC-derived BG Cap (§2.1)
 — the loss opened a gap that would otherwise sit empty until the next
 Winter Mobilization — the faction may reconstitute a BG of the
@@ -1104,9 +1105,7 @@ during the very next strategic turn only. Miss that window and the
 opportunity is gone; waiting for the normal Winter Mobilization path
 (any type, full strength) is always available regardless. Deployed under
 the same eligibility as Mobilization (§4.4) — an Owned RC, not
-Damaged/Destroyed/Isolated, currently tracing supply to the
-capital.</li>
-</ul>
+Damaged/Destroyed/Isolated, currently tracing supply to the capital.</p>
 <h3 id="sec-3-8">3.8. BG Refit</h3>
 <p>Spends CP (§2.5) to restore a specific BG’s points directly, from
 that BG’s own panel — a deliberate, funded alternative to ordinary
@@ -1173,6 +1172,32 @@ the same turn.</p>
 enemy shouldn’t see a Refit coming for free. Like any other Sealed,
 BG-tied action, it can still be exposed by B-Dienst Intercept (§5.3) if
 conditions for that happen to trigger.</p>
+<h3 id="sec-3-9">3.9. Mobilization</h3>
+<p>Building a new BG is available <strong>any strategic turn</strong>,
+not just following a Winter Audit — a nation checks live against its
+current RC-derived BG Cap (§2.1) every time, so capturing territory
+mid-year opens mobilization room immediately rather than waiting for the
+next Winter to catch up. Not automatic: a nation under its cap doesn’t
+get a BG for free, it gets the <em>option</em> to raise one.</p>
+<p><strong>Where.</strong> From the Battle Group Roster section of that
+faction’s dashboard. Owner picks name, type (respecting §3.2’s Infantry
+Minimum), and deployment sector — any Owned RC, not Occupied, that is
+not Damaged or Destroyed and currently traces supply to the capital
+(§2.4). The Home Capital itself always qualifies.</p>
+<p><strong>Strength.</strong> A new BG need not be raised at full
+strength — owner selects anywhere from <strong>50% to 100%</strong> of
+that BG’s OQ-adjusted ceiling (§2.7), not a flat 2,500 points. A
+lower-strength formation costs less to raise, but starts with less to
+lose before it needs its first Refit.</p>
+<p><strong>Cost.</strong> 1 CP per point raised, same base rate as Refit
+(§3.8) — no distance friction (mobilization already requires an
+in-supply RC) and no national efficiency discount (a brand-new formation
+has no veteran cadre to discount for).</p>
+<pre><code>Cost = Points Raised × 1</code></pre>
+<p><strong>Eligibility is rechecked at the moment of purchase</strong>,
+not just when the dashboard was opened — if RC holdings changed since
+then, a nation that’s since reached its cap is correctly refused rather
+than mobilizing past it on stale information.</p>
 <hr />
 <h1 id="part-ii-sequence-of-play">PART II: SEQUENCE OF PLAY</h1>
 <h2 id="sec-4">4. The Strategic Turn</h2>
@@ -1201,22 +1226,15 @@ industry is inactive for this step (§11.4).</li>
 <li><strong>Attrition.</strong> Each BG over the newly-set cap loses
 <strong>20% of its points</strong>, applied in priority order:
 <strong>ARM → MECH → AIRBORNE → MARINE → INF</strong>.</li>
-<li><strong>Mobilization.</strong> If RC support exceeds BG count, build
-new BGs at full 2,500 points. Deploy each on any Owned RC sector — not
-Occupied, see §2.2 — in the nation’s home territory that is
-<strong>not</strong> Damaged or Destroyed and currently traces supply to
-the capital (§2.4). The Home Capital itself always qualifies. Owner
-picks the type (respecting §3.2) and which eligible RC to deploy
-at.</li>
 <li><strong>Refit.</strong> Any Shattered BG that spent the Winter turn
 in a friendly RC sector returns to Ready.</li>
-<li><strong>Tokens.</strong> Collect 1 token per 2 RCs; choose type
-now.</li>
-<li><strong>Repair.</strong> Repair RCs damaged or destroyed by bombing
-or submarines (§8.5).</li>
 <li><strong>Doctrine activation.</strong> A nation may declare a
 Doctrine now — see §10.3.</li>
 </ul>
+<p>Mobilization, Support Token purchase, and RC repair are
+<strong>not</strong> Winter-only steps — see §3.1 (Mobilization), §2.8
+(Tokens), and §2.6 (RC Repair). All three are CP-funded and available
+any strategic turn a nation is eligible, not gated to this phase.</p>
 <p>Soviet evacuated RCs reactivate after all purchases in this phase are
 complete (§11.4).</p>
 <h1 id="part-iii-operational-mechanics-combat">PART III: OPERATIONAL
@@ -4555,14 +4573,14 @@ function mergeSectorsWithSeed(saved){
   return merged;
 }
 
-// Fills in any fields a saved dashboards blob predates (e.g. mobilizationSlack
+// Fills in any fields a saved dashboards blob predates (e.g. cpPool
 // didn't exist in earlier saves) using the current default shape, without
 // discarding anything the players already entered.
 function defaultDashboards(){
   return {
     Axis: { doctrine:{Germany:{active:'None',token:'None',activated:'',expires:''},Japan:{active:'None',token:'None',activated:'',expires:''},Italy:{active:'None',token:'None',activated:'',expires:''}},
       doctrineCosts:{Germany:{}, Japan:{}, Italy:{}},
-      tokens:{Germany:{},Japan:{},Italy:{}}, mobilizationSlack:{Germany:0,Japan:0,Italy:0},
+      tokens:{Germany:{},Japan:{},Italy:{}},
       flags:{'Oil War trace active — Germany':'No','Oil War trace active — Japan':'No','Ketsu-Go declared':'No','Italian Armistice triggered':'No','General Winter active':'No','Atlantic Wall triggered':'No'},
       airForces:{Germany:{fighterDefense:FIGHTER_DEFENSE_GROWTH.Germany[1941]}, Japan:{fighterDefense:FIGHTER_DEFENSE_GROWTH.Japan[1941]}},
       submarineFleet:{Germany:SUBMARINE_FLEET_GROWTH.Germany[1941]},
@@ -4577,7 +4595,7 @@ function defaultDashboards(){
       notes:'' },
     Allied: { doctrine:{USA:{active:'None',token:'None',activated:'',expires:''},UK:{active:'None',token:'None',activated:'',expires:''},USSR:{active:'None',token:'None',activated:'',expires:''},China:{active:'None',token:'None',activated:'',expires:''}},
       doctrineCosts:{USA:{}, UK:{}, USSR:{}, China:{}},
-      tokens:{USA:{},UK:{},USSR:{},China:{}}, mobilizationSlack:{USA:0,UK:0,USSR:0,China:0},
+      tokens:{USA:{},UK:{},USSR:{},China:{}},
       flags:{'Free France Legitimacy count (0-3)':'0','Vichy Legitimacy count (0-3)':'0','Italian Armistice triggered':'No','Flying Tigers active':'No','Burma Road / Hump Lend-Lease active':'No','China Alpha Force unlocked':'No'},
       intel:{ultraTurn:'', ultraTargets:[], ultraRevealTurn:'', ultraRevealCount:0, magicRevealTurn:'', magicRevealDone:false},
       airForces:{USA:{bomberForce:BOMBER_FORCE_GROWTH.USA[1941], committedThisTurn:0}, UK:{bomberForce:BOMBER_FORCE_GROWTH.UK[1941], committedThisTurn:0}},
@@ -4601,7 +4619,6 @@ function normalizeDashboards(saved){
     Object.keys(b.doctrine).forEach(n=>{ b.doctrine[n] = {...b.doctrine[n], ...((s.doctrine&&s.doctrine[n])||{})}; });
     Object.keys(b.doctrineCosts).forEach(n=>{ b.doctrineCosts[n] = {...b.doctrineCosts[n], ...((s.doctrineCosts&&s.doctrineCosts[n])||{})}; });
     Object.keys(b.tokens).forEach(n=>{ b.tokens[n] = {...b.tokens[n], ...((s.tokens&&s.tokens[n])||{})}; });
-    Object.keys(b.mobilizationSlack).forEach(n=>{ b.mobilizationSlack[n] = (s.mobilizationSlack&&s.mobilizationSlack[n]) || 0; });
     Object.keys(b.airForces).forEach(n=>{ b.airForces[n] = {...b.airForces[n], ...((s.airForces&&s.airForces[n])||{})}; });
     Object.keys(b.submarineFleet).forEach(n=>{ b.submarineFleet[n] = (s.submarineFleet&&s.submarineFleet[n]) ?? b.submarineFleet[n]; });
     Object.keys(b.submarineCommitted).forEach(n=>{ b.submarineCommitted[n] = (s.submarineCommitted&&s.submarineCommitted[n]) || 0; });
@@ -7182,7 +7199,7 @@ function renderBGPanel(){
 
   el.innerHTML = `
     <div class="panel-head">
-      <div class="eyebrow">${b.nation} · ${b.type}${b.elite?' · Elite':''}</div>
+      <div class="eyebrow">${b.nation} · ${b.type} · OQ ${computeBgOQ(b).toFixed(1)}${b.elite?' · Elite':''}</div>
       <h2>${b.name}</h2>
       <span class="faction-badge ${faction}">${faction}</span>
       <div class="winter-note rule-link" data-section="sec-3-1" style="margin-top:4px;" title="§3.1 — the composition requirement this BG type must meet to be legally purchased/built. Informational only; the tool doesn't check actual unit composition.">${TYPE_REQUIREMENTS[b.type] || ''}</div>
@@ -9482,16 +9499,6 @@ function advanceSupplyStatus(){
   return changes;
 }
 
-// §3.7 Recovery: a BG not engaged this turn regains 500 points, or 1,000 if
-// sitting in its own nation's home province — never past its maximum.
-// Maximum is normally 2,500, but drops to 2,000 for Germany/Japan ARM/MECH
-// specifically once their Oil War trace has failed (§12.5, 1943+). That
-// trace status is tracked as a manual dashboard flag elsewhere in this tool
-// (nothing currently computes it automatically), so this reads the same
-// flag rather than re-deciding the question a second way.
-function isHomeProvince(sector, nation){
-  return !!(sector && sector.owner===nation);
-}
 // Officer Quality — national baseline modified by a BG's own experience.
 // A veteran BG (experience above the 60 Regular baseline) fights above
 // its nation's own OQ; a green BG drags its own effective OQ down below
@@ -9596,30 +9603,6 @@ function oilWarCapApplies(bg){
   const faction = factionForNation(bg.nation);
   const flagKey = 'Oil War trace active — ' + bg.nation;
   return dashboards[faction].flags[flagKey] !== 'Yes';
-}
-function advanceRecovery(){
-  const changes = [];
-  bgs.forEach(b=>{
-    if(b.engagedThisTurn) return; // §3.7 — only a BG that didn't fight this turn recovers
-    if(b.shattered) return; // a Shattered BG refits via §10, not ordinary Recovery
-    const sector = byId[b.sectorId];
-    const home = isHomeProvince(sector, b.nation);
-    const gain = home ? 1000 : 500;
-    // Oil War's -500 penalty now applies as a delta from this BG's own
-    // OQ-adjusted ceiling, not a hardcoded 2000 — a veteran German ARM
-    // formation under a strong national officer corps still loses 500
-    // off whatever its real (possibly >2500) ceiling is, rather than
-    // being flattened to a flat number regardless of OQ.
-    const cap = oilWarCapApplies(b) ? bgCeiling(b) - 500 : bgCeiling(b);
-    const before = b.points;
-    b.points = Math.min(cap, b.points + gain);
-    const actualGain = b.points - before;
-    if(actualGain > 0){
-      changes.push({bg:b, home, actualGain, before, after:b.points, cap});
-    }
-  });
-  bgs.forEach(b=>{ b.engagedThisTurn = false; }); // reset for the new turn about to start
-  return changes;
 }
 
 function tracesSupplyToCapital(sectorId, nation){
@@ -10326,10 +10309,23 @@ function buildDashboardHtml(faction){
       <button class="cr-roll-btn" id="starting_doctrines_btn" style="margin-top:8px;width:100%;">Choose ${faction}'s Starting Doctrines</button>
     </div>` : '';
 
-  const warnRows = majors.filter(n=>(dash.mobilizationSlack[n]||0)>0).map(n=>{
+  // Mobilization eligibility is now checked LIVE against current RC
+  // holdings every time the dashboard renders, not just once a year at
+  // Winter Logistics — a nation that captures territory mid-year can
+  // mobilize against that new capacity immediately, not wait for the
+  // next Winter snapshot to catch up. mobilizationSlack (the old
+  // Winter-only figure) is retired as the gating mechanism here; the
+  // live economy computation is the only source of truth now.
+  const mobRows = majors.filter(n=>{
+    const e = econ[n];
+    return e && e.fielded < e.bgCap;
+  }).map(n=>{
+    const e = econ[n];
+    const room = Math.floor(e.bgCap - e.fielded);
     const eligible = eligibleMobilizationSectors(n);
+    const pool = dash.cpPool[n]||0;
     return `
-    <div class="moved-banner">⚠ ${n} is ${dash.mobilizationSlack[n]} Battle Group(s) short of its RC-supported cap (§10 Mobilization).
+    <div class="moved-banner">${n} has room for ${room} more Battle Group(s) under its current RC-supported cap (${e.fielded}/${e.bgCap.toFixed(1)}).
       <div class="field-row" style="margin-top:8px;">
         <div><div class="fg-label">Name</div><input class="txtfield" id="mob_name_${n}" placeholder="e.g. ${n} New Army"></div>
         <div><div class="fg-label">Type</div><select id="mob_type_${n}">${['INF','ARM','MECH','CAV','Airborne','Marine'].map(t=>`<option>${t}</option>`).join('')}</select></div>
@@ -10339,7 +10335,10 @@ function buildDashboardHtml(faction){
         ${eligible.length ? eligible.map(s=>`<option value="${s.id}">${s.name}${s.name===HOME_CAPITAL[n]?' (Capital)':''}</option>`).join('')
           : `<option value="">No eligible RC — supply trace to capital is broken everywhere</option>`}
       </select>
-      <button class="cr-roll-btn" data-mob-nation="${n}" style="margin-top:8px;" ${eligible.length?'':'disabled'}>Create</button>
+      <div class="fg-label" style="margin-top:6px;">Starting strength — 50% to 100% of ceiling (§3.1)</div>
+      <input class="txtfield" id="mob_strength_${n}" type="range" min="50" max="100" value="100" step="5" style="width:100%;">
+      <div class="winter-note" id="mob_cost_preview_${n}">CP pool: ${pool.toLocaleString()}.</div>
+      <button class="cr-roll-btn" data-mob-nation="${n}" style="margin-top:8px;" ${eligible.length?'':'disabled'}>Mobilize</button>
     </div>`;}).join('');
 
   // House rule: emergency reconstitution (§3.7) for a BG lost between
@@ -10380,7 +10379,7 @@ function buildDashboardHtml(faction){
     const searchKey = `${b.name} ${b.nation} ${b.type} ${loc}`.toLowerCase();
     return `<tr class="roster-row" data-bgid="${b.id}" data-search="${searchKey}" style="cursor:pointer;">
       <td>${b.name}${b.movedThisTurn?' ⬤':''}${b.shattered?' ✕':''}</td><td>${b.nation}</td><td>${b.type}</td>
-      <td>${loc}</td><td>${b.points}</td><td>${b.experience}</td><td>${b.fatigue||0}</td><td>${b.in_supply}</td></tr>`;
+      <td>${loc}</td><td>${computeBgOQ(b).toFixed(1)}</td><td>${b.points}</td><td>${b.experience}</td><td>${b.fatigue||0}</td><td>${b.in_supply}</td></tr>`;
   }).join('');
 
   const doctrineRows = majors.map(n=>{
@@ -10491,7 +10490,6 @@ function buildDashboardHtml(faction){
     ${startingDoctrinesBanner}
     ${armisticeBanner}
     ${alphaForceBanner}
-    ${warnRows}
     ${reconRows}
 
     <div class="cr-side-title" style="margin-top:6px;">Economy At-A-Glance</div>
@@ -10508,7 +10506,7 @@ function buildDashboardHtml(faction){
         const genShown = canSeeExactDash ? genLive.toLocaleString() : estimateEnemyStrength(genLive);
         const poolShown = canSeeExactDash ? (dash.cpPool[n]||0).toLocaleString() : estimateEnemyStrength(dash.cpPool[n]||0);
         const lastTurnShown = canSeeExactDash ? (dash.cpGeneratedLastTurn[n]||0).toLocaleString() : estimateEnemyStrength(dash.cpGeneratedLastTurn[n]||0);
-        return `<tr><td>${n}</td><td style="color:var(--gold);">${genShown}</td><td>${poolShown}</td><td>${lastTurnShown}</td><td>${(dash.officerQuality[n]||60).toFixed(1)}</td></tr>`;
+        return `<tr><td>${n}</td><td style="color:var(--gold);">${genShown}</td><td>${poolShown}</td><td>${lastTurnShown}</td><td style="color:var(--gold);font-weight:700;font-size:1.05em;">${(dash.officerQuality[n]||60).toFixed(1)}</td></tr>`;
       }).join('')}
     </tbody></table>
     <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;align-items:center;">
@@ -10525,8 +10523,9 @@ function buildDashboardHtml(faction){
 
     <div class="cr-side-title" style="margin-top:18px;">Battle Group Roster (${fs.total.count}) — click any row to open it</div>
     <input class="txtfield" id="rosterFilter" placeholder="Filter by name, nation, type, or location…" style="margin-bottom:8px;">
-    <table class="econ-table" id="rosterTable"><thead><tr><th>Name</th><th>Nation</th><th>Type</th><th>Location</th><th>Points</th><th>Exp</th><th>FP</th><th>Supply</th></tr></thead>
+    <table class="econ-table" id="rosterTable"><thead><tr><th>Name</th><th>Nation</th><th>Type</th><th>Location</th><th>OQ</th><th>Points</th><th>Exp</th><th>FP</th><th>Supply</th></tr></thead>
       <tbody>${rosterRows}</tbody></table>
+    ${mobRows}
 
     <div class="cr-side-title" style="margin-top:18px;">Doctrine &amp; National Token Tracker</div>
     ${doctrineRows}
@@ -10801,6 +10800,29 @@ function wireDashboardInputs(faction){
       openDashboard(faction);
     });
   });
+  const mobDash = dashboards[faction]; // wireDashboardInputs receives `faction`, not `dash`/`majors` — those are separate locals in the HTML-building half of openDashboard, not in scope here.
+  const mobMajors = MAJOR_NATIONS[faction];
+  const mobStrengthCost = (n, type, strengthPct) => {
+    const ceiling = bgCeiling({nation:n, experience: experienceBaseline(n,type)});
+    const points = Math.round(ceiling * strengthPct/100);
+    return {points, cost: points, ceiling}; // 1 CP per point — same base rate as Refit (§3.8)
+  };
+  mobMajors.forEach(n=>{
+    const slider = document.getElementById(`mob_strength_${n}`);
+    const typeSel = document.getElementById(`mob_type_${n}`);
+    const previewEl = document.getElementById(`mob_cost_preview_${n}`);
+    if(!slider || !previewEl) return;
+    const updatePreview = () => {
+      const type = typeSel.value;
+      const pct = parseInt(slider.value)||100;
+      const {points, cost} = mobStrengthCost(n, type, pct);
+      const pool = mobDash.cpPool[n]||0;
+      previewEl.innerHTML = `${pct}% strength = ${points.toLocaleString()} pts, costs ${cost.toLocaleString()} CP. ${n}'s CP pool: ${pool.toLocaleString()}.${cost>pool?' <span style="color:var(--danger);">Exceeds pool.</span>':''}`;
+    };
+    slider.addEventListener('input', updatePreview);
+    if(typeSel) typeSel.addEventListener('change', updatePreview);
+    updatePreview();
+  });
   document.querySelectorAll('[data-mob-nation]').forEach(btn=>{
     btn.addEventListener('click', async ()=>{
       const n = btn.dataset.mobNation;
@@ -10810,14 +10832,23 @@ function wireDashboardInputs(faction){
       const chosenId = sectorSel ? parseInt(sectorSel.value) : null;
       const deploySector = chosenId ? byId[chosenId] : sectors.find(s=>s.name===HOME_CAPITAL[n]);
       if(!deploySector){ notify('No eligible deployment sector — supply trace to the capital is broken everywhere.'); return; }
+      // Live re-check at the moment of purchase, not just at render time —
+      // the dashboard could be stale if another activation changed RC
+      // holdings since it was opened.
+      const liveEcon = computeEconomy()[n];
+      if(!liveEcon || liveEcon.fielded >= liveEcon.bgCap){ notify(`${n} is no longer under its RC-supported cap — mobilization unavailable.`); return; }
+      const strengthPct = parseInt(document.getElementById(`mob_strength_${n}`).value)||100;
+      const {points, cost} = mobStrengthCost(n, type, strengthPct);
+      const pool = mobDash.cpPool[n]||0;
+      if(cost > pool){ notify(`${n}'s CP pool only has ${pool.toLocaleString()} — needs ${cost.toLocaleString()} for ${strengthPct}% strength.`); return; }
+      mobDash.cpPool[n] = pool - cost;
       const maxId = bgs.reduce((m,b)=>Math.max(m,b.id),0);
       bgs.push({
-        faction, nation:n, name, type, fow:null, location:deploySector.name, points:2500, fatigue:0,
+        faction, nation:n, name, type, fow:null, location:deploySector.name, points, fatigue:0,
         experience: experienceBaseline(n,type), orders:'Hold', in_supply:'Yes', elite:null, id:maxId+1,
         sectorId: deploySector.id, shattered:false, movedThisTurn:false
       });
-      logAction(faction, 'Purchase', `${name} (${n}, ${type}) mobilized at ${deploySector.name}`, [deploySector]);
-      dashboards[faction].mobilizationSlack[n] = Math.max(0, (dashboards[faction].mobilizationSlack[n]||0) - 1);
+      logAction(faction, 'CP Purchase', `${name} (${n}, ${type}) mobilized at ${deploySector.name}, ${strengthPct}% strength (${points.toLocaleString()} pts) for ${cost.toLocaleString()} CP`, [deploySector]);
       await saveState(true, true);
       render();
       openDashboard(faction);
@@ -11478,7 +11509,7 @@ function openWinterLogisticsModal(){
     html += `<div class="winter-nation"><h3>${n}</h3>
       <div class="winter-line">Fielded <b>${e0.fielded}</b> → new cap <b>${newCap.toFixed(1)}</b></div>
       ${excess>0 ? `<div class="winter-line">Attrition: <b>${excess}</b> BG(s) over cap take -20% points, priority ARM→MECH→Airborne→Marine→INF (§10)</div>` : ''}
-      ${slack>0 ? `<div class="winter-line">Mobilization: <b>${slack}</b> new INF BG(s) raised at ${HOME_CAPITAL[n]} at 2,500 pts (§10)</div>` : ''}
+      ${slack>0 ? `<div class="winter-line">Room for <b>${slack}</b> more BG(s) under the new cap — mobilize any time from the Battle Group Roster (§3.9), not automatic here.</div>` : ''}
       ${excess===0&&slack===0 ? `<div class="winter-line">At cap — no change.</div>` : ''}
     </div>`;
   });
@@ -11527,7 +11558,7 @@ function applyStandingForceGrowth(comingYear){
 async function applyWinterLogistics(plan, comingYear){
   const beforeSnap = snapshotForChangeSummary();
   MAJORS.forEach(n=>{
-    const {excess, slack} = plan[n];
+    const {excess} = plan[n];
     const minors = minorsFor(n).filter(m=>isMinorActivated(n,m));
     const nationSet = n==='China' ? new Set(['China (Nationalist)','China (Communist)']) : new Set([n, ...minors]);
     if(excess>0){
@@ -11543,12 +11574,9 @@ async function applyWinterLogistics(plan, comingYear){
         }
       }
     }
-    // Mobilization is NOT automatic (§10 — "Owner picks the type"): record the
-    // shortfall as a warning on that nation's dashboard instead of creating
-    // BGs for the player. See "Create New BG" there.
-    const fac = (n==='Germany'||n==='Japan'||n==='Italy') ? 'Axis' : 'Allied';
-    dashboards[fac].mobilizationSlack = dashboards[fac].mobilizationSlack || {};
-    dashboards[fac].mobilizationSlack[n] = slack>0 ? slack : 0;
+    // Mobilization eligibility (§3.1) is checked LIVE from the dashboard
+    // now, not snapshotted here — a nation under its RC-supported cap can
+    // mobilize any turn, not just following a Winter Audit.
   });
   // Standing forces (Bomber/Fighter/Submarine/NTF) no longer grow
   // automatically each Winter — replaced entirely by CP purchasing,
@@ -11566,16 +11594,7 @@ async function applyWinterLogistics(plan, comingYear){
     // any time, not granted here.
     openDoctrineSelectionModal(MAJORS, ()=>finishWinterLogistics(beforeSnap, comingYear));
   };
-  if(clearedSummary.length){
-    openModal('Unspent Tokens Cleared (house rule)', `
-      <div class="winter-note">Support Tokens don't carry forward past the end of the year — everyone's unspent inventory just cleared:</div>
-      ${clearedSummary.map(l=>`<div class="winter-line">${l}</div>`).join('')}
-      <button class="cr-roll-btn" id="tok_clear_continue" style="margin-top:10px;">Continue to Winter Token Collection</button>
-    `);
-    document.getElementById('tok_clear_continue').addEventListener('click', proceedToCollection);
-  } else {
-    proceedToCollection();
-  }
+  proceedToCollection();
 }
 async function finishWinterLogistics(beforeSnap, comingYear){
   // Refit: any Shattered BG resets if it's sitting on a friendly-controlled RC sector (§10)
@@ -11587,14 +11606,13 @@ async function finishWinterLogistics(beforeSnap, comingYear){
       }
     }
   });
-  bgs.forEach(b=>{ b.movedThisTurn = false; });
+  bgs.forEach(b=>{ b.movedThisTurn = false; b.engagedThisTurn = false; }); // engagedThisTurn also feeds Fog of War tier (§5.1) — reset here now that advanceRecovery (its previous home) is retired
   advanceCPEconomy();
   resetForceCommitment();
   autoResolvePendingSubmarinePatrols();
   sectors.forEach(s=>{ if(s.type==='Sea') s.ntfLocked = {}; });
   advancePartisans();
   const supplyChanges = advanceSupplyStatus();
-  const recoveryChanges = advanceRecovery();
   const interceptResult = advanceAxisIntercept();
   if(interceptResult) supplyChanges.push(interceptResult);
   expireReconstitutionOpportunities();
@@ -11604,7 +11622,7 @@ async function finishWinterLogistics(beforeSnap, comingYear){
   updateClockBadge();
   render();
   closeModal();
-  showTurnChangeSummary(beforeSnap, `Spring ${comingYear}`, supplyChanges, recoveryChanges);
+  showTurnChangeSummary(beforeSnap, `Spring ${comingYear}`, supplyChanges);
 }
 
 // "What changed this turn" — snapshot key auto-changing state before the
@@ -11615,7 +11633,7 @@ function snapshotForChangeSummary(){
     rcStatus: Object.fromEntries(sectors.filter(s=>s.rc>0).map(s=>[s.id, s.status])),
   };
 }
-function showTurnChangeSummary(before, newTurnLabel, extraLines, recoveryChanges){
+function showTurnChangeSummary(before, newTurnLabel, extraLines){
   const lines = [...(extraLines||[])];
   sectors.forEach(s=>{
     const was = before.partisan[s.id]||0, now = s.partisan||0;
@@ -11624,25 +11642,6 @@ function showTurnChangeSummary(before, newTurnLabel, extraLines, recoveryChanges
   sectors.filter(s=>s.rc>0).forEach(s=>{
     const was = before.rcStatus[s.id], now = s.status;
     if(was!==now) lines.push(`${s.name} RC status: ${was} → ${now}`);
-  });
-  // §3.7 Recovery — formatted at display time, not when it happened, so it
-  // reflects whoever is actually looking at this summary right now. Exact
-  // point totals are Tier-3-only knowledge (§5.1); an enemy BG's recovery
-  // only shows if the current viewer could already see its exact points —
-  // fighting, sitting Contested, or REC/INL/ULTRA-targeted this turn — the
-  // same standard as everywhere else in this tool, not a special case.
-  const viewer = playerRole || 'Observer';
-  (recoveryChanges||[]).forEach(c=>{
-    const tier = computeBgTier(c.bg, viewer);
-    if(tier === 3){
-      lines.push(`${c.bg.name} (${c.bg.nation}) recovers +${c.actualGain} pts${c.home?' (home province)':''} — now ${c.after}/${c.cap}`);
-    } else if(tier === 2){
-      // Partial Info (§5.1): category and nation are visible, points are not.
-      lines.push(`A ${c.bg.nation} ${c.bg.type} BG recovered points this turn — exact amount hidden (§5.1, not Tier 3 to you)`);
-    }
-    // Tier 1: skipped entirely — the BG's existence itself isn't revealed
-    // (§5.1), so even a generic "something recovered" line would leak more
-    // than Tier 1 is supposed to.
   });
   if(!lines.length){
     notify(`Advanced to ${newTurnLabel}. Nothing auto-changed this turn.`);
@@ -11672,21 +11671,20 @@ document.getElementById('advanceTurn').addEventListener('click', async ()=>{
   expireReconstitutionOpportunities();
   clock = next;
   advanceWeather();
-  bgs.forEach(b=>{ b.movedThisTurn = false; });
+  bgs.forEach(b=>{ b.movedThisTurn = false; b.engagedThisTurn = false; }); // engagedThisTurn also feeds Fog of War tier (§5.1) — reset here now that advanceRecovery (its previous home) is retired
   advanceCPEconomy();
   resetForceCommitment();
   autoResolvePendingSubmarinePatrols();
   sectors.forEach(s=>{ if(s.type==='Sea') s.ntfLocked = {}; });
   advancePartisans();
   const supplyChanges = advanceSupplyStatus();
-  const recoveryChanges = advanceRecovery();
   const interceptResult = advanceAxisIntercept();
   if(interceptResult) supplyChanges.push(interceptResult);
   await saveState(true, true);
   updateClockBadge();
   render();
   if(selectedBgId) renderBGPanel();
-  showTurnChangeSummary(beforeSnap, `${next.season} ${next.year}`, supplyChanges, recoveryChanges);
+  showTurnChangeSummary(beforeSnap, `${next.season} ${next.year}`, supplyChanges);
 });
 
 Object.values(INSET_CONFIGS).forEach(cfg=>{
