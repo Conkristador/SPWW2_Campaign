@@ -816,8 +816,9 @@ slow, compounding institutional investment. Victory growth applies once
 per unique nation represented among a winning stack, never on a
 Stalemate.</p>
 <h3 id="sec-2-8">2.8. Unified CP Purchasing</h3>
-<p>Everything below draws from the same National CP Pool, at a flat
-cost, available at any point during a player’s own activation:</p>
+<p>Everything below draws from the same National CP Pool, available at
+any point during a player’s own activation. All are a flat cost per unit
+except Flak, which doubles per level:</p>
 <table>
 <colgroup>
 <col style="width: 50%" />
@@ -843,8 +844,8 @@ cost, available at any point during a player’s own activation:</p>
 <td>500 CP</td>
 </tr>
 <tr class="even">
-<td>Flak, 1 level (Germany/Japan only, max 5 per RC)</td>
-<td>100 CP</td>
+<td>Flak, per level (Germany/Japan only, max 5 per RC)</td>
+<td>100 / 200 / 400 / 800 / 1,600 CP</td>
 </tr>
 </tbody>
 </table>
@@ -855,7 +856,12 @@ effective defense against a Strategic Bombing raid at that
 Fighter unit’s contribution, but never diluted the way Fighter Defense
 Force is (which splits across every active RC a nation holds). Cheap,
 concentrated, reliable local hardening for one specific RC, versus
-flexible-but-thin national coverage.</p>
+flexible-but-thin national coverage. Unlike everything else on this
+table, Flak’s cost <strong>doubles with each level already purchased at
+that RC</strong> — the first level is a cheap 100 CP, the fifth is a
+serious 1,600 CP commitment. Concentrated AA saturation runs into steep
+diminishing returns quickly; a player fortifying one RC to the max is
+making a real trade-off against spreading that CP elsewhere.</p>
 <p><strong>Carryover.</strong> Unspent CP rolls over to the next turn,
 capped at half of that turn’s own generation — not half of the
 accumulated pool. A nation that generated 3,000 CP and spent nothing
@@ -1754,6 +1760,25 @@ are capped at <strong>2,000 points</strong> and cannot recover losses.
 BGs <em>moving</em> through lose <strong>250 points per NTF</strong> of
 the superior side’s margin.</li>
 </ul>
+<p><strong>Naval Combat.</strong> Whenever both an Axis and an Allied
+NTF sit in the same sea sector, either side may resolve Naval Combat
+directly from that sector’s own panel — an activation, same as any other
+resolution button. Doctrine of the era wasn’t built around simply
+outnumbering the enemy; it aimed to <strong>square</strong> them —
+beating a fleet of 2 meant fielding 4, beating a fleet of 4 meant
+fielding 16. Effective combat power here is each side’s NTF count
+<strong>squared</strong>, not the raw count:</p>
+<pre><code>Axis Power = Axis NTF²
+Allied Power = Allied NTF²
+Axis Win Chance = Axis Power / (Axis Power + Allied Power)</code></pre>
+<p>A 4-vs-2 NTF mismatch isn’t a 2:1 fight, it’s a 16-vs-4 (80%) one.
+Losses to the defeated side scale with the <strong>square</strong> of
+the force disparity too, capped at a 3:1 ratio before squaring — a
+close, even fight bloodies both sides moderately (around 30% losses to
+the loser, 10% to the winner), while a lopsided one (2:1 or beyond) can
+wipe the losing side out almost entirely while the winner walks away
+largely unscathed. Losses are permanent — a sunk NTF is gone from that
+nation’s total, not merely withdrawn from the sector.</p>
 <h3 id="sec-8-4">8.4. Submarine Warfare</h3>
 <p>Not token-driven — a standing <strong>Submarine Fleet</strong>,
 tracked per nation (Germany, USA only; no other nation’s WWII submarine
@@ -2342,7 +2367,9 @@ level (§9.2) in Mountain terrain (§6.1).</td>
 <td><strong>Proximity Fuze &amp; Massed Logistics</strong></td>
 <td>USA Fighter tokens permanently cancel 2 Axis Fighters each (§8.5),
 instead of 1.</td>
-<td>USA’s Elite Formation slot cap (§10.4) is permanently −1.</td>
+<td>No structural cost — Elite Formation’s cap (§10.4) is retired, so
+this Doctrine’s original −1 penalty no longer applies to anything.
+Flagged for a real balancing cost; not decided here.</td>
 </tr>
 <tr class="even">
 <td>USA</td>
@@ -2418,16 +2445,19 @@ benefit ends immediately on switching. Exception: a cost phrased as a
 standing condition tied to the Doctrine itself (such as Panzerwaffe’s
 fuel-trace condition) only applies while the Doctrine is active.</p>
 <h3 id="sec-10-4">10.4. Elite Formations</h3>
-<p>One Elite designation per <strong>6 RCs</strong>, max
-<strong>3</strong> per nation. Lost only when the BG is destroyed —
-falling below the RC threshold doesn’t strip existing Elites, it only
-blocks new ones.</p>
+<p>Fully automatic (§ CP Economy) — no longer a player designation, and
+no longer capped at 1 per 6 RCs / max 3 per nation. A BG reaches Elite
+status the moment its experience hits <strong>90</strong>. Once Elite,
+it stays Elite through ordinary fluctuation and only reverts if
+experience drops below <strong>60</strong> — deliberate hysteresis so a
+BG hovering near the threshold doesn’t flicker in and out of Elite
+status turn to turn.</p>
 <p>An Elite BG gets <strong>one of its listed tokens, owner’s choice,
 free every turn</strong>, on top of anything assigned for a specific
 battle. This is separate from — and doesn’t count against — the OQ-based
-per-engagement token cap (§ CP Economy): that cap governs tokens spent
-from inventory during Combat Resolver assignment specifically, not a
-BG’s automatic Elite allocation or other standing national token bonuses
+per-engagement token cap (§2.7): that cap governs tokens spent from
+inventory during Combat Resolver assignment specifically, not a BG’s
+automatic Elite allocation or other standing national token bonuses
 (such as §12.5’s Neutrality Violation award).</p>
 <table>
 <thead>
@@ -2758,8 +2788,9 @@ region’s ceiling.</p>
 <ul>
 <li>Any occupying BG in a sector with Level 1+ Partisans may attack
 them. The defending side gets 500 points per Level, spent only on
-infiltration/partisan/light infantry. A win by the occupier drops the
-Level by 1.</li>
+infiltration/partisan/light infantry. A <strong>standard</strong> Axis
+win drops the Level by <strong>2</strong>; a <strong>decisive</strong>
+Axis win clears it to <strong>0</strong> outright.</li>
 <li>If a friendly BG attacks a sector with active Partisans of its own
 side, the Partisans join that engagement.</li>
 </ul>
@@ -3788,7 +3819,7 @@ const SEED = [{"id":1,"name":"London","region":"Western Europe","type":"Home Cap
 const FACTION_COLOR = { Axis:'var(--axis)', Allied:'var(--allied)', Neutral:'var(--neutral)' };
 const FACTION_HEX = { Axis:'#B4443C', Allied:'#4A7FA6', Neutral:'#6B6F52' };
 
-const OOB_SEED = [{"faction":"Axis","nation":"Germany","name":"Heeresgruppe Nord","type":"INF","fow":null,"location":"East Prussia","points":2500,"fatigue":0,"experience":70,"orders":"Hold","in_supply":"Yes","elite":null,"id":1,"sectorId":16,"shattered":false},{"faction":"Axis","nation":"Germany","name":"Heeresgruppe Mitte","type":"INF","fow":null,"location":"Warsaw","points":2500,"fatigue":0,"experience":70,"orders":"Hold","in_supply":"Yes","elite":null,"id":2,"sectorId":31,"shattered":false},{"faction":"Axis","nation":"Germany","name":"1 Kavallerie-Division","type":"CAV","fow":null,"location":"Bucharest","points":2500,"fatigue":0,"experience":70,"orders":"Hold","in_supply":"Yes","elite":null,"id":3,"sectorId":38,"shattered":false},{"faction":"Axis","nation":"Germany","name":"11. Armee","type":"INF","fow":null,"location":"Bucharest","points":2500,"fatigue":0,"experience":70,"orders":"Hold","in_supply":"Yes","elite":null,"id":4,"sectorId":38,"shattered":false},{"faction":"Axis","nation":"Germany","name":"18. Armee","type":"INF","fow":null,"location":"East Prussia","points":2500,"fatigue":0,"experience":70,"orders":"Hold","in_supply":"Yes","elite":null,"id":5,"sectorId":16,"shattered":false},{"faction":"Axis","nation":"Germany","name":"4. Armee","type":"INF","fow":null,"location":"Warsaw","points":2500,"fatigue":0,"experience":70,"orders":"Hold","in_supply":"Yes","elite":null,"id":6,"sectorId":31,"shattered":false},{"faction":"Axis","nation":"Romania","name":"3rd Romanian Army","type":"INF","fow":null,"location":"Slovakia","points":2500,"fatigue":0,"experience":70,"orders":"Hold","in_supply":"Yes","elite":null,"id":7,"sectorId":35,"shattered":false},{"faction":"Axis","nation":"Germany","name":"Panzergruppe 1","type":"ARM","fow":null,"location":"Krakow","points":2500,"fatigue":0,"experience":80,"orders":"Hold","in_supply":"Yes","elite":null,"id":8,"sectorId":32,"shattered":false},{"faction":"Axis","nation":"Germany","name":"Panzergruppe 2","type":"ARM","fow":null,"location":"Slovakia","points":2500,"fatigue":0,"experience":80,"orders":"Hold","in_supply":"Yes","elite":null,"id":9,"sectorId":35,"shattered":false},{"faction":"Axis","nation":"Germany","name":"Panzergruppe 3","type":"ARM","fow":null,"location":"Danzig","points":2500,"fatigue":0,"experience":80,"orders":"Hold","in_supply":"Yes","elite":null,"id":10,"sectorId":33,"shattered":false},{"faction":"Axis","nation":"Germany","name":"Panzergruppe 4","type":"ARM","fow":null,"location":"Danzig","points":2500,"fatigue":0,"experience":80,"orders":"Hold","in_supply":"Yes","elite":null,"id":11,"sectorId":33,"shattered":false},{"faction":"Axis","nation":"Germany","name":"SS-Division Wiking","type":"MECH","fow":null,"location":"Krakow","points":2500,"fatigue":0,"experience":80,"orders":"Hold","in_supply":"Yes","elite":"YES","id":12,"sectorId":32,"shattered":false},{"faction":"Axis","nation":"Germany","name":"SS-Division Das Reich","type":"MECH","fow":null,"location":"Prague","points":2500,"fatigue":0,"experience":80,"orders":"Hold","in_supply":"Yes","elite":null,"id":13,"sectorId":34,"shattered":false},{"faction":"Axis","nation":"Germany","name":"7. Flieger-Division","type":"Airborne","fow":null,"location":"Berlin","points":2500,"fatigue":0,"experience":65,"orders":"Hold","in_supply":"Yes","elite":"YES","id":14,"sectorId":13,"shattered":false},{"faction":"Axis","nation":"Japan","name":"Kwantung Army","type":"INF","fow":null,"location":"Manchuria","points":2500,"fatigue":0,"experience":75,"orders":"Hold","in_supply":"Yes","elite":null,"id":15,"sectorId":81,"shattered":false},{"faction":"Axis","nation":"Japan","name":"China Expeditionary Army","type":"INF","fow":null,"location":"Beijing","points":2500,"fatigue":0,"experience":75,"orders":"Hold","in_supply":"Yes","elite":null,"id":16,"sectorId":83,"shattered":false},{"faction":"Axis","nation":"Japan","name":"Southern Expeditionary Army","type":"INF","fow":null,"location":"French Indochina","points":2500,"fatigue":0,"experience":75,"orders":"Hold","in_supply":"Yes","elite":null,"id":17,"sectorId":93,"shattered":false},{"faction":"Axis","nation":"Japan","name":"1st Army","type":"INF","fow":null,"location":"Beijing","points":2500,"fatigue":0,"experience":75,"orders":"Hold","in_supply":"Yes","elite":null,"id":18,"sectorId":83,"shattered":false},{"faction":"Axis","nation":"Japan","name":"11th Army","type":"INF","fow":null,"location":"Shanghai","points":2500,"fatigue":0,"experience":75,"orders":"Hold","in_supply":"Yes","elite":null,"id":19,"sectorId":84,"shattered":false},{"faction":"Axis","nation":"Japan","name":"Imperial Cavalry Group","type":"CAV","fow":null,"location":"Shanghai","points":2500,"fatigue":0,"experience":75,"orders":"Hold","in_supply":"Yes","elite":null,"id":20,"sectorId":84,"shattered":false},{"faction":"Axis","nation":"Japan","name":"13th Army","type":"INF","fow":null,"location":"Canton","points":2500,"fatigue":0,"experience":75,"orders":"Hold","in_supply":"Yes","elite":null,"id":21,"sectorId":86,"shattered":false},{"faction":"Axis","nation":"Japan","name":"SNLF","type":"Marine","fow":null,"location":"Japan (Tokyo)","points":2500,"fatigue":0,"experience":80,"orders":"Hold","in_supply":"Yes","elite":"YES","id":22,"sectorId":101,"shattered":false},{"faction":"Axis","nation":"Thailand","name":"Royal Thai Army","type":"INF","fow":null,"location":"Thailand","points":2500,"fatigue":0,"experience":80,"orders":"Hold","in_supply":"Yes","elite":null,"id":23,"sectorId":92,"shattered":false},{"faction":"Axis","nation":"Italy","name":"10th Army","type":"INF","fow":null,"location":"Tripoli","points":2500,"fatigue":0,"experience":60,"orders":"Hold","in_supply":"Yes","elite":null,"id":24,"sectorId":64,"shattered":false},{"faction":"Axis","nation":"Italy","name":"CSIR","type":"INF","fow":null,"location":"Ploesti","points":2500,"fatigue":0,"experience":60,"orders":"Hold","in_supply":"Yes","elite":null,"id":25,"sectorId":39,"shattered":false},{"faction":"Axis","nation":"Italy","name":"132nd Divisione Corazzata","type":"ARM","fow":null,"location":"Tripoli","points":2500,"fatigue":0,"experience":60,"orders":"Hold","in_supply":"Yes","elite":null,"id":26,"sectorId":64,"shattered":false},{"faction":"Allied","nation":"UK","name":"8th Army","type":"INF","fow":null,"location":"Cairo","points":2500,"fatigue":0,"experience":70,"orders":"Hold","in_supply":"Yes","elite":null,"id":27,"sectorId":67,"shattered":false},{"faction":"Allied","nation":"India","name":"10th Indian Cavalry Division","type":"CAV","fow":null,"location":"Iraq","points":2500,"fatigue":0,"experience":70,"orders":"Hold","in_supply":"Yes","elite":null,"id":28,"sectorId":70,"shattered":false},{"faction":"Allied","nation":"UK","name":"12th Army","type":"INF","fow":null,"location":"Burma","points":2500,"fatigue":0,"experience":70,"orders":"Hold","in_supply":"Yes","elite":null,"id":29,"sectorId":91,"shattered":false},{"faction":"Allied","nation":"UK","name":"Malaya Command","type":"INF","fow":null,"location":"Malaya","points":2500,"fatigue":0,"experience":70,"orders":"Hold","in_supply":"Yes","elite":null,"id":30,"sectorId":94,"shattered":false},{"faction":"Allied","nation":"UK","name":"7th Armoured Division","type":"ARM","fow":null,"location":"Cairo","points":2500,"fatigue":0,"experience":70,"orders":"Hold","in_supply":"Yes","elite":null,"id":31,"sectorId":67,"shattered":false},{"faction":"Allied","nation":"UK","name":"1st Armoured Division","type":"ARM","fow":null,"location":"London","points":2500,"fatigue":0,"experience":70,"orders":"Hold","in_supply":"Yes","elite":null,"id":32,"sectorId":1,"shattered":false},{"faction":"Allied","nation":"UK","name":"1st Infantry Division","type":"MECH","fow":null,"location":"London","points":2500,"fatigue":0,"experience":70,"orders":"Hold","in_supply":"Yes","elite":null,"id":33,"sectorId":1,"shattered":false},{"faction":"Allied","nation":"UK","name":"1st Airborne Division","type":"Airborne","fow":null,"location":"London","points":2500,"fatigue":0,"experience":70,"orders":"Hold","in_supply":"Yes","elite":null,"id":34,"sectorId":1,"shattered":false},{"faction":"Allied","nation":"USA","name":"Philippine Department","type":"INF","fow":null,"location":"Philippines (Luzon)","points":2500,"fatigue":0,"experience":70,"orders":"Hold","in_supply":"Yes","elite":null,"id":35,"sectorId":105,"shattered":false},{"faction":"Allied","nation":"USA","name":"1st Armored Division","type":"ARM","fow":null,"location":"USA (East Coast)","points":2500,"fatigue":0,"experience":70,"orders":"Hold","in_supply":"Yes","elite":null,"id":36,"sectorId":126,"shattered":false},{"faction":"Allied","nation":"USA","name":"1st Marine Division","type":"Marine","fow":null,"location":"USA (West Coast)","points":2500,"fatigue":0,"experience":80,"orders":"Hold","in_supply":"Yes","elite":"Yes","id":37,"sectorId":128,"shattered":false},{"faction":"Allied","nation":"USSR","name":"Northwestern Front","type":"INF","fow":null,"location":"Baltic States","points":2500,"fatigue":0,"experience":60,"orders":"Hold","in_supply":"Yes","elite":null,"id":38,"sectorId":58,"shattered":false},{"faction":"Allied","nation":"USSR","name":"Western Front","type":"INF","fow":null,"location":"Minsk","points":2500,"fatigue":0,"experience":60,"orders":"Hold","in_supply":"Yes","elite":null,"id":39,"sectorId":49,"shattered":false},{"faction":"Allied","nation":"USSR","name":"Southwestern Front","type":"INF","fow":null,"location":"Kiev","points":2500,"fatigue":0,"experience":60,"orders":"Hold","in_supply":"Yes","elite":null,"id":40,"sectorId":48,"shattered":false},{"faction":"Allied","nation":"USSR","name":"2nd Guards Cavalry Corps","type":"CAV","fow":null,"location":"Crimea","points":2500,"fatigue":0,"experience":60,"orders":"Hold","in_supply":"Yes","elite":null,"id":41,"sectorId":57,"shattered":false},{"faction":"Allied","nation":"USSR","name":"Northern Front","type":"INF","fow":null,"location":"Leningrad","points":2500,"fatigue":0,"experience":60,"orders":"Hold","in_supply":"Yes","elite":null,"id":42,"sectorId":46,"shattered":false},{"faction":"Allied","nation":"USSR","name":"Far Eastern Front","type":"INF","fow":null,"location":"Vladivostok","points":2500,"fatigue":0,"experience":60,"orders":"Hold","in_supply":"Yes","elite":null,"id":43,"sectorId":56,"shattered":false},{"faction":"Allied","nation":"USSR","name":"1st Mechanized Corps","type":"ARM","fow":null,"location":"Leningrad","points":2500,"fatigue":0,"experience":70,"orders":"Hold","in_supply":"Yes","elite":null,"id":44,"sectorId":46,"shattered":false},{"faction":"Allied","nation":"USSR","name":"1st Guards Tank Army","type":"ARM","fow":null,"location":"Minsk","points":2500,"fatigue":0,"experience":70,"orders":"Hold","in_supply":"Yes","elite":"Yes","id":45,"sectorId":49,"shattered":false},{"faction":"Allied","nation":"USSR","name":"8th Mechanized Corps","type":"ARM","fow":null,"location":"Kiev","points":2500,"fatigue":0,"experience":70,"orders":"Hold","in_supply":"Yes","elite":null,"id":46,"sectorId":48,"shattered":false},{"faction":"Allied","nation":"USSR","name":"9th Mechanized Corps","type":"ARM","fow":null,"location":"Crimea","points":2500,"fatigue":0,"experience":70,"orders":"Hold","in_supply":"Yes","elite":null,"id":47,"sectorId":57,"shattered":false},{"faction":"Allied","nation":"China (Nationalist)","name":"1st Military Region","type":"INF","fow":null,"location":"Chongqing","points":2500,"fatigue":0,"experience":50,"orders":"Hold","in_supply":"Yes","elite":null,"id":48,"sectorId":87,"shattered":false},{"faction":"Allied","nation":"China (Nationalist)","name":"2nd Military Region","type":"INF","fow":null,"location":"Chongqing","points":2500,"fatigue":0,"experience":50,"orders":"Hold","in_supply":"Yes","elite":null,"id":49,"sectorId":87,"shattered":false},{"faction":"Allied","nation":"China (Nationalist)","name":"3rd Military Region","type":"INF","fow":null,"location":"Yunnan","points":2500,"fatigue":0,"experience":50,"orders":"Hold","in_supply":"Yes","elite":null,"id":50,"sectorId":88,"shattered":false},{"faction":"Allied","nation":"China (Nationalist)","name":"4th Military Region","type":"INF","fow":null,"location":"Yunnan","points":2500,"fatigue":0,"experience":50,"orders":"Hold","in_supply":"Yes","elite":null,"id":51,"sectorId":88,"shattered":false},{"faction":"Allied","nation":"China (Communist)","name":"Eighth Route Army I Corps","type":"INF","fow":null,"location":"Sinkiang","points":2500,"fatigue":0,"experience":50,"orders":"Hold","in_supply":"Yes","elite":null,"id":52,"sectorId":89,"shattered":false},{"faction":"Allied","nation":"China (Communist)","name":"Eighth Route Army II Corps","type":"INF","fow":null,"location":"Sinkiang","points":2500,"fatigue":0,"experience":50,"orders":"Hold","in_supply":"Yes","elite":null,"id":53,"sectorId":89,"shattered":false},{"faction":"Allied","nation":"ANZAC","name":"2nd Australian Imperial Force","type":"INF","fow":null,"location":"El Alamein","points":2500,"fatigue":0,"experience":50,"orders":"Hold","in_supply":"Yes","elite":null,"id":54,"sectorId":66,"shattered":false},{"faction":"Allied","nation":"ANZAC","name":"2nd NZ Expeditionary Force","type":"INF","fow":null,"location":"North Island","points":2500,"fatigue":0,"experience":50,"orders":"Hold","in_supply":"Yes","elite":null,"id":55,"sectorId":124,"shattered":false},{"faction":"Allied","nation":"Canada","name":"1 Canadian Corps","type":"INF","fow":null,"location":"London","points":2500,"fatigue":0,"experience":50,"orders":"Hold","in_supply":"Yes","elite":null,"id":56,"sectorId":1,"shattered":false},{"faction":"Allied","nation":"Canada","name":"2 Canadian Corps","type":"INF","fow":null,"location":"Canada (East)","points":2500,"fatigue":0,"experience":50,"orders":"Hold","in_supply":"Yes","elite":null,"id":57,"sectorId":130,"shattered":false},{"faction":"Axis","nation":"Germany","name":"6. Armee","type":"INF","fow":null,"location":"Oslo","points":2500,"fatigue":0,"experience":70,"orders":"Hold","in_supply":"Yes","elite":null,"id":58,"sectorId":26,"shattered":false},{"faction":"Axis","nation":"Germany","name":"17. Armee","type":"INF","fow":null,"location":"Paris","points":2500,"fatigue":0,"experience":70,"orders":"Hold","in_supply":"Yes","elite":null,"id":59,"sectorId":5,"shattered":false},{"faction":"Axis","nation":"Germany","name":"Panzergruppe 5","type":"ARM","fow":null,"location":"Berlin","points":2500,"fatigue":0,"experience":80,"orders":"Hold","in_supply":"Yes","elite":null,"id":60,"sectorId":13,"shattered":false},{"faction":"Axis","nation":"Romania","name":"4th Romanian Army","type":"INF","fow":null,"location":"Bucharest","points":2500,"fatigue":0,"experience":60,"orders":"Hold","in_supply":"Yes","elite":null,"id":61,"sectorId":38,"shattered":false},{"faction":"Allied","nation":"UK","name":"9th Army","type":"INF","fow":null,"location":"London","points":2500,"fatigue":0,"experience":70,"orders":"Hold","in_supply":"Yes","elite":null,"id":62,"sectorId":1,"shattered":false},{"faction":"Axis","nation":"Bulgaria","name":"Bulgarian Army","type":"INF","fow":null,"location":"Sofia","points":2500,"fatigue":0,"experience":60,"orders":"Hold","in_supply":"Yes","elite":null,"id":63,"sectorId":40,"shattered":false},{"faction":"Axis","nation":"Hungary","name":"Hungarian Army","type":"INF","fow":null,"location":"Budapest","points":2500,"fatigue":0,"experience":60,"orders":"Hold","in_supply":"Yes","elite":null,"id":64,"sectorId":37,"shattered":false}];
+const OOB_SEED = [{"faction":"Axis","nation":"Germany","name":"Heeresgruppe Nord","type":"INF","fow":null,"location":"East Prussia","points":2500,"fatigue":0,"experience":70,"orders":"Hold","in_supply":"Yes","elite":null,"id":1,"sectorId":16,"shattered":false},{"faction":"Axis","nation":"Germany","name":"Heeresgruppe Mitte","type":"INF","fow":null,"location":"Warsaw","points":2500,"fatigue":0,"experience":70,"orders":"Hold","in_supply":"Yes","elite":null,"id":2,"sectorId":31,"shattered":false},{"faction":"Axis","nation":"Germany","name":"1 Kavallerie-Division","type":"CAV","fow":null,"location":"Bucharest","points":2500,"fatigue":0,"experience":70,"orders":"Hold","in_supply":"Yes","elite":null,"id":3,"sectorId":38,"shattered":false},{"faction":"Axis","nation":"Germany","name":"11. Armee","type":"INF","fow":null,"location":"Bucharest","points":2500,"fatigue":0,"experience":70,"orders":"Hold","in_supply":"Yes","elite":null,"id":4,"sectorId":38,"shattered":false},{"faction":"Axis","nation":"Germany","name":"18. Armee","type":"INF","fow":null,"location":"East Prussia","points":2500,"fatigue":0,"experience":70,"orders":"Hold","in_supply":"Yes","elite":null,"id":5,"sectorId":16,"shattered":false},{"faction":"Axis","nation":"Germany","name":"4. Armee","type":"INF","fow":null,"location":"Warsaw","points":2500,"fatigue":0,"experience":70,"orders":"Hold","in_supply":"Yes","elite":null,"id":6,"sectorId":31,"shattered":false},{"faction":"Axis","nation":"Romania","name":"3rd Romanian Army","type":"INF","fow":null,"location":"Slovakia","points":2500,"fatigue":0,"experience":70,"orders":"Hold","in_supply":"Yes","elite":null,"id":7,"sectorId":35,"shattered":false},{"faction":"Axis","nation":"Germany","name":"Panzergruppe 1","type":"ARM","fow":null,"location":"Krakow","points":2500,"fatigue":0,"experience":90,"orders":"Hold","in_supply":"Yes","elite":null,"id":8,"sectorId":32,"shattered":false},{"faction":"Axis","nation":"Germany","name":"Panzergruppe 2","type":"ARM","fow":null,"location":"Slovakia","points":2500,"fatigue":0,"experience":90,"orders":"Hold","in_supply":"Yes","elite":null,"id":9,"sectorId":35,"shattered":false},{"faction":"Axis","nation":"Germany","name":"Panzergruppe 3","type":"ARM","fow":null,"location":"Danzig","points":2500,"fatigue":0,"experience":80,"orders":"Hold","in_supply":"Yes","elite":null,"id":10,"sectorId":33,"shattered":false},{"faction":"Axis","nation":"Germany","name":"Panzergruppe 4","type":"ARM","fow":null,"location":"Danzig","points":2500,"fatigue":0,"experience":80,"orders":"Hold","in_supply":"Yes","elite":null,"id":11,"sectorId":33,"shattered":false},{"faction":"Axis","nation":"Germany","name":"SS-Division Wiking","type":"MECH","fow":null,"location":"Krakow","points":2500,"fatigue":0,"experience":80,"orders":"Hold","in_supply":"Yes","elite":null,"id":12,"sectorId":32,"shattered":false},{"faction":"Axis","nation":"Germany","name":"SS-Division Das Reich","type":"MECH","fow":null,"location":"Prague","points":2500,"fatigue":0,"experience":90,"orders":"Hold","in_supply":"Yes","elite":null,"id":13,"sectorId":34,"shattered":false},{"faction":"Axis","nation":"Germany","name":"7. Flieger-Division","type":"Airborne","fow":null,"location":"Berlin","points":2500,"fatigue":0,"experience":65,"orders":"Hold","in_supply":"Yes","elite":null,"id":14,"sectorId":13,"shattered":false},{"faction":"Axis","nation":"Japan","name":"Kwantung Army","type":"INF","fow":null,"location":"Manchuria","points":2500,"fatigue":0,"experience":75,"orders":"Hold","in_supply":"Yes","elite":null,"id":15,"sectorId":81,"shattered":false},{"faction":"Axis","nation":"Japan","name":"China Expeditionary Army","type":"INF","fow":null,"location":"Beijing","points":2500,"fatigue":0,"experience":75,"orders":"Hold","in_supply":"Yes","elite":null,"id":16,"sectorId":83,"shattered":false},{"faction":"Axis","nation":"Japan","name":"Southern Expeditionary Army","type":"INF","fow":null,"location":"French Indochina","points":2500,"fatigue":0,"experience":75,"orders":"Hold","in_supply":"Yes","elite":null,"id":17,"sectorId":93,"shattered":false},{"faction":"Axis","nation":"Japan","name":"1st Army","type":"INF","fow":null,"location":"Beijing","points":2500,"fatigue":0,"experience":75,"orders":"Hold","in_supply":"Yes","elite":null,"id":18,"sectorId":83,"shattered":false},{"faction":"Axis","nation":"Japan","name":"11th Army","type":"INF","fow":null,"location":"Shanghai","points":2500,"fatigue":0,"experience":75,"orders":"Hold","in_supply":"Yes","elite":null,"id":19,"sectorId":84,"shattered":false},{"faction":"Axis","nation":"Japan","name":"Imperial Cavalry Group","type":"CAV","fow":null,"location":"Shanghai","points":2500,"fatigue":0,"experience":75,"orders":"Hold","in_supply":"Yes","elite":null,"id":20,"sectorId":84,"shattered":false},{"faction":"Axis","nation":"Japan","name":"13th Army","type":"INF","fow":null,"location":"Canton","points":2500,"fatigue":0,"experience":75,"orders":"Hold","in_supply":"Yes","elite":null,"id":21,"sectorId":86,"shattered":false},{"faction":"Axis","nation":"Japan","name":"SNLF","type":"Marine","fow":null,"location":"Japan (Tokyo)","points":2500,"fatigue":0,"experience":90,"orders":"Hold","in_supply":"Yes","elite":null,"id":22,"sectorId":101,"shattered":false},{"faction":"Axis","nation":"Thailand","name":"Royal Thai Army","type":"INF","fow":null,"location":"Thailand","points":2500,"fatigue":0,"experience":80,"orders":"Hold","in_supply":"Yes","elite":null,"id":23,"sectorId":92,"shattered":false},{"faction":"Axis","nation":"Italy","name":"10th Army","type":"INF","fow":null,"location":"Tripoli","points":2500,"fatigue":0,"experience":60,"orders":"Hold","in_supply":"Yes","elite":null,"id":24,"sectorId":64,"shattered":false},{"faction":"Axis","nation":"Italy","name":"CSIR","type":"INF","fow":null,"location":"Ploesti","points":2500,"fatigue":0,"experience":60,"orders":"Hold","in_supply":"Yes","elite":null,"id":25,"sectorId":39,"shattered":false},{"faction":"Axis","nation":"Italy","name":"132nd Divisione Corazzata","type":"ARM","fow":null,"location":"Tripoli","points":2500,"fatigue":0,"experience":60,"orders":"Hold","in_supply":"Yes","elite":null,"id":26,"sectorId":64,"shattered":false},{"faction":"Allied","nation":"UK","name":"8th Army","type":"INF","fow":null,"location":"Cairo","points":2500,"fatigue":0,"experience":70,"orders":"Hold","in_supply":"Yes","elite":null,"id":27,"sectorId":67,"shattered":false},{"faction":"Allied","nation":"India","name":"10th Indian Cavalry Division","type":"CAV","fow":null,"location":"Iraq","points":2500,"fatigue":0,"experience":70,"orders":"Hold","in_supply":"Yes","elite":null,"id":28,"sectorId":70,"shattered":false},{"faction":"Allied","nation":"UK","name":"12th Army","type":"INF","fow":null,"location":"Burma","points":2500,"fatigue":0,"experience":70,"orders":"Hold","in_supply":"Yes","elite":null,"id":29,"sectorId":91,"shattered":false},{"faction":"Allied","nation":"UK","name":"Malaya Command","type":"INF","fow":null,"location":"Malaya","points":2500,"fatigue":0,"experience":70,"orders":"Hold","in_supply":"Yes","elite":null,"id":30,"sectorId":94,"shattered":false},{"faction":"Allied","nation":"UK","name":"7th Armoured Division","type":"ARM","fow":null,"location":"Cairo","points":2500,"fatigue":0,"experience":70,"orders":"Hold","in_supply":"Yes","elite":null,"id":31,"sectorId":67,"shattered":false},{"faction":"Allied","nation":"UK","name":"1st Armoured Division","type":"ARM","fow":null,"location":"London","points":2500,"fatigue":0,"experience":70,"orders":"Hold","in_supply":"Yes","elite":null,"id":32,"sectorId":1,"shattered":false},{"faction":"Allied","nation":"UK","name":"1st Infantry Division","type":"MECH","fow":null,"location":"London","points":2500,"fatigue":0,"experience":70,"orders":"Hold","in_supply":"Yes","elite":null,"id":33,"sectorId":1,"shattered":false},{"faction":"Allied","nation":"UK","name":"1st Airborne Division","type":"Airborne","fow":null,"location":"London","points":2500,"fatigue":0,"experience":90,"orders":"Hold","in_supply":"Yes","elite":null,"id":34,"sectorId":1,"shattered":false},{"faction":"Allied","nation":"USA","name":"Philippine Department","type":"INF","fow":null,"location":"Philippines (Luzon)","points":2500,"fatigue":0,"experience":70,"orders":"Hold","in_supply":"Yes","elite":null,"id":35,"sectorId":105,"shattered":false},{"faction":"Allied","nation":"USA","name":"1st Armored Division","type":"ARM","fow":null,"location":"USA (East Coast)","points":2500,"fatigue":0,"experience":70,"orders":"Hold","in_supply":"Yes","elite":null,"id":36,"sectorId":126,"shattered":false},{"faction":"Allied","nation":"USA","name":"1st Marine Division","type":"Marine","fow":null,"location":"USA (West Coast)","points":2500,"fatigue":0,"experience":90,"orders":"Hold","in_supply":"Yes","elite":null,"id":37,"sectorId":128,"shattered":false},{"faction":"Allied","nation":"USSR","name":"Northwestern Front","type":"INF","fow":null,"location":"Baltic States","points":2500,"fatigue":0,"experience":60,"orders":"Hold","in_supply":"Yes","elite":null,"id":38,"sectorId":58,"shattered":false},{"faction":"Allied","nation":"USSR","name":"Western Front","type":"INF","fow":null,"location":"Minsk","points":2500,"fatigue":0,"experience":60,"orders":"Hold","in_supply":"Yes","elite":null,"id":39,"sectorId":49,"shattered":false},{"faction":"Allied","nation":"USSR","name":"Southwestern Front","type":"INF","fow":null,"location":"Kiev","points":2500,"fatigue":0,"experience":60,"orders":"Hold","in_supply":"Yes","elite":null,"id":40,"sectorId":48,"shattered":false},{"faction":"Allied","nation":"USSR","name":"2nd Guards Cavalry Corps","type":"CAV","fow":null,"location":"Crimea","points":2500,"fatigue":0,"experience":60,"orders":"Hold","in_supply":"Yes","elite":null,"id":41,"sectorId":57,"shattered":false},{"faction":"Allied","nation":"USSR","name":"Northern Front","type":"INF","fow":null,"location":"Leningrad","points":2500,"fatigue":0,"experience":60,"orders":"Hold","in_supply":"Yes","elite":null,"id":42,"sectorId":46,"shattered":false},{"faction":"Allied","nation":"USSR","name":"Far Eastern Front","type":"INF","fow":null,"location":"Vladivostok","points":2500,"fatigue":0,"experience":60,"orders":"Hold","in_supply":"Yes","elite":null,"id":43,"sectorId":56,"shattered":false},{"faction":"Allied","nation":"USSR","name":"1st Mechanized Corps","type":"ARM","fow":null,"location":"Leningrad","points":2500,"fatigue":0,"experience":70,"orders":"Hold","in_supply":"Yes","elite":null,"id":44,"sectorId":46,"shattered":false},{"faction":"Allied","nation":"USSR","name":"1st Guards Tank Army","type":"ARM","fow":null,"location":"Minsk","points":2500,"fatigue":0,"experience":90,"orders":"Hold","in_supply":"Yes","elite":null,"id":45,"sectorId":49,"shattered":false},{"faction":"Allied","nation":"USSR","name":"8th Mechanized Corps","type":"ARM","fow":null,"location":"Kiev","points":2500,"fatigue":0,"experience":70,"orders":"Hold","in_supply":"Yes","elite":null,"id":46,"sectorId":48,"shattered":false},{"faction":"Allied","nation":"USSR","name":"9th Mechanized Corps","type":"ARM","fow":null,"location":"Crimea","points":2500,"fatigue":0,"experience":70,"orders":"Hold","in_supply":"Yes","elite":null,"id":47,"sectorId":57,"shattered":false},{"faction":"Allied","nation":"China (Nationalist)","name":"1st Military Region","type":"INF","fow":null,"location":"Chongqing","points":2500,"fatigue":0,"experience":50,"orders":"Hold","in_supply":"Yes","elite":null,"id":48,"sectorId":87,"shattered":false},{"faction":"Allied","nation":"China (Nationalist)","name":"2nd Military Region","type":"INF","fow":null,"location":"Chongqing","points":2500,"fatigue":0,"experience":50,"orders":"Hold","in_supply":"Yes","elite":null,"id":49,"sectorId":87,"shattered":false},{"faction":"Allied","nation":"China (Nationalist)","name":"3rd Military Region","type":"INF","fow":null,"location":"Yunnan","points":2500,"fatigue":0,"experience":50,"orders":"Hold","in_supply":"Yes","elite":null,"id":50,"sectorId":88,"shattered":false},{"faction":"Allied","nation":"China (Nationalist)","name":"4th Military Region","type":"INF","fow":null,"location":"Yunnan","points":2500,"fatigue":0,"experience":50,"orders":"Hold","in_supply":"Yes","elite":null,"id":51,"sectorId":88,"shattered":false},{"faction":"Allied","nation":"China (Communist)","name":"Eighth Route Army I Corps","type":"INF","fow":null,"location":"Sinkiang","points":2500,"fatigue":0,"experience":50,"orders":"Hold","in_supply":"Yes","elite":null,"id":52,"sectorId":89,"shattered":false},{"faction":"Allied","nation":"China (Communist)","name":"Eighth Route Army II Corps","type":"INF","fow":null,"location":"Sinkiang","points":2500,"fatigue":0,"experience":50,"orders":"Hold","in_supply":"Yes","elite":null,"id":53,"sectorId":89,"shattered":false},{"faction":"Allied","nation":"ANZAC","name":"2nd Australian Imperial Force","type":"INF","fow":null,"location":"El Alamein","points":2500,"fatigue":0,"experience":50,"orders":"Hold","in_supply":"Yes","elite":null,"id":54,"sectorId":66,"shattered":false},{"faction":"Allied","nation":"ANZAC","name":"2nd NZ Expeditionary Force","type":"INF","fow":null,"location":"North Island","points":2500,"fatigue":0,"experience":50,"orders":"Hold","in_supply":"Yes","elite":null,"id":55,"sectorId":124,"shattered":false},{"faction":"Allied","nation":"Canada","name":"1 Canadian Corps","type":"INF","fow":null,"location":"London","points":2500,"fatigue":0,"experience":50,"orders":"Hold","in_supply":"Yes","elite":null,"id":56,"sectorId":1,"shattered":false},{"faction":"Allied","nation":"Canada","name":"2 Canadian Corps","type":"INF","fow":null,"location":"Canada (East)","points":2500,"fatigue":0,"experience":50,"orders":"Hold","in_supply":"Yes","elite":null,"id":57,"sectorId":130,"shattered":false},{"faction":"Axis","nation":"Germany","name":"6. Armee","type":"INF","fow":null,"location":"Oslo","points":2500,"fatigue":0,"experience":70,"orders":"Hold","in_supply":"Yes","elite":null,"id":58,"sectorId":26,"shattered":false},{"faction":"Axis","nation":"Germany","name":"17. Armee","type":"INF","fow":null,"location":"Paris","points":2500,"fatigue":0,"experience":70,"orders":"Hold","in_supply":"Yes","elite":null,"id":59,"sectorId":5,"shattered":false},{"faction":"Axis","nation":"Germany","name":"Panzergruppe 5","type":"ARM","fow":null,"location":"Berlin","points":2500,"fatigue":0,"experience":80,"orders":"Hold","in_supply":"Yes","elite":null,"id":60,"sectorId":13,"shattered":false},{"faction":"Axis","nation":"Romania","name":"4th Romanian Army","type":"INF","fow":null,"location":"Bucharest","points":2500,"fatigue":0,"experience":60,"orders":"Hold","in_supply":"Yes","elite":null,"id":61,"sectorId":38,"shattered":false},{"faction":"Allied","nation":"UK","name":"9th Army","type":"INF","fow":null,"location":"London","points":2500,"fatigue":0,"experience":70,"orders":"Hold","in_supply":"Yes","elite":null,"id":62,"sectorId":1,"shattered":false},{"faction":"Axis","nation":"Bulgaria","name":"Bulgarian Army","type":"INF","fow":null,"location":"Sofia","points":2500,"fatigue":0,"experience":60,"orders":"Hold","in_supply":"Yes","elite":null,"id":63,"sectorId":40,"shattered":false},{"faction":"Axis","nation":"Hungary","name":"Hungarian Army","type":"INF","fow":null,"location":"Budapest","points":2500,"fatigue":0,"experience":60,"orders":"Hold","in_supply":"Yes","elite":null,"id":64,"sectorId":37,"shattered":false}];
 
 // Mirrors the Economy tab's year ratio table (§2) and minor-nation mapping (§2.1)
 const YEAR_RATIO = {
@@ -3799,6 +3830,19 @@ const YEAR_RATIO = {
   UK:      {1941:1, 1942:1, 1943:1, 1944:1, 1945:1},
   USSR:    {1941:1, 1942:1.5, 1943:2, 1944:3, 1945:3},
 };
+// House rule: once the Allies capture the Marianas, Japan's home-front
+// mobilization intensity permanently steps up in response — the ratio
+// floors at 1.25 from that point on, on top of whatever YEAR_RATIO and
+// doctrine effects would otherwise produce. A floor, not a flat
+// override, so a later doctrine or year bump that pushes the ratio
+// above 1.25 on its own still applies in full.
+function computeNationRatio(nation){
+  let ratio = ((YEAR_RATIO[nation] && YEAR_RATIO[nation][clock.year]) ?? 1) + doctrineCostFor(nation, 'ratio');
+  if(nation==='Japan' && dashboards && dashboards.Axis && dashboards.Axis.flags['Marianas captured (ratio boost)']==='Yes'){
+    ratio = Math.max(ratio, 1.25);
+  }
+  return ratio;
+}
 // §9.1 — the only Support Token type with an actual rule-defined numeric
 // cap. Same coming-year convention as YEAR_RATIO (§2): the cap that applies
 // during a given year was set by the Winter audit at the END of the
@@ -3939,9 +3983,9 @@ const DOCTRINE_EFFECTS = {
   },
   'Proximity Fuze & Massed Logistics': {
     effectText: 'USA Fighter tokens permanently cancel 2 Axis Fighters each (§11.3), instead of 1.',
-    costText: "USA's Elite Formation slot cap (§9.3) is permanently −1.",
-    permCost: {eliteCap: -1},
-    automatedNote: "Applied: USA's Elite Formation cap is now reduced by 1 wherever it's shown.",
+    costText: "No structural cost — Elite Formation's cap (§9.3) is retired, so the original -1 penalty this Doctrine charged no longer applies to anything. Flagged for a real balancing cost, not decided here.",
+    permCost: {},
+    automatedNote: 'Nothing auto-applied — see costText.',
     manualNote: 'Fighter tokens cancelling 2 Axis Fighters instead of 1 applies during Strategic Bombing resolution — not tracked here.',
   },
   'Arsenal of Democracy': {
@@ -5503,6 +5547,7 @@ function executeRefit(bg, pointsRequested){
   dashboards[fac].cpPool[bg.nation] = pool - cost;
   bg.points = Math.min(ceiling, bg.points + requested);
   bg.experience = Math.max(0, bg.experience - expLoss);
+  syncEliteStatus(bg);
   bg.movedThisTurn = true; // Refit spends this BG's activation for the turn
   const desc = `${bg.name} (${bg.nation}) refits ${requested} pts for ${cost} CP (${hops} hops, ${friction.toFixed(2)}x friction, ${efficiency.toFixed(2)}x efficiency) — loses ${expLoss} experience.`;
   logAction(fac, 'Refit', desc, [byId[bg.sectorId]], bg.id, true); // Sealed by default
@@ -5523,6 +5568,14 @@ const CP_COST_STANDING_UNIT = 500; // Bomber / Fighter / Submarine, 1 unit
 const CP_COST_FLAK_LEVEL = 100;
 const FLAK_MAX_LEVEL = 5;
 const FLAK_DEFENSE_PER_LEVEL = 0.5;
+// Each Flak level costs double the last — 100/200/400/800/1600 for levels
+// 1 through 5 — rather than a flat per-level fee. Reflects how quickly
+// concentrated AA saturation on one RC runs into diminishing returns
+// for further investment; the first level is cheap insurance, the fifth
+// is a serious commitment.
+function flakLevelCost(currentLevel){
+  return CP_COST_FLAK_LEVEL * Math.pow(2, currentLevel);
+}
 
 function purchaseToken(nation, tokenType){
   const fac = factionForNation(nation);
@@ -5599,12 +5652,13 @@ function purchaseFlakLevel(sector, nation){
   const current = sector.flakLevel||0;
   if(current >= FLAK_MAX_LEVEL) return {applied:false, reason:`${sector.name} is already at the Flak cap (${FLAK_MAX_LEVEL}).`};
   const fac = factionForNation(nation);
+  const cost = flakLevelCost(current);
   const pool = dashboards[fac].cpPool[nation]||0;
-  if(CP_COST_FLAK_LEVEL > pool) return {applied:false, reason:`Insufficient CP — needs ${CP_COST_FLAK_LEVEL}, pool has ${pool}.`};
-  dashboards[fac].cpPool[nation] = pool - CP_COST_FLAK_LEVEL;
+  if(cost > pool) return {applied:false, reason:`Insufficient CP — needs ${cost}, pool has ${pool}.`};
+  dashboards[fac].cpPool[nation] = pool - cost;
   sector.flakLevel = current + 1;
-  logAction(fac, 'CP Purchase', `${nation} spends ${CP_COST_FLAK_LEVEL} CP on Flak level ${sector.flakLevel} at ${sector.name}`, [sector]);
-  return {applied:true, cost:CP_COST_FLAK_LEVEL, newLevel:sector.flakLevel};
+  logAction(fac, 'CP Purchase', `${nation} spends ${cost} CP on Flak level ${sector.flakLevel} at ${sector.name}`, [sector]);
+  return {applied:true, cost, newLevel:sector.flakLevel};
 }
 
 // USA CP transfer — replaces the Lend-Lease token entirely. Bounded by
@@ -5822,13 +5876,20 @@ function advancePartisans(){
       // turn the condition persists, since MIL BGs don't count against
       // the BG Cap and this represents ongoing, not one-time, escalation.
       if(s.owner==='China' && before===partisanCapFor(s)){
-        const maxId = bgs.reduce((m,b)=>Math.max(m,b.id),0);
-        bgs.push({
-          faction:'Allied', nation:'China', name:`${s.name} Partisan Levy`, type:'MIL', fow:null,
-          location:s.name, points:2500, fatigue:0, experience:40, orders:'Hold', in_supply:'Yes',
-          elite:null, id:maxId+1, sectorId:s.id, shattered:false, movedThisTurn:false,
-        });
-        logAction('Allied', 'Purchase', `China: sustained Level 4 Partisan resistance at ${s.name} (no Axis CAV present) spawns a Chinese MIL BG (§12.1)`, [s]);
+        // Only spawn if a Levy BG isn't already sitting here — otherwise
+        // sustained Level 4 pressure would keep stacking new MIL BGs in
+        // the same sector indefinitely, turn after turn, rather than
+        // representing a single escalation that then persists on its own.
+        const levyAlreadyHere = bgs.some(b=>b.sectorId===s.id && b.isPartisanLevy);
+        if(!levyAlreadyHere){
+          const maxId = bgs.reduce((m,b)=>Math.max(m,b.id),0);
+          bgs.push({
+            faction:'Allied', nation:'China', name:`${s.name} Partisan Levy`, type:'MIL', fow:null,
+            location:s.name, points:2500, fatigue:0, experience:40, orders:'Hold', in_supply:'Yes',
+            elite:null, id:maxId+1, sectorId:s.id, shattered:false, movedThisTurn:false, isPartisanLevy:true,
+          });
+          logAction('Allied', 'Purchase', `China: sustained Level 4 Partisan resistance at ${s.name} (no Axis CAV present) spawns a Chinese MIL BG (§12.1)`, [s]);
+        }
       }
     }
   });
@@ -6595,8 +6656,8 @@ function renderPanel(){
         <div class="winter-note">No bombing damage to repair.</div>`}
         ${flakNation ? `
         <div class="fg-label" style="margin-top:8px;">Flak (§2.8)</div>
-        <div class="winter-note">Current level: ${s.flakLevel||0}/5. +0.5 flat effective defense per level against Strategic Bombing at this RC specifically — undiluted by RC count, unlike Fighter Defense Force.${canBuyFlak?'':` Only ${flakNation} may purchase Flak here${playerRole?` — you're playing as ${playerRole}`:''}.`}</div>
-        ${canBuyFlak ? `<button class="cr-roll-btn" id="f_flak_buy_btn" style="margin-top:8px;width:100%;" ${(s.flakLevel||0)>=5?'disabled':''}>${(s.flakLevel||0)>=5 ? 'At Flak cap (5)' : `Buy 1 Flak Level for ${flakNation} (100 CP)`}</button>` : ''}` : ''}
+        <div class="winter-note">Current level: ${s.flakLevel||0}/5. +0.5 flat effective defense per level against Strategic Bombing at this RC specifically — undiluted by RC count, unlike Fighter Defense Force. Each level costs double the last (100/200/400/800/1600 CP).${canBuyFlak?'':` Only ${flakNation} may purchase Flak here${playerRole?` — you're playing as ${playerRole}`:''}.`}</div>
+        ${canBuyFlak ? `<button class="cr-roll-btn" id="f_flak_buy_btn" style="margin-top:8px;width:100%;" ${(s.flakLevel||0)>=5?'disabled':''}>${(s.flakLevel||0)>=5 ? 'At Flak cap (5)' : `Buy 1 Flak Level for ${flakNation} (${flakLevelCost(s.flakLevel||0).toLocaleString()} CP)`}</button>` : ''}` : ''}
       </div>`;
       })() : ''}
       ${(s.type!=='Sea' && s.rc>0 && factionForNation(s.occupier||s.owner)==='Axis' && s.status!=='Destroyed' && (gmMode || bomberTargetInRange(s))) ? `<div class="field-group">
@@ -6711,6 +6772,8 @@ function renderPanel(){
           return `<div class="stat-line"><span>${n}${locked?' 🔒':''}</span><b>${s.ntf[n]} NTF</b></div>`;
         }).join('') || `<div class="winter-note">No NTFs currently assigned here.</div>`}
         <button class="cr-roll-btn" id="f_ntf_assign_btn" style="margin-top:8px;width:100%;">Assign Naval Task Forces</button>
+        ${(NTF_NATION_ORDER.some(n=>factionForNation(n)==='Axis' && (s.ntf&&s.ntf[n])>0) && NTF_NATION_ORDER.some(n=>factionForNation(n)==='Allied' && (s.ntf&&s.ntf[n])>0)) ? `
+        <button class="cr-roll-btn" id="f_naval_combat_btn" style="margin-top:8px;width:100%;">Resolve Naval Combat</button>` : ''}
         ${s.id===181 ? `
         <div class="fg-label rule-link" data-section="sec-8-1" style="margin-top:10px;">UK Garrison (special, not a BG)</div>
         <select id="f_gibraltar_garrison">
@@ -6732,6 +6795,12 @@ function renderPanel(){
         <select id="f_partisan">
           ${[0,1,2,3,4].map(v=>`<option value="${v}" ${s.partisan==v?'selected':''}>${v}</option>`).join('')}
         </select>
+        ${(factionForNation(s.occupier)==='Axis' && (s.partisan||0)>0) ? `
+        <div class="winter-note" style="margin-top:6px;">Anti-Partisan engagement result (§12.1):</div>
+        <div class="field-row" style="margin-top:4px;">
+          <button class="cr-roll-btn" id="f_partisan_standard_win_btn">Axis win, standard (−2)</button>
+          <button class="cr-roll-btn" id="f_partisan_decisive_win_btn">Axis win, decisive (→ 0)</button>
+        </div>` : ''}
       </div>` : ''}
 
       ${s.type!=='Sea' ? `<div class="field-group">
@@ -6990,6 +7059,28 @@ function renderPanel(){
     selectSector(s.id);
   });
 
+  // §12.1 Anti-Partisan engagement outcomes — standard Axis win drops the
+  // Level by 2 (up from the previous flat -1), decisive Axis win clears it
+  // to 0 outright.
+  const partisanStandardWinBtn = document.getElementById('f_partisan_standard_win_btn');
+  if(partisanStandardWinBtn) partisanStandardWinBtn.addEventListener('click', async ()=>{
+    const before = s.partisan||0;
+    s.partisan = Math.max(0, before - 2);
+    logAction(factionForNation(s.occupier), 'Combat', `Anti-Partisan engagement at ${s.name}: standard win, Partisan Level ${before} → ${s.partisan} (§12.1)`, [s]);
+    await saveState(true, true);
+    render();
+    selectSector(s.id);
+  });
+  const partisanDecisiveWinBtn = document.getElementById('f_partisan_decisive_win_btn');
+  if(partisanDecisiveWinBtn) partisanDecisiveWinBtn.addEventListener('click', async ()=>{
+    const before = s.partisan||0;
+    s.partisan = 0;
+    logAction(factionForNation(s.occupier), 'Combat', `Anti-Partisan engagement at ${s.name}: decisive win, Partisan Level ${before} → 0 (§12.1)`, [s]);
+    await saveState(true, true);
+    render();
+    selectSector(s.id);
+  });
+
   const rcRepairAmountInput = document.getElementById('f_rc_repair_amount');
   const rcRepairPreviewEl = document.getElementById('f_rc_repair_preview');
   const updateRCRepairPreview = () => {
@@ -7021,6 +7112,9 @@ function renderPanel(){
 
   const ntfAssignBtn = document.getElementById('f_ntf_assign_btn');
   if(ntfAssignBtn) ntfAssignBtn.addEventListener('click', ()=>openNTFAssignModal(s));
+
+  const navalCombatBtn = document.getElementById('f_naval_combat_btn');
+  if(navalCombatBtn) navalCombatBtn.addEventListener('click', ()=>openNavalCombatModal(s));
 
   const resolveSubZoneBtn = document.getElementById('f_resolve_sub_zone_btn');
   if(resolveSubZoneBtn) resolveSubZoneBtn.addEventListener('click', ()=>resolveSubmarineSeaZone(s));
@@ -7288,10 +7382,8 @@ function renderBGPanel(){
       </div>
 
       <div class="field-group">
-        <div class="fg-label rule-link" data-section="sec-10-4" title="One Elite slot per 6 RCs, max 3 per nation (§9.3). Gets its nation's listed tokens free every turn. Lost only when the BG is destroyed — never by falling below the RC threshold.">Elite Formation (§9.3)</div>
-        <select id="f_elite" ${isOwnUnit?'':'disabled'} title="One Elite slot per 6 RCs, max 3 per nation (§9.3). Gets its nation's listed tokens free every turn. Lost only when the BG is destroyed — never by falling below the RC threshold.">
-          ${['No','Yes'].map(v=>`<option value="${v}" ${(b.elite?'Yes':'No')===v?'selected':''}>${v}</option>`).join('')}
-        </select>
+        <div class="fg-label rule-link" data-section="sec-10-4" title="Automatic (§9.3) — reaches Elite at 90+ experience, no cap on how many a nation may field. Once Elite, stays Elite until experience drops below 60 (hysteresis, so it doesn't flicker in and out near the threshold). No longer a player designation.">Elite Formation (§9.3)</div>
+        <div class="stat-line"><span>Status</span><b>${b.elite ? 'Elite' : `Not Elite (reaches Elite at ${ELITE_ENTRY_THRESHOLD} experience)`}</b></div>
       </div>
 
       ${isOwnUnit ? `
@@ -7370,25 +7462,11 @@ function renderBGPanel(){
     const oldPoints = b.points, oldFatigue = b.fatigue;
     b.points = parseFloat(document.getElementById('f_points').value) || 0;
     b.experience = parseFloat(document.getElementById('f_exp').value) || 0;
+    syncEliteStatus(b); // §9.3 — Elite is automatic on experience now, no manual toggle or cap
     b.fatigue = parseInt(document.getElementById('f_fatigue').value);
     b.in_supply = document.getElementById('f_supply').value;
     b.orders = document.getElementById('f_orders').value;
     b.shattered = document.getElementById('f_shattered').value === 'Yes';
-    const wantsElite = document.getElementById('f_elite').value === 'Yes';
-    if(wantsElite && !b.elite){
-      const econ = computeEconomy();
-      const e = econ[b.nation] || Object.values(econ).find(x=>{
-        const minors = minorBgNationsFor(x.nation);
-        return minors.includes(b.nation);
-      });
-      if(e && e.eliteFielded >= e.eliteCap){
-        notify(`${b.nation}'s Elite slots are full (${e.eliteFielded}/${e.eliteCap}, §9.3 — one per 6 RCs, max 3). Not applied.`);
-      } else {
-        b.elite = true;
-      }
-    } else {
-      b.elite = wantsElite;
-    }
     if(b.points !== oldPoints){
       logAction(faction, 'Strength Change', `${b.name} (${b.nation}) points ${oldPoints} → ${b.points}`, [sector]);
     }
@@ -7502,7 +7580,7 @@ function renderBGPanel(){
     }
   };
 
-  ['f_points','f_exp','f_fatigue','f_supply','f_orders','f_shattered','f_elite','f_move'].forEach(id=>{
+  ['f_points','f_exp','f_fatigue','f_supply','f_orders','f_shattered','f_move'].forEach(id=>{
     const node = document.getElementById(id);
     if(node) node.addEventListener('change', commit);
   });
@@ -8385,6 +8463,65 @@ const FIGHTER_POSTURE = {
 // defending any single one), and a nation that ever hits 0 fighters
 // would otherwise guarantee every future strike.
 const FLAK_BASE = 3;
+// §11 Naval Combat (house rule) — resolved the same way Strategic Bombing
+// is: an activation, spent from the sector panel, whenever both an Axis
+// and an Allied NTF sit in the same sea sector. Naval doctrine of the era
+// wasn't about outnumbering the enemy, it was about squaring them — beat
+// a fleet of 2, you wanted 4; beat a fleet of 4, you wanted 16. Effective
+// combat power here is each side's NTF count SQUARED, not the raw count,
+// and losses to the defeated side scale with the SQUARE of the force
+// disparity too — a close fight bloodies both sides, a lopsided one
+// devastates the loser and barely touches the winner.
+function resolveNavalCombat(sector){
+  const axisNTF = NTF_NATION_ORDER.filter(n=>factionForNation(n)==='Axis').reduce((sum,n)=>sum+((sector.ntf&&sector.ntf[n])||0),0);
+  const alliedNTF = NTF_NATION_ORDER.filter(n=>factionForNation(n)==='Allied').reduce((sum,n)=>sum+((sector.ntf&&sector.ntf[n])||0),0);
+  if(axisNTF<=0 || alliedNTF<=0){
+    return {blocked:true, reason:`Both an Axis and an Allied NTF must be present at ${sector.name} to resolve Naval Combat.`};
+  }
+  const axisPower = axisNTF*axisNTF;
+  const alliedPower = alliedNTF*alliedNTF;
+  const total = axisPower + alliedPower;
+  const axisWinChance = total>0 ? axisPower/total : 0.5;
+  const axisWins = Math.random() < axisWinChance;
+  const winnerCount = axisWins ? axisNTF : alliedNTF;
+  const loserCount = axisWins ? alliedNTF : axisNTF;
+  // Ratio capped at 3:1 before squaring — same spirit as Strategic
+  // Bombing's ratio cap, keeping one engagement's losses proportional to
+  // the forces actually present rather than an unbounded blowout.
+  const rawRatio = loserCount>0 ? winnerCount/loserCount : winnerCount;
+  const cappedRatio = Math.min(3, rawRatio);
+  const squaredRatio = cappedRatio*cappedRatio; // 1 (even) up to 9 (3:1+)
+  const loserLossFraction = Math.min(1, 0.15 + 0.15*squaredRatio); // 0.30 even -> 1.00 at 3:1+
+  const winnerLossFraction = Math.max(0, 0.15 - 0.05*squaredRatio); // 0.10 even -> 0 by ~2:1
+  const loserLosses = Math.min(loserCount, Math.max(1, Math.round(loserCount*loserLossFraction)));
+  const winnerLosses = Math.min(winnerCount, Math.round(winnerCount*winnerLossFraction));
+  const axisLosses = axisWins ? winnerLosses : loserLosses;
+  const alliedLosses = axisWins ? loserLosses : winnerLosses;
+  return {blocked:false, axisWins, axisNTF, alliedNTF, axisPower, alliedPower, axisWinChance, rawRatio, axisLosses, alliedLosses};
+}
+// Distributes a faction's total NTF losses proportionally across whichever
+// of its nations actually have NTFs present in this sector, removing them
+// permanently from both the sector assignment and the national pool —
+// sunk, not just withdrawn.
+function applyNavalLosses(sector, faction, totalLosses){
+  if(totalLosses<=0) return [];
+  const nationsHere = NTF_NATION_ORDER.filter(n=>factionForNation(n)===faction && (sector.ntf&&sector.ntf[n])>0);
+  const presentTotal = nationsHere.reduce((sum,n)=>sum+sector.ntf[n],0);
+  if(presentTotal<=0) return [];
+  let remaining = Math.min(totalLosses, presentTotal);
+  const applied = [];
+  nationsHere.forEach((n,i)=>{
+    if(remaining<=0) return;
+    const share = i===nationsHere.length-1 ? remaining : Math.min(sector.ntf[n], Math.round(totalLosses * (sector.ntf[n]/presentTotal)));
+    const actual = Math.min(share, sector.ntf[n], remaining);
+    if(actual<=0) return;
+    sector.ntf[n] -= actual;
+    dashboards[faction].ntfPool[n] = Math.max(0, (dashboards[faction].ntfPool[n]||0) - actual);
+    remaining -= actual;
+    applied.push({nation:n, lost:actual});
+  });
+  return applied;
+}
 function resolveBomberStrike(targetSector, committedBombers){
   const targetNation = targetSector.occupier || targetSector.owner;
   const rawFighterForce = (dashboards.Axis.airForces[targetNation] && dashboards.Axis.airForces[targetNation].fighterDefense) || 0;
@@ -8524,6 +8661,46 @@ function openBomberStrikeModal(sector){
     render();
     openModal(`Strategic Bombing — ${r.success ? 'Success' : 'Failed'}`, `<div class="winter-note">${resultDesc}</div>`);
   });
+}
+
+function openNavalCombatModal(sector){
+  const preview = resolveNavalCombatPreview(sector);
+  if(preview.blocked){
+    openModal('Naval Combat', `<div class="winter-note">${preview.reason}</div>`);
+    return;
+  }
+  openModal(`Naval Combat — ${sector.name}`, `
+    <div class="winter-note">${preview.axisNTF} Axis NTF (power ${preview.axisPower}, squared) vs ${preview.alliedNTF} Allied NTF (power ${preview.alliedPower}, squared) — ${Math.round(preview.axisWinChance*100)}% Axis win chance. Losses scale with the SQUARE of the force disparity (§11 Naval Combat) — a close fight bloodies both sides, a lopsided one can be decisive.</div>
+    <button class="cr-roll-btn" id="naval_combat_go" style="margin-top:10px;">Resolve Naval Combat</button>
+  `);
+  document.getElementById('naval_combat_go').addEventListener('click', async ()=>{
+    const r = resolveNavalCombat(sector);
+    if(r.blocked){
+      openModal('Naval Combat', `<div class="winter-note">${r.reason}</div>`);
+      return;
+    }
+    const axisLossDetail = applyNavalLosses(sector, 'Axis', r.axisLosses);
+    const alliedLossDetail = applyNavalLosses(sector, 'Allied', r.alliedLosses);
+    const describeLosses = (detail) => detail.length ? detail.map(d=>`${d.nation} −${d.lost}`).join(', ') : 'none';
+    const resultDesc = `Naval Combat at ${sector.name}: ${r.axisNTF} Axis NTF (power ${r.axisPower}) vs ${r.alliedNTF} Allied NTF (power ${r.alliedPower}) — ${Math.round(r.axisWinChance*100)}% Axis win chance, ${r.axisWins?'AXIS WINS':'ALLIES WIN'}. Axis losses: ${describeLosses(axisLossDetail)}. Allied losses: ${describeLosses(alliedLossDetail)}.`;
+    logAction(r.axisWins?'Axis':'Allied', 'Naval Combat', resultDesc, [sector]);
+    await saveState(true, true);
+    render();
+    openModal(`Naval Combat — ${r.axisWins?'Axis Victory':'Allied Victory'}`, `<div class="winter-note">${resultDesc}</div>`);
+  });
+}
+// Same math as resolveNavalCombat but read-only — used for the modal's
+// live preview so a player can see the odds before committing to resolve.
+function resolveNavalCombatPreview(sector){
+  const axisNTF = NTF_NATION_ORDER.filter(n=>factionForNation(n)==='Axis').reduce((sum,n)=>sum+((sector.ntf&&sector.ntf[n])||0),0);
+  const alliedNTF = NTF_NATION_ORDER.filter(n=>factionForNation(n)==='Allied').reduce((sum,n)=>sum+((sector.ntf&&sector.ntf[n])||0),0);
+  if(axisNTF<=0 || alliedNTF<=0){
+    return {blocked:true, reason:`Both an Axis and an Allied NTF must be present at ${sector.name} to resolve Naval Combat.`};
+  }
+  const axisPower = axisNTF*axisNTF;
+  const alliedPower = alliedNTF*alliedNTF;
+  const total = axisPower+alliedPower;
+  return {blocked:false, axisNTF, alliedNTF, axisPower, alliedPower, axisWinChance: total>0?axisPower/total:0.5};
 }
 
 // §8.4 Submarine Warfare — replaces the old Submarine token entirely with
@@ -9058,12 +9235,14 @@ function openSPMCalculatorModal(sector){
       b.points = Math.max(0, b.points - winnerPerBG);
       b.fatigue = (b.fatigue||0) + 1; // §C.5 — full FP regardless of the time fraction
       if(r.baseline.winnerXP) b.experience = Math.min(100, b.experience + r.baseline.winnerXP);
+      syncEliteStatus(b);
     });
     r.loserBGs.forEach(b=>{
       b.points = Math.max(0, b.points - loserPerBG);
       b.fatigue = (b.fatigue||0) + 1;
       if(r.baseline.loserXP) b.experience = Math.max(0, b.experience + r.baseline.loserXP);
       if(r.baseline.shatter) b.shattered = true;
+      syncEliteStatus(b);
     });
 
     let retreatDesc = '';
@@ -9316,10 +9495,10 @@ async function applyCombatResult(){
     applyOQVictoryGrowth(winnerBGs, r.outcome);
     // §13.1 Second Army on the Don: a Hungarian BG winning in a USSR sector
     // always gets +5 XP, regardless of margin.
-    winnerBGs.forEach(b=>{ b.experience += (inUSSR && b.nation==='Hungary') ? 5 : winXP; });
+    winnerBGs.forEach(b=>{ b.experience += (inUSSR && b.nation==='Hungary') ? 5 : winXP; syncEliteStatus(b); });
     const retreatSel = document.getElementById('cr_retreat_select');
     if(r.outcome==='Decisive Victory'){
-      loserBGs.forEach(b=>{ b.experience = Math.max(0,b.experience-5); b.shattered = true; });
+      loserBGs.forEach(b=>{ b.experience = Math.max(0,b.experience-5); b.shattered = true; syncEliteStatus(b); });
     }
     // Overstacked-space retreat rule: a Decisive Victory (Shatter) is a
     // collapse of the whole position, not just the BGs that fought — every
@@ -9519,6 +9698,18 @@ function computeBgOQ(bg){
 function bgCeiling(bg){
   const oq = computeBgOQ(bg);
   return Math.round(2500 * (1 + Math.max(0, oq-60)/100));
+}
+// Elite Formation — now fully automatic on experience, not a player
+// designation, and no longer capped (§9.3's "1 per 6 RCs, max 3" is
+// retired). A BG crosses INTO Elite at experience 90+; once Elite, it
+// stays Elite through normal fluctuation and only drops back out if
+// experience falls below 60 — hysteresis specifically so a BG hovering
+// around 90 doesn't flicker in and out of Elite status turn to turn.
+const ELITE_ENTRY_THRESHOLD = 90;
+const ELITE_EXIT_THRESHOLD = 60;
+function syncEliteStatus(bg){
+  if(!bg.elite && bg.experience >= ELITE_ENTRY_THRESHOLD) bg.elite = true;
+  else if(bg.elite && bg.experience < ELITE_EXIT_THRESHOLD) bg.elite = false;
 }
 // floor(OQ/20) — the maximum number of Support Tokens this BG may have
 // assigned to it in a single Combat Resolver engagement.
@@ -9732,6 +9923,65 @@ const LATAM_ACTIVATION = {
   'Chile':     {season:'Winter', year:1944},
   'Argentina': {season:'Spring', year:1945},
 };
+// §13 Pan-American Solidarity was previously abstracted purely as a +1 RC
+// bonus to the USA (bonusRC calculations elsewhere) — the actual sector
+// ownership flip this represents (a Latin American sector, if one exists
+// on the map under that nation's own name, joining the Allied war effort
+// under USA control once its activation date passes) was never
+// implemented. Idempotent: safe to run every turn-advance, since setting
+// an already-USA sector to USA again is a no-op.
+function advanceLatamActivation(){
+  const changes = [];
+  Object.entries(LATAM_ACTIVATION).forEach(([nation, when])=>{
+    if(!turnAtLeast(when.season, when.year)) return;
+    const s = sectors.find(x=>x.name===nation);
+    if(!s) return; // this nation has no corresponding sector on this map
+    if(s.owner==='USA') return; // already switched, nothing to report
+    s.owner = 'USA';
+    s.occupier = null;
+    s.faction = 'Allied';
+    changes.push(`${nation} activates and joins the Allied war effort under USA control (§13)`);
+  });
+  return changes;
+}
+// House rule: Japanese Home Defense Mobilization. Each of these four
+// outlying sectors, the first time it's captured by the Allies, triggers
+// Japan raising 1 INF BG at a random Home Island sector — home-front
+// panic drafting in response to the front line collapsing closer to the
+// mainland. Each sector's trigger fires exactly once for the rest of the
+// campaign, tracked as its own dashboard flag so recapture-and-loss
+// cycles can't repeat it. Marianas additionally, and separately, floors
+// Japan's ratio at 1.25 permanently (§2) — see computeNationRatio.
+const JAPAN_MOBILIZATION_TRIGGERS = ['Marianas', 'Iwo Jima', 'Okinawa', 'Formosa'];
+const JAPAN_HOME_ISLANDS = ['Japan (Tokyo)', 'Japan (Kyushu)', 'Japan (Hokkaido)'];
+function advanceJapaneseMobilizationEvents(){
+  const changes = [];
+  JAPAN_MOBILIZATION_TRIGGERS.forEach(name=>{
+    const s = sectors.find(x=>x.name===name);
+    if(!s) return; // this sector doesn't exist on this map
+    if(factionForNation(s.occupier||s.owner) !== 'Allied') return; // not captured (yet)
+    const flagKey = `${name} captured (mobilization)`;
+    if(dashboards.Axis.flags[flagKey]==='Yes') return; // already fired, one-time only
+    dashboards.Axis.flags[flagKey] = 'Yes';
+    const homeIslandNames = JAPAN_HOME_ISLANDS.filter(n=>sectors.some(x=>x.name===n));
+    const chosenHomeName = homeIslandNames.length ? homeIslandNames[Math.floor(Math.random()*homeIslandNames.length)] : null;
+    const home = chosenHomeName ? sectors.find(x=>x.name===chosenHomeName) : null;
+    if(home){
+      const maxId = bgs.reduce((m,b)=>Math.max(m,b.id),0);
+      bgs.push({
+        faction:'Axis', nation:'Japan', name:`${name} Response Levy`, type:'INF', fow:null,
+        location:home.name, points:2500, fatigue:0, experience: experienceBaseline('Japan','INF'),
+        orders:'Hold', in_supply:'Yes', elite:null, id:maxId+1, sectorId:home.id, shattered:false, movedThisTurn:false,
+      });
+      changes.push(`Japan raises an INF BG at ${home.name} in response to the loss of ${name} (§13, one-time)`);
+    }
+    if(name==='Marianas'){
+      dashboards.Axis.flags['Marianas captured (ratio boost)'] = 'Yes';
+      changes.push(`Japan's RC:BG ratio permanently floors at 1.25 following the loss of the Marianas (§2, one-time)`);
+    }
+  });
+  return changes;
+}
 function minorNationChecklist(){
   const held = (name, nation)=>{ const s = sectors.find(x=>x.name===name); return s && (s.occupier===nation || (!s.occupier && s.owner===nation)); };
   const heldByFaction = (name, fac)=>{ const s = sectors.find(x=>x.name===name); return s && factionForNation(s.occupier||s.owner)===fac; };
@@ -10080,7 +10330,7 @@ function computeCPGeneration(nation){
   // Ratio (year-based mobilization intensity) applies to owned production
   // only, same as the original formula — occupied territory's output
   // isn't scaled by the occupier's own home-front mobilization level.
-  const ratio = ((YEAR_RATIO[nation] && YEAR_RATIO[nation][clock.year]) ?? 1) + doctrineCostFor(nation, 'ratio');
+  const ratio = computeNationRatio(nation);
   let N_yield = CP_N_YIELD[nation] || 1.0;
   if(nation==='Germany'){
     const oilActive = dashboards.Axis.flags['Oil War trace active — Germany']==='Yes';
@@ -10119,7 +10369,7 @@ function computeSingleRCCPOutput(sector, nation, ignoreDamage){
   if(!isOwned && !isOccupied) return 0;
   const already = sector.cpRaidedThisTurn || 0;
   const value = sectorCPValue(sector);
-  const ratio = ((YEAR_RATIO[nation] && YEAR_RATIO[nation][clock.year]) ?? 1) + doctrineCostFor(nation, 'ratio');
+  const ratio = computeNationRatio(nation);
   let N_yield = CP_N_YIELD[nation] || 1.0;
   if(nation==='Germany'){
     N_yield = dashboards.Axis.flags['Oil War trace active — Germany']==='Yes' ? 1.3 : 1.1;
@@ -10149,7 +10399,7 @@ function computeEconomy(){
       out[nation] = {nation, ownedRC:owned, occupiedRC:occ, minorRC:0, ratio:'N/A', bgCap:cap,
         majorCap:cap, fielded, minorFielded:0, majorFielded:fielded,
         infPct: fielded?infCount/fielded:0, infMin:1.0,
-        eliteCap: Math.min(3,Math.floor((owned+occ)/6)), eliteFielded: bgs.filter(b=>(b.nation==='China (Nationalist)'||b.nation==='China (Communist)')&&b.elite).length,
+        eliteFielded: bgs.filter(b=>(b.nation==='China (Nationalist)'||b.nation==='China (Communist)')&&b.elite).length,
         tokens: Math.floor((owned+occ)/2)};
       return;
     }
@@ -10170,7 +10420,7 @@ function computeEconomy(){
       .reduce((a,s)=>a + s.rc * ((nation==='Germany'&&s.evacuated==='Yes')?0.5:1), 0);
     // §9.2.1 Doctrine costs can adjust the ratio (Arsenal of Democracy /
     // Stavka Reserve: -0.5 for the specific year it takes effect).
-    const ratio = ((YEAR_RATIO[nation] && YEAR_RATIO[nation][clock.year]) ?? 1) + doctrineCostFor(nation, 'ratio');
+    const ratio = computeNationRatio(nation);
     const rcMinors = minorsFor(nation).filter(m=>isMinorActivated(nation,m));
     const minorRC = sectors.filter(s=>s.status==='ACTIVE' && rcMinors.includes(s.owner)).reduce((a,s)=>a+s.rc,0);
     const bgMinors = minorBgNationsFor(nation);
@@ -10187,7 +10437,6 @@ function computeEconomy(){
     const infCount = cappedBgs.filter(b=>nationSet.has(b.nation)&&b.type==='INF').length;
     out[nation] = {nation, ownedRC:owned, occupiedRC:occ, minorRC, ratio, bgCap, majorCap,
       fielded, minorFielded, majorFielded, infPct: fielded?infCount/fielded:0, infMin: INF_MIN[nation] + doctrineCostFor(nation, 'infMin'),
-      eliteCap: Math.max(0, Math.min(3,Math.floor((owned+occ)/6)) + doctrineCostFor(nation, 'eliteCap')),
       eliteFielded: bgs.filter(b=>nationSet.has(b.nation)&&b.elite).length,
       tokens: Math.max(0, Math.floor((owned+occ)/2) + doctrineCostFor(nation, 'tokenRate'))};
   });
@@ -10367,7 +10616,7 @@ function buildDashboardHtml(faction){
       <td class="${over?'pill-over':'pill-ok'}">${e.fielded}</td>
       <td class="${over?'pill-over':'pill-ok'}">${over?'OVER CAP':'OK'}</td>
       <td>${(e.infPct*100).toFixed(0)}% / ${(e.infMin*100).toFixed(0)}%</td>
-      <td>${e.eliteFielded}/${e.eliteCap}</td><td>${e.tokens}</td></tr>`;
+      <td>${e.eliteFielded}</td><td>${e.tokens}</td></tr>`;
   }).join('');
 
   const forceRows = fs.rows.map(r=>`<tr><td>${r.type}</td><td>${r.count}</td><td>${r.points.toLocaleString()}</td><td>${r.avgExp.toFixed(0)}</td></tr>`).join('');
@@ -11247,7 +11496,7 @@ document.getElementById('openEconomy').addEventListener('click', ()=>{
       <td class="${over?'pill-over':'pill-ok'}">${e.fielded}</td>
       <td class="${over?'pill-over':'pill-ok'}">${over?'OVER CAP':'OK'}</td>
       <td class="${infOver?'pill-over':'pill-ok'}">${(e.infPct*100).toFixed(0)}% / ${(e.infMin*100).toFixed(0)}%</td>
-      <td>${e.eliteFielded}/${e.eliteCap}</td>
+      <td>${e.eliteFielded}</td>
       <td>${e.tokens}</td>
     </tr>
     <tr class="minor-row"><td colspan="12">↳ Minor: ${e.minorRC.toFixed(1)} RC · ${e.minorFielded} fielded (cap ${e.minorRC.toFixed(1)}) &nbsp;|&nbsp; Major: ${(e.bgCap-e.minorRC).toFixed(1)} cap · ${e.majorFielded} fielded</td></tr>`;
@@ -11437,9 +11686,9 @@ function openBattleLogModal(){
         const winnerBgs = winner==='ATTACKER' ? atkBgs : defBgs;
         const winXP = outcome==='Decisive Victory' ? 5 : 3;
         applyOQVictoryGrowth(winnerBgs, outcome);
-        winnerBgs.forEach(b=>{ b.experience += winXP; });
+        winnerBgs.forEach(b=>{ b.experience += winXP; syncEliteStatus(b); });
         if(outcome==='Decisive Victory'){
-          loserBgs.forEach(b=>{ b.experience = Math.max(0,b.experience-5); b.shattered = true; });
+          loserBgs.forEach(b=>{ b.experience = Math.max(0,b.experience-5); b.shattered = true; syncEliteStatus(b); });
         }
         const retreatSel = document.getElementById('mb_retreat');
         if(retreatSel && retreatSel.value){
@@ -11607,12 +11856,17 @@ async function finishWinterLogistics(beforeSnap, comingYear){
     }
   });
   bgs.forEach(b=>{ b.movedThisTurn = false; b.engagedThisTurn = false; }); // engagedThisTurn also feeds Fog of War tier (§5.1) — reset here now that advanceRecovery (its previous home) is retired
+  bgs.forEach(syncEliteStatus); // §9.3 — Elite is now fully automatic on experience, synced every turn-advance
   advanceCPEconomy();
   resetForceCommitment();
   autoResolvePendingSubmarinePatrols();
   sectors.forEach(s=>{ if(s.type==='Sea') s.ntfLocked = {}; });
   advancePartisans();
   const supplyChanges = advanceSupplyStatus();
+  const latamChanges = advanceLatamActivation();
+  if(latamChanges.length) supplyChanges.push(...latamChanges);
+  const japanMobChanges = advanceJapaneseMobilizationEvents();
+  if(japanMobChanges.length) supplyChanges.push(...japanMobChanges);
   const interceptResult = advanceAxisIntercept();
   if(interceptResult) supplyChanges.push(interceptResult);
   expireReconstitutionOpportunities();
@@ -11672,12 +11926,17 @@ document.getElementById('advanceTurn').addEventListener('click', async ()=>{
   clock = next;
   advanceWeather();
   bgs.forEach(b=>{ b.movedThisTurn = false; b.engagedThisTurn = false; }); // engagedThisTurn also feeds Fog of War tier (§5.1) — reset here now that advanceRecovery (its previous home) is retired
+  bgs.forEach(syncEliteStatus); // §9.3 — Elite is now fully automatic on experience, synced every turn-advance
   advanceCPEconomy();
   resetForceCommitment();
   autoResolvePendingSubmarinePatrols();
   sectors.forEach(s=>{ if(s.type==='Sea') s.ntfLocked = {}; });
   advancePartisans();
   const supplyChanges = advanceSupplyStatus();
+  const latamChanges = advanceLatamActivation();
+  if(latamChanges.length) supplyChanges.push(...latamChanges);
+  const japanMobChanges = advanceJapaneseMobilizationEvents();
+  if(japanMobChanges.length) supplyChanges.push(...japanMobChanges);
   const interceptResult = advanceAxisIntercept();
   if(interceptResult) supplyChanges.push(interceptResult);
   await saveState(true, true);
@@ -11868,6 +12127,7 @@ document.getElementById('resetData').addEventListener('click', async ()=>{
   if(!(await confirmDialog('Restore all sectors, Battle Groups, and the campaign clock to their Summer 1941 scenario-start values? This overwrites the current shared campaign state.'))) return;
   sectors = JSON.parse(JSON.stringify(SEED));
   bgs = JSON.parse(JSON.stringify(OOB_SEED));
+  bgs.forEach(syncEliteStatus); // §9.3 — compute initial Elite status from seed experience values
   clock = { year: 1941, season: 'Summer' };
   battleLog = [];
   actionLog = [];
@@ -12057,6 +12317,7 @@ function startApp(){
   // the first paint on a network/storage call.
   sectors = JSON.parse(JSON.stringify(SEED));
   bgs = JSON.parse(JSON.stringify(OOB_SEED));
+  bgs.forEach(syncEliteStatus); // §9.3 — compute initial Elite status from seed experience values
   sectors.forEach(s=>{ if(!s.weather) s.weather = rollWeather(s.region, clock.season); });
   buildIndex();
   // Starting CP pool: 25% of what each nation would generate this turn,
