@@ -1319,11 +1319,20 @@ player could previously see (Tier 2+) drops to Tier 1, a faint, dashed
 marker persists at its last-known sector for a few turns before fading,
 rather than the position simply vanishing outright. Purely informational
 — it never implies the BG is still there.</p>
-<p><strong>§5.1b Partisan HUMINT (§12.1 addition).</strong> Any sector
-at Partisan Level 2+ generates one HUMINT contact report per turn on
-whichever Axis BGs are present there, source-graded C-3 — a wide-band,
-broad-coverage sighting in the same spirit as routine
-reconnaissance.</p>
+<p><strong>§5.1b Partisan HUMINT (§12.1 addition, revised).</strong>
+Deliberately the mirror of SIGINT: narrow-but-precise (ULTRA) versus
+broad-but-unreliable (HUMINT). <em>Partisans see everything and
+understand little; Bletchley sees little and understands everything.</em>
+Any sector at Partisan Level 1+ is eligible for a report each turn —
+Level 1 has a <strong>30%</strong> chance of producing one, Level 2+ a
+<strong>60%</strong> chance — source-graded <strong>D-4</strong> (not
+usually reliable, possibly true). Two independent error modes apply on
+top of that: a <strong>20%</strong> chance the reported category is
+simply wrong, and a <strong>10%</strong> chance the report is a false
+positive — a formation described in an adjacent sector where nothing is
+actually present, exclusive with a genuine sighting that turn. Wide-band,
+broad-coverage, and occasionally wrong: the same spirit as routine
+reconnaissance, with reliability traded for reach.</p>
 <h3 id="sec-5-2">5.2. Sealed Orders</h3>
 <p>Sealed moves activate in the same alternating sequence as any other
 activation (§7.2). Only what’s shown to the opponent differs.</p>
@@ -1433,7 +1442,7 @@ values are never modified — falsification lives entirely at the display
 layer, exactly like Phantom Contacts. REC-token actions are not
 affected: physical reconnaissance sees what is actually there; only the
 agent-network channel is compromised.</p>
-<p><strong>Blowing the game.</strong> Checked each turn advance, in
+<p><strong>Detection.</strong> Checked each turn advance, in
 order:</p>
 <ol type="1">
 <li><strong>ULTRA counter-play:</strong> if the UK holds the ULTRA
@@ -1443,22 +1452,54 @@ exactly how Double-Cross was verified and Englandspiel partly unmasked.
 There is deliberately no Axis-side equivalent against Allied games: an
 asymmetry that is uncomfortable for the Axis player, and also the
 historical record.</li>
-<li><strong>Ground truth:</strong> auto-blown if the Radio Game’s sector
+<li><strong>Ground truth:</strong> detected if the Radio Game’s sector
 is liberated, or its Partisan Level rises back to 2+ (a rebuilt network
 warns home about the old one).</li>
 <li><strong>Expiry:</strong> duration lapse — the game simply goes
-silent.</li>
+silent. Never detected in time to act on, so this case skips straight to
+quiet expiry below; it is never a Turn/Expose choice.</li>
 </ol>
-<p><strong>On blowing (cases 1–2):</strong> the victim’s log receives a
-retroactive notice — <em>MOST SECRET — all products attributed to this
-network are assessed CONTAMINATED, enemy playback suspected</em> — and
-every poisoned intelligence entry gains a
-<strong>[CONTAMINATED]</strong> prefix, so the victim can finally see
-which of their “intelligence” was authored by the enemy. The operator
-sees only that the network has gone silent; they are never told whether
-it was blown or expired. <strong>On expiry (case 3):</strong> no
-contamination flag — the victim never learns. Some radio games were only
-discovered after the war, and some should be.</p>
+<p>Detection via case 1 or 2 does not automatically end the game — it
+hands the detecting side a choice: <strong>Expose</strong> it, or
+<strong>Turn</strong> it (§5.4.4, below).</p>
+<p><strong>Exposing.</strong> The victim’s log receives a retroactive
+notice — <em>MOST SECRET — all products attributed to this network are
+assessed CONTAMINATED, enemy playback suspected</em> — and every
+poisoned intelligence entry gains a <strong>[CONTAMINATED]</strong>
+prefix, so the victim can finally see which of their “intelligence” was
+authored by the enemy. The operator sees only that the network has gone
+silent; they are never told whether it was exposed or expired.
+<strong>On expiry:</strong> no contamination flag — the victim never
+learns. Some radio games were only discovered after the war, and some
+should be.</p>
+<h4 id="sec-5-4-4">5.4.4. Turning (Triple-Cross)</h4>
+<p>Detecting an enemy Radio Game doesn’t have to end it. The historical
+crown move was rarely to arrest the agents the moment they were found —
+it was to keep them transmitting and feed the traffic yourself. <strong>
+Double-Cross</strong> wasn’t the discovery of German agents in Britain;
+it was the decision not to arrest them.</p>
+<ul>
+<li><strong>The original operator is never notified.</strong> Their feed
+keeps arriving on schedule, appearing to run exactly as before.</li>
+<li><strong>Products from that point on are authored by the new
+controller</strong> instead of being genuine playback — the same
+falsified-band mechanism the ordinary poison effect already uses, never
+touching true values.</li>
+<li>The new controller’s own INL actions into that region are no longer
+poisoned by this game — they know which channel is theirs now.</li>
+<li><strong>Once only.</strong> A game may be turned a single time. The
+original operator has no detection mechanic of their own against their
+own channel — institutional blindness is intentional, not an oversight
+— so a turned game cannot be turned back; any further detection against
+it goes straight to Expose.</li>
+<li><strong>Turning a Soviet (Monastyr) game specifically requires its
+new controller — Germany — to keep paying the Berezino drain</strong>
+(100 pts/turn, §11.4) to sustain the cover story, now knowingly rather
+than as a dupe. If no eligible German BG can pay it in a given turn, the
+turned game lapses outright — the fiction cannot sustain itself, and the
+silence is itself a risk Germany has chosen not to manage. Turning any
+other game carries no maintenance cost of its own.</li>
+</ul>
 <h2 id="sec-6">6. Environmental Effects &amp; Climate</h2>
 <h3 id="sec-6-1">6.1. Terrain Types</h3>
 <p>Every land sector has a major terrain type: Plains, Mountain,
@@ -1527,6 +1568,14 @@ that would also block Strategic Movement.</li>
 corresponding WinSPWW2 match</strong> — each condition maps to its own
 visibility range, anchored to the principle that low visibility makes
 air support unlikely.</li>
+<li><strong>The Weather War (new).</strong> The tool’s next-turn
+forecast is not available to both sides equally. Allied viewers keep it
+in Western Europe regardless of year — the historical met-station edge
+(Greenland/Iceland stations fed the real D-Day forecast). Everyone else
+— Axis in any theater, and Allied viewers outside Western Europe — loses
+the forecast entirely from 1943 onward, as the war’s weather picture
+generally hardened into secrecy on both sides. GM Mode and Observer
+bypass this.</li>
 </ul>
 <h3 id="sec-6-3">6.3. River Crossings</h3>
 <p>Ten sector connections cross a named river: the Rhine
@@ -1712,8 +1761,9 @@ sit in Second Echelon at any Home RC — an RC sector owned by the
 stacking player’s own side (not necessarily their own nation, supporting
 coalition stacking) and currently unoccupied. Home Capitals get
 unlimited Second Echelon slots, matching their unlimited combat cap.
-Small Island Outposts and an active Lodgement Rotation hub get zero —
-the cap there stays a pure combat-slot count.</p>
+Small Island Outposts and an Amphibious Lodgement
+(free or AMPH-extended, §11.1.6) get zero — the cap there stays a pure
+combat-slot count.</p>
 <p><strong>Effect.</strong> A Second Echelon BG does not count toward
 the combat stack cap, cannot join an engagement (it’s a bystander, not a
 combatant, even if an enemy BG moves into the same sector), but
@@ -1812,17 +1862,15 @@ for the strategic turn of the victory only — this is unconditional.
 Sustaining elevated capacity past that turn requires one of two
 independent paths:</p>
 <ul>
-<li><strong>Lodgement Rotation</strong> <em>(simplified — house rule
-revision)</em>. The Allied player may spend 1× AMPH token
-<strong>once</strong> — no RC capture required — to activate Lodgement
-Rotation at a secured invasion sector. Once activated, no further
-payment is required: it persists on its own until that Lodgement is lost
-or fully consolidated into normal territory. While active, that sector
-and every sector directly adjacent to it together support up to
-<strong>6 BGs total</strong> — a single shared pool across the whole
-zone, not 6 in each sector individually. As with a Home Capital (§1),
-only 2 BGs ever fight at a time in a given engagement (the player’s
-choice when resolving it).</li>
+<li><strong>AMPH Extension</strong> (§11.1.6, revised). Each
+subsequent turn, the owner may spend <strong>1 AMPH Support Token</strong>
+at turn start to extend the elevated 4-BG cap in the <strong>hub sector
+only</strong> for one more turn. When the extension lapses or isn’t
+paid, the standard 2-BG cap (§1) applies immediately, and any excess BGs
+must move out on their next activation or are subject to the
+over-stacking attrition above. Beachheads have no Second Echelon slots
+(§7.9) — depth requires secured territory, not an elevated combat
+cap.</li>
 <li><strong>Deep-Water Port Capture.</strong> Separately, and requiring
 no AMPH token, the Allied player may instead physically capture and
 secure an adjacent land sector containing a Resource Center. The
@@ -2386,6 +2434,24 @@ token.</td>
 </table>
 <p>Air-dependent tokens (AIR, Fighter) are grounded by Heavy Rain/Snow
 or Storm/Blizzard weather at the engagement sector (§6.2).</p>
+<p><strong>Fog of War.</strong> Purchasing a Standard Token, an NTF, or
+a standing Bomber/Fighter/Submarine unit is Sealed (§5.2) by default —
+none of these have a sector to become exposed at, so the enemy learns
+of the banking step only via ULTRA/MAGIC, or not at all. This hides
+only the <em>purchase</em>: the token, fleet, or force still becomes
+visible the ordinary way the moment it is actually spent or committed
+to something the enemy can observe — an NTF sighted at sea, a token
+spent on a visible engagement, a bomber or fighter flying a mission.</p>
+<p><strong>Strategic Photo Reconnaissance.</strong> A REC token may also
+be spent outside any engagement to task a whole <strong>sector</strong>
+rather than a single BG: 1 REC opens a one-turn Partial Info window
+(§5.1) — location, category, wide strength band, no close
+identification — on any sector within bomber-style range of friendly
+territory. Weaker by design than the per-BG REC/INL targeting above,
+which grants full Tier 3 identification; this only lifts a Tier 1
+blackout to Tier 2. Grounded by Storm/Blizzard at the target sector,
+giving weather a strategic-intelligence consequence rather than only a
+tactical one.</p>
 <h3 id="sec-10-2">10.2. National Tokens</h3>
 <p>Bought by spending <strong>2</strong> currently-banked Support Tokens
 (any type, or two of the same type). Maximum one each.</p>
@@ -2398,6 +2464,16 @@ Sealed BG order. No equivalent tool exists for the Axis side, so a USA,
 UK, USSR, or China purchase stays Sealed for the rest of the campaign —
 a deliberate asymmetry reflecting the real imbalance in WWII signals
 intelligence.</p>
+<p><strong>The Oshima Channel.</strong> MAGIC was diplomatic traffic,
+and Ambassador Oshima’s Berlin cables were arguably the best single
+Allied source on German intentions — this gives MAGIC reach beyond
+Japan. While USA holds the MAGIC token, once per year the USA may read
+one <strong>exact</strong> dashboard-level fact about either Axis power
+— current Standard Token holdings, Officer Quality investment, or
+standing force totals — Grade A-1, no token cost. Deliberately exact
+rather than banded like every other intel product in this system:
+Oshima’s cables really were that good, and the once-a-year cap is the
+balancing lever instead of uncertainty.</p>
 <table>
 <colgroup>
 <col style="width: 50%" />
@@ -2865,11 +2941,13 @@ invents one and lets the Abwehr recruit it.</li>
 games run all standard §5.4 effects independently.</li>
 <li><strong>The Berezino drain.</strong> Each turn a Soviet Radio Game
 is active, one German BG in the game’s sector or an adjacent sector
-loses <strong>25 points</strong> — fuel, transport, and supply diverted
+loses <strong>100 points</strong> — fuel, transport, and supply diverted
 to sustain a fiction. Logged to the Axis player only as a routine line
 item (<em>Luftwaffe special-supply operations</em>); the true cause is
-visible to the USSR and the GM. The drain is small by design: its job is
-flavor and slow bleed, not economics.</li>
+visible to the USSR and the GM. At this rate the drain is real
+attrition, not just flavor — a game left running for several turns next
+to a concentration costs a meaningful fraction of a refit, which is why
+Germany has genuine incentive to hunt these down.</li>
 </ol>
 <p>There is deliberately no Axis counter-tool against Soviet games — the
 ULTRA counter-play check (§5.4) targets Axis games only, so a Soviet
@@ -3357,14 +3435,17 @@ side currently holds initiative.</p>
 <p><strong>15.2 Contested-Sector Attrition.</strong> A Stalemate (§9.3)
 that persists in the same sector for <strong>2 or more consecutive
 strategic turns</strong> now inflicts ongoing attrition — every BG on
-both sides there loses <strong>5% of its points per turn</strong> it
-remains Contested, representing sustained skirmishing and wastage rather
-than a formal Engagement Check. This addresses a standing gap in the
-original design: an indefinite Stalemate previously carried no cost at
-all, letting two sides sit deadlocked in the same sector forever with no
-pressure to resolve it. Second Echelon BGs (§7.9) are exempt — they
-aren’t fighting, so they don’t bleed. The attrition clock resets the
-moment the sector stops being Contested, even briefly; only continuous
+both sides there loses <strong>5% of its points and gains 1 Fatigue per
+turn</strong> it remains Contested, representing sustained skirmishing
+and wastage rather than a formal Engagement Check. This addresses a
+standing gap in the original design: an indefinite Stalemate previously
+carried no cost at all, letting two sides sit deadlocked in the same
+sector forever with no pressure to resolve it. The 2-turn grace period
+is deliberate — the first turn of any Stalemate is a fresh standoff, not
+yet the grinding deadlock this rule is meant to punish. Second Echelon
+BGs (§7.9) are exempt — they aren’t fighting, so they don’t bleed. The
+attrition clock resets the moment the sector stops being Contested, even
+briefly; only continuous
 deadlock counts.</p>
 <p><strong>15.3 Immersion Extras.</strong> Purely cosmetic additions
 with <strong>no mechanical effect whatsoever</strong>:</p>
@@ -4914,7 +4995,15 @@ function mergeSectorsWithSeed(saved){
       emergencyReserveUsed: prev.emergencyReserveUsed || false,
       submarinePatrol: prev.submarinePatrol || null,
       lodgementTurn: prev.lodgementTurn || null,
-      lodgementRotationActive: !!prev.lodgementRotationActive || !!prev.lodgementRotationTurn, // migrates the old per-turn field — under the new simplified rule, having paid at all now persists
+      // §11.1.6 Sustaining a Lodgement — single-sector cap extension, paid
+      // with 1 AMPH token at turn start, valid for that turn only (same
+      // pattern as lodgementTurn's free first-turn cap). Replaces the old
+      // multi-sector 6-BG shared-pool model, which the approved spec
+      // explicitly removed; migrating any prior lodgementRotationActive/
+      // lodgementRotationTurn flag forward as "not currently extended" —
+      // a pool-based flag has no faithful single-turn equivalent to carry
+      // over, so the safe default is to require paying again.
+      lodgementExtendedTurn: prev.lodgementExtendedTurn || null,
       faction: prev.faction!==undefined ? prev.faction : seed.faction,
       // Map Editor fields — connections/terrain edited by a player must
       // survive a reload same as everything else, not silently revert to
@@ -6203,7 +6292,12 @@ function purchaseToken(nation, tokenType){
   dashboards[fac].cpPool[nation] = pool - CP_COST_TOKEN;
   dashboards[fac].tokens[nation] = dashboards[fac].tokens[nation] || {};
   dashboards[fac].tokens[nation][tokenType] = (dashboards[fac].tokens[nation][tokenType]||0) + 1;
-  logAction(fac, 'CP Purchase', `${nation} spends ${CP_COST_TOKEN} CP on 1x ${tokenType} token`, []);
+  // Fog of War: a banked Standard Token has no sector to expose it
+  // against — same reasoning National Token purchases already use.
+  // Sealed by default (§5.2), revealable only via ULTRA/MAGIC; the
+  // enemy still learns of it the ordinary way the moment it's actually
+  // SPENT on a visible engagement, so this only hides the banking step.
+  logAction(fac, 'CP Purchase', `${nation} spends ${CP_COST_TOKEN} CP on 1x ${tokenType} token`, [], null, true);
   return {applied:true, cost:CP_COST_TOKEN};
 }
 function purchaseNTF(nation){
@@ -6212,7 +6306,10 @@ function purchaseNTF(nation){
   if(CP_COST_NTF > pool) return {applied:false, reason:`Insufficient CP — needs ${CP_COST_NTF}, pool has ${pool}.`};
   dashboards[fac].cpPool[nation] = pool - CP_COST_NTF;
   dashboards[fac].ntfPool[nation] = (dashboards[fac].ntfPool[nation]||0) + 1;
-  logAction(fac, 'CP Purchase', `${nation} spends ${CP_COST_NTF} CP on 1x NTF`, []);
+  // Fog of War: same reasoning as purchaseToken — the build itself has
+  // no sector to expose against; the fleet becomes visible the ordinary
+  // way once actually deployed and spotted.
+  logAction(fac, 'CP Purchase', `${nation} spends ${CP_COST_NTF} CP on 1x NTF`, [], null, true);
   return {applied:true, cost:CP_COST_NTF};
 }
 // kind: 'bomber' | 'fighter' | 'sub'. Bomber only valid for USA/UK,
@@ -6230,7 +6327,10 @@ function purchaseStandingUnit(nation, kind){
   if(kind==='bomber') af.bomberForce += 1;
   else if(kind==='fighter') af.fighterDefense += 1;
   else if(kind==='sub') dashboards[fac].submarineFleet[nation] += 1;
-  logAction(fac, 'CP Purchase', `${nation} spends ${CP_COST_STANDING_UNIT} CP on 1x ${kind}`, []);
+  // Fog of War: same reasoning again — a new bomber/fighter/sub added
+  // to a standing force isn't observable until it's actually flown or
+  // sailed on a mission the enemy can see (a strike, a patrol, combat).
+  logAction(fac, 'CP Purchase', `${nation} spends ${CP_COST_STANDING_UNIT} CP on 1x ${kind}`, [], null, true);
   return {applied:true, cost:CP_COST_STANDING_UNIT};
 }
 // 2 CP spent per 1 CP of capacity restored (RC_REPAIR_RATIO), replacing
@@ -6402,6 +6502,20 @@ function forecastNextWeather(sector){
   for(let i=1;i<weights.length;i++){ if(weights[i]>weights[best]) best = i; }
   return WEATHER_CONDITIONS[best];
 }
+// New immersion addition — the Weather War. The forecast itself was
+// previously computed identically for both viewers with no gate at all.
+// Historically the Allies held a real edge in the Atlantic theater
+// (Greenland/Iceland met stations fed the D-Day forecast); that edge is
+// modeled as always-on for Allied viewers in Western Europe specifically,
+// while everyone else's forecasting — Axis in any theater, and Allied
+// outside Western Europe — goes blind from 1943 as the war's weather
+// picture generally hardened into secrecy on both sides. GM Mode and
+// Observer bypass this, matching every other visibility gate in the tool.
+function weatherForecastVisible(viewerFaction, sector){
+  if(gmMode || viewerFaction==='Observer') return true;
+  if(viewerFaction==='Allied' && sector.region==='Western Europe') return true;
+  return clock.year < 1943;
+}
 function advanceWeather(){
   // Snapshot last turn's values for every sector BEFORE rolling any of
   // them — rolling in place, sector by sector, would let whichever
@@ -6451,6 +6565,64 @@ function recordReconstitutionOpportunity(bg){
     destroyedTurn: `${clock.season} ${clock.year}`,
     eligibleTurn: `${eligible.season} ${eligible.year}`,
   });
+}
+
+// §5.4 trigger C — captured ciphers / documents. Either side that
+// Annihilates an enemy BG captures whatever signals material it was
+// carrying: one Sealed enemy log entry from this turn is revealed
+// outright, or — if none exist to reveal — a free Tier-2-grade contact
+// report on the nearest currently-hidden enemy BG. One-shot, automatic,
+// no token cost. Called from all three Annihilation-execution sites
+// (SPM, dice-rolled Combat Resolver, Manual Battle entry) at the moment
+// the BG(s) are actually removed for lack of a retreat destination —
+// the same three sites §9.4 Internment is wired into.
+function grantCapturedDocuments(capturingFaction){
+  const enemyFac = capturingFaction==='Axis' ? 'Allied' : 'Axis';
+  const thisTurn = `${clock.season} ${clock.year}`;
+  const sealedCandidates = actionLog.filter(e=>e.turn===thisTurn && e.faction===enemyFac && e.sealed && !e.revealed);
+  if(sealedCandidates.length){
+    const pick = sealedCandidates[Math.floor(Math.random()*sealedCandidates.length)];
+    pick.revealed = true;
+    logAction(capturingFaction, 'Captured Documents', `CAPTURED DOCUMENTS — signals material taken from the destroyed formation exposes a sealed enemy order this period. Grade A-1 (§5.4).`, [], null, true);
+    return;
+  }
+  // Nothing sealed to reveal — fall back to a report on the nearest
+  // currently-hidden (Tier 1) enemy BG instead. "Nearest" measured from
+  // the Annihilation's own sector isn't threaded through here (the call
+  // sites vary in what sector context is cheaply available), so this
+  // scans from any friendly-controlled sector outward; in practice the
+  // nearest hidden enemy BG to the front line is usually also nearest to
+  // wherever the Annihilation just happened.
+  let best = null, bestHops = Infinity;
+  const friendlyAnchors = sectors.filter(s=>factionForNation(s.occupier||s.owner)===capturingFaction);
+  bgs.filter(b=>(b.faction||factionForNation(b.nation))===enemyFac).forEach(b=>{
+    if(computeBgTier(b, capturingFaction)>=2) return; // already visible — nothing new to offer
+    friendlyAnchors.forEach(anchor=>{
+      const hops = sectorHopsBetween(anchor.id, b.sectorId, 6);
+      if(hops!==null && hops!==undefined && hops<bestHops){ bestHops = hops; best = b; }
+    });
+  });
+  if(!best) return; // nothing hidden left to report — a quiet no-op, not an error
+  const sector = byId[best.sectorId];
+  const pb = pointsBand(best.points||0, 'recon');
+  logAction(capturingFaction, 'Captured Documents', `CAPTURED DOCUMENTS — signals material taken from the destroyed formation points to another enemy unit: a ${best.nation} ${best.type} formation near ${sector?sector.name:'?'}, assessed ${pb.low.toLocaleString()}–${pb.high.toLocaleString()} pts. Grade A-1 (§5.4).`, [], null, true);
+}
+
+// New immersion addition — the winner of any engagement receives one
+// free Tier-2-grade contact report on one enemy BG adjacent to the
+// battle sector, from debriefing prisoners. High-reliability, direct
+// source, so graded A-1 despite the Tier-2-style band width. A no-op
+// (not an error) if there's nothing adjacent left to report on.
+function grantPoWDebrief(winnerFaction, sector){
+  if(!sector) return;
+  const enemyFac = winnerFaction==='Axis' ? 'Allied' : 'Axis';
+  const adjIds = new Set((sector.connections||[]).map(c=>c));
+  const candidates = bgs.filter(b=>adjIds.has(b.sectorId) && (b.faction||factionForNation(b.nation))===enemyFac);
+  if(!candidates.length) return;
+  const pick = candidates[Math.floor(Math.random()*candidates.length)];
+  const pickSector = byId[pick.sectorId];
+  const pb = pointsBand(pick.points||0, 'recon');
+  logAction(winnerFaction, 'PoW Debrief', `PoW DEBRIEF — prisoners taken at ${sector.name} describe a ${pick.nation} ${pick.type} formation near ${pickSector?pickSector.name:'?'}, assessed ${pb.low.toLocaleString()}–${pb.high.toLocaleString()} pts. Grade A-1.`, [], null, true);
 }
 // Called once per turn-advance: any opportunity whose eligible window was
 // the turn that's now ending expires unused — by rule this is a single-
@@ -6575,14 +6747,75 @@ function targetBgWithRecon(faction, nation, targetBg, tokenType){
   return {applied:true};
 }
 
+// New immersion addition — Strategic Photo Reconnaissance. Unlike
+// targetBgWithRecon (a per-BG spend, upgrading one specific enemy
+// formation to Tier 3), this is SECTOR-scoped and weaker by design: 1
+// REC token spent outside an engagement grants a one-turn Tier-2 window
+// (§5.1's "Partial Info" — location, category, wide band; no exact
+// identification) on any sector within bomber-style range of friendly
+// territory. Grounded by Storm/Blizzard, finally giving weather a
+// strategic-intelligence consequence rather than only a tactical one.
+// Deliberately reuses BOMBER_RANGE rather than the nation-specific
+// bomberBasingSectors() logic — this checks range from ANY
+// friendly-controlled sector, not a fixed basing point.
+function strategicReconInRange(faction, targetSector){
+  const friendlyAnchors = sectors.filter(s=>factionForNation(s.occupier||s.owner)===faction);
+  return friendlyAnchors.some(anchor=>sectorHopDistance(anchor.id, targetSector.id, BOMBER_RANGE)!==null);
+}
+function performStrategicPhotoRecon(faction, nation, sectorId){
+  const target = byId[sectorId];
+  if(!target) return {applied:false, reason:'Invalid sector.'};
+  const targetController = target.occupier || target.owner;
+  if(targetController && factionForNation(targetController)===faction) return {applied:false, reason:'No need to reconnoiter your own territory.'};
+  if(target.weather==='Storm/Blizzard') return {applied:false, reason:`${target.name} is grounded by Storm/Blizzard this turn — no strategic reconnaissance possible.`};
+  if(!strategicReconInRange(faction, target)) return {applied:false, reason:`${target.name} is out of range — no friendly-controlled sector within ${BOMBER_RANGE} hops.`};
+  const dash = dashboards[faction];
+  const inv = (dash.tokens[nation]||{})['REC']||0;
+  if(inv<1) return {applied:false, reason:`${nation} has no REC tokens available.`};
+  dash.tokens[nation].REC = inv-1;
+  target.strategicReconTurn = `${clock.season} ${clock.year}`;
+  logAction(faction, 'Strategic Recon', `Photographic reconnaissance sortie over ${target.name} — a one-turn Partial Info window (§5.1) is opened on whatever enemy formations are present, without close-in identification.`, [], null, true);
+  return {applied:true};
+}
+
+// §5.1b / §12.1 HUMINT — broad but unreliable, the deliberate mirror of
+// SIGINT's narrow-but-precise. Doctrine line: "partisans see everything
+// and understand little; Bletchley sees little and understands
+// everything." Any Partisan Level 1+ sector is eligible every turn, not
+// just Level 2 — coverage chance and reliability both scale with level.
+// Two independent error modes on top of the coverage roll, since a wide
+// net catches noise as well as signal: WRONG_TYPE_CHANCE misreports the
+// category; FALSE_POSITIVE_CHANCE reports a formation that isn't there
+// at all, in an adjacent sector rather than the observed one.
+const HUMINT_COVERAGE_CHANCE = {1: 0.30, 2: 0.60};
+const HUMINT_WRONG_TYPE_CHANCE = 0.20;
+const HUMINT_FALSE_POSITIVE_CHANCE = 0.10;
+const HUMINT_TYPES = ['ARM','MECH','INF','CAV','Airborne','Marine'];
 function advancePartisanHUMINT(){
   bgs.forEach(b=>{ b._humintTagged = false; b._taskedThisTurn = false; }); // both are per-turn tags — a targeting/report is fresh evidence, not a standing designation
-  const thisTurn = `${clock.season} ${clock.year}`;
-  sectors.filter(s=>(s.partisan||0)>=2).forEach(s=>{
+  sectors.filter(s=>(s.partisan||0)>=1).forEach(s=>{
+    const coverageChance = HUMINT_COVERAGE_CHANCE[Math.min(2, s.partisan)] || 0;
+    if(Math.random() >= coverageChance) return; // no report generated this turn — the network stayed quiet
     const axisHere = bgs.filter(b=>b.sectorId===s.id && (b.faction||factionForNation(b.nation))==='Axis');
-    if(!axisHere.length) return;
+    // A false positive needs somewhere plausible to report — an adjacent
+    // sector, matching "a formation reported where nothing stands." If
+    // there's no real sighting AND no viable false-positive sector,
+    // there's simply nothing this network can report this turn.
+    const falsePositiveRoll = Math.random() < HUMINT_FALSE_POSITIVE_CHANCE;
+    const adjSectors = (s.connections||[]).map(cid=>byId[cid]).filter(Boolean);
+    if(falsePositiveRoll && adjSectors.length){
+      const fpSector = adjSectors[Math.floor(Math.random()*adjSectors.length)];
+      const fpType = HUMINT_TYPES[Math.floor(Math.random()*HUMINT_TYPES.length)];
+      logAction('Allied', 'HUMINT', `W/T flash from the ${s.name} network (strength Level ${s.partisan}): 1 enemy formation observed in the ${fpSector.name} area — assessed ${fpType}. Source graded D-4: not usually reliable, possibly true (§12.1).`, [], null, true);
+      return; // false positive is exclusive with a real sighting this turn — one report, not two
+    }
+    if(!axisHere.length) return; // nothing real to report, and the false-positive roll didn't fire
     axisHere.forEach(b=>{ b._humintTagged = true; });
-    logAction('Allied', 'HUMINT', `W/T flash from the ${s.name} network (strength Level ${s.partisan}): ${axisHere.length} enemy formation(s) observed in the area — ${axisHere.map(b=>b.type).join(', ')}. Source graded C-3: usually reliable, uncorroborated (§12.1).`, [], null, true);
+    const wrongTypeRoll = Math.random() < HUMINT_WRONG_TYPE_CHANCE;
+    const reportedTypes = wrongTypeRoll
+      ? axisHere.map(()=>HUMINT_TYPES[Math.floor(Math.random()*HUMINT_TYPES.length)])
+      : axisHere.map(b=>b.type);
+    logAction('Allied', 'HUMINT', `W/T flash from the ${s.name} network (strength Level ${s.partisan}): ${axisHere.length} enemy formation(s) observed in the area — ${reportedTypes.join(', ')}. Source graded D-4: not usually reliable, possibly true (§12.1).`, [], null, true);
   });
 }
 
@@ -6594,6 +6827,13 @@ function advancePartisanHUMINT(){
 // Phantom Contacts wrap the display pipeline rather than the data.
 const RADIO_GAME_DURATION_TURNS = 3;
 const RADIO_GAME_SOE_DURATION_BONUS = 1; // an SOE-fed network runs a turn longer — the supplies/agents sent in are sustaining someone else's game now
+// §5.4.4 Turning (Triple-Cross) — detections queue here instead of
+// resolving immediately, so the detecting player can be asked Expose vs.
+// Turn via an awaitable modal (advanceRadioGames() itself can't await a
+// click — it's a synchronous step inside the Advance Turn pipeline).
+// Drained by resolveRadioGameDetections(), called right after
+// advanceRadioGames() at both turn-advance call sites.
+let pendingRadioGameChoices = [];
 function radioGameLimitFor(faction, nation){
   if(faction==='Allied' && nation==='USSR') return 2; // §11.4 Monastyr
   return 1;
@@ -6681,10 +6921,10 @@ function performAntiPartisanSweep(bg){
 }
 
 // Checked every turn advance, in order: ULTRA counter-play, ground
-// truth, then expiry. On a catch (cases 1–2), the victim's log gets a
-// retroactive contamination flag; on quiet expiry (case 3), they never
-// learn at all — some radio games were only discovered after the war,
-// and some should be.
+// truth, then expiry. Detection via ULTRA/ground-truth (cases 1–2) no
+// longer auto-blows — it queues a Turn-or-Expose choice for the
+// detecting player (§5.4.4). Expiry (case 3) is never detected in time
+// to act on, so it stays automatic and quiet, exactly as before.
 const ULTRA_COUNTER_RADIO_GAME_CHANCE = 0.25;
 function advanceRadioGames(){
   ['Axis','Allied'].forEach(fac=>{
@@ -6692,6 +6932,13 @@ function advanceRadioGames(){
     dash.radioGames = (dash.radioGames||[]).filter(g=>{
       const sector = byId[g.sectorId];
       const sectorName = sector ? sector.name : '?';
+      // A game that's already been turned once has no self-detection
+      // mechanic of its own (§5.4.4 — "the original operator has no
+      // detection mechanic against their own channel") and can't be
+      // turned a second time ("a game may be turned once") — so any
+      // future detection against it goes straight to Expose, same as
+      // the old unconditional behavior.
+      const skipChoice = !!g.turned;
       // 1. ULTRA counter-play — Axis games only. The Allied structural
       // SIGINT edge becomes the structural counterintelligence remedy;
       // there's deliberately no Axis-side equivalent against Soviet or
@@ -6699,8 +6946,10 @@ function advanceRadioGames(){
       // Axis player and also the historical record.
       if(fac==='Axis' && dashboards.Allied.doctrine.UK && dashboards.Allied.doctrine.UK.token==='ULTRA'){
         if(Math.random() < ULTRA_COUNTER_RADIO_GAME_CHANCE){
-          blowRadioGame(fac, g, 'ULTRA counter-play');
-          return false;
+          if(skipChoice){ blowRadioGame(fac, g, 'ULTRA counter-play'); return false; }
+          g._pendingDetection = true;
+          pendingRadioGameChoices.push({originalFaction: fac, game: g, cause: 'ULTRA counter-play'});
+          return true; // stays in the array — resolved by the player's choice, not removed here
         }
       }
       // 2. Ground truth — sector liberated, or Partisan Level rebuilt to
@@ -6708,10 +6957,14 @@ function advanceRadioGames(){
       const stillAxisHeld = sector && factionForNation(sector.occupier)===fac;
       const partisanRebuilt = sector && (sector.partisan||0)>=2;
       if((fac==='Axis' && !stillAxisHeld) || partisanRebuilt){
-        blowRadioGame(fac, g, 'ground truth');
-        return false;
+        if(skipChoice){ blowRadioGame(fac, g, 'ground truth'); return false; }
+        g._pendingDetection = true;
+        pendingRadioGameChoices.push({originalFaction: fac, game: g, cause: 'ground truth'});
+        return true;
       }
       // 3. Expiry — quiet, no contamination flag, victim never learns.
+      // Never queued for a choice: by definition it's discovered too
+      // late (or never) to act on.
       if(turnsSinceLabel(g.startTurn) >= g.expiresAfterTurns){
         logAction(fac, 'Radio Game', `The controlled network at ${sectorName} transmits its final scheduled contact and goes silent — the game has run its course (§5.4).`, [], null, true);
         return false;
@@ -6723,9 +6976,13 @@ function advanceRadioGames(){
     // a contact-grade report on one victim formation in the game's
     // region, or a negative report if none are present. Sealed to the
     // operator's own side; the victim never sees their own traffic being
-    // read back.
+    // read back. Games with a pending Turn/Expose choice this turn are
+    // skipped here — their fate for this turn is about to be decided,
+    // so generating a feed product for them would be premature (and,
+    // for a game about to be Exposed, meaningless).
     const victimFac = fac==='Axis' ? 'Allied' : 'Axis';
     dash.radioGames.forEach(g=>{
+      if(g._pendingDetection) return;
       const region = byId[g.sectorId];
       if(!region) return;
       const regionIds = new Set([g.sectorId, ...(region.connections||[])]);
@@ -6741,6 +6998,7 @@ function advanceRadioGames(){
     });
   });
   advanceMonastyrBerezino();
+  advanceTurnedMonastyrMaintenance(); // §5.4.4 — a turned ex-Monastyr game still needs its Berezino cover fed, now knowingly, by its new controller
 }
 // On a catch, every poisoned entry this game ever produced gets a
 // retroactive [CONTAMINATED] marker and the victim's log receives the
@@ -6755,6 +7013,116 @@ function blowRadioGame(faction, game, cause){
   });
   logAction(victimFac, 'Radio Game', `MOST SECRET — All products attributed to the network at ${sector?sector.name:'?'} since ${game.startTurn} are assessed CONTAMINATED — enemy playback suspected (${cause}, §5.4).`, [], null, true);
   logAction(faction, 'Radio Game', `The controlled network at ${sector?sector.name:'?'} has gone off the air. Whether the other side caught on or the channel simply ran its course cannot be determined from this end (§5.4).`, [], null, true);
+}
+
+// §5.4.4 Turning (Triple-Cross) — the detecting side's alternative to
+// Expose. The original operator is never notified: their per-turn feed
+// keeps arriving on schedule (advanceRadioGames' feed loop already skips
+// _pendingDetection games for THIS turn only; once turned, the game is
+// simply a normal entry in the new controller's radioGames array and
+// resumes feeding on the very next turn advance like any other game —
+// just now authored by the new controller instead of being genuine
+// playback). Reuses poisonedPointsBand exactly as the ordinary poison
+// mechanic does — falsification is display-layer only, never touching
+// true values, whether the game is running normally or has been turned.
+function turnRadioGame(detectingFaction, originalFaction, game, cause){
+  const origArr = dashboards[originalFaction].radioGames || [];
+  dashboards[originalFaction].radioGames = origArr.filter(g=>g.id!==game.id);
+  game._pendingDetection = false;
+  game.turned = true;
+  game.turnedBy = detectingFaction;
+  game.turnedAtTurn = `${clock.season} ${clock.year}`;
+  game.faction = detectingFaction;
+  dashboards[detectingFaction].radioGames = dashboards[detectingFaction].radioGames || [];
+  // Deliberately NOT run through establishRadioGame()/radioGameLimitFor()
+  // — this is an inherited asset via detection, not a freshly established
+  // game, so the detecting faction's own concurrent-game limit doesn't
+  // block accepting it. A faction could therefore end up temporarily
+  // "over" its normal limit by one turned game; that's intended, not a
+  // bug — the limit governs what you can START, not what you can catch.
+  dashboards[detectingFaction].radioGames.push(game);
+  const sector = byId[game.sectorId];
+  // Sealed to the detecting faction only — the whole point is the
+  // original operator has no idea. No log entry reaches them at all.
+  logAction(detectingFaction, 'Radio Game', `The network at ${sector?sector.name:'?'} has been turned (${cause}, §5.4.4) — its transmitter keeps its schedule, but every product from here forward is authored on our end. The other side does not know.`, [], null, true);
+}
+
+// Presents the Expose-or-Turn choice to whichever side just detected an
+// enemy Radio Game (§5.4.4). Same awaitable-modal pattern as
+// confirmDialog — openModal/closeModal wrapped in a Promise, since
+// advanceRadioGames() itself runs synchronously inside the Advance Turn
+// pipeline and can't block on a click.
+function openTurnOrExposeModal(detectingFaction, originalFaction, game, cause){
+  return new Promise(resolve=>{
+    const sector = byId[game.sectorId];
+    openModal('Radio Game Detected — §5.4.4', `
+      <div class="winter-note">${detectingFaction} intelligence has identified an enemy-controlled network at ${sector?sector.name:'?'} (detected via ${cause}). Expose it now, or turn it and run it against them without their knowledge?</div>
+      <button class="cr-roll-btn" id="rg_expose_btn" style="margin-top:10px;width:100%;">Expose — shut it down, they learn their intel from this network was contaminated</button>
+      <button class="cr-roll-btn" id="rg_turn_btn" style="margin-top:8px;width:100%;">Turn — keep it running under our control, they never find out</button>
+    `);
+    document.getElementById('rg_expose_btn').addEventListener('click', ()=>{ closeModal(); resolve('expose'); });
+    document.getElementById('rg_turn_btn').addEventListener('click', ()=>{ closeModal(); resolve('turn'); });
+  });
+}
+
+// Drains pendingRadioGameChoices sequentially — one modal at a time, in
+// case both factions had a game detected in the same turn advance.
+// Called right after advanceRadioGames() at both turn-advance call
+// sites. Each choice is resolved (Expose actually removes the game via
+// blowRadioGame + array filter, matching what the old inline
+// `return false` used to do; Turn hands it to turnRadioGame) before the
+// next modal in the queue opens.
+async function resolveRadioGameDetections(){
+  while(pendingRadioGameChoices.length){
+    const {originalFaction, game, cause} = pendingRadioGameChoices.shift();
+    // A liberated sector or an already-lapsed game between queuing and
+    // resolution (shouldn't happen within one synchronous turn-advance
+    // pass, but defensive) — skip cleanly rather than act on stale data.
+    const stillPresent = (dashboards[originalFaction].radioGames||[]).some(g=>g.id===game.id);
+    if(!stillPresent){ continue; }
+    const detectingFaction = originalFaction==='Axis' ? 'Allied' : 'Axis';
+    const choice = await openTurnOrExposeModal(detectingFaction, originalFaction, game, cause);
+    if(choice==='turn'){
+      turnRadioGame(detectingFaction, originalFaction, game, cause);
+    } else {
+      game._pendingDetection = false;
+      blowRadioGame(originalFaction, game, cause);
+      dashboards[originalFaction].radioGames = (dashboards[originalFaction].radioGames||[]).filter(g=>g.id!==game.id);
+    }
+  }
+}
+
+// §5.4.4 — a turned ex-Monastyr game still needs its Berezino cover fed,
+// now knowingly, by its new (Axis) controller: the fiction must keep
+// being supplied or the sudden silence tips Moscow off that something
+// changed. Mechanically identical drain to advanceMonastyrBerezino()
+// (same points, same nearby-German-BG targeting), but charged
+// consciously rather than as a dupe, and — the interpretive call this
+// implementation makes — if no eligible German BG can pay it, the
+// turned game lapses outright rather than silently skipping a turn the
+// way an un-turned Soviet game's drain does. The asymmetry is
+// deliberate: for the ORIGINAL Soviet-run game, Germany doesn't know
+// it's being drained, so "no target this turn" is just a quiet miss.
+// For a TURNED game, Germany is now choosing to pay for the cover story
+// on purpose — failing to pay is a decision with a consequence, not an
+// invisible non-event.
+function advanceTurnedMonastyrMaintenance(){
+  const dash = dashboards.Axis;
+  dash.radioGames = (dash.radioGames||[]).filter(g=>{
+    if(!(g.turned && g.isMonastyr)) return true;
+    const sector = byId[g.sectorId];
+    if(!sector) return true;
+    const nearbyGerman = bgs.filter(b=>b.nation==='Germany' &&
+      (b.sectorId===g.sectorId || (sector.connections||[]).includes(b.sectorId)));
+    if(!nearbyGerman.length){
+      logAction('Axis', 'Radio Game', `The turned network at ${sector.name} goes dark — no formation nearby to keep feeding its cover story, and the fiction can't sustain itself. Whether Moscow noticed the silence is unknown from here (§5.4.4).`, [], null, true);
+      return false;
+    }
+    const target = nearbyGerman[Math.floor(Math.random()*nearbyGerman.length)];
+    target.points = Math.max(0, target.points - BEREZINO_DRAIN_POINTS);
+    logAction('Axis', 'Radio Game', `Maintaining the turned Berezino cover at ${sector.name}: ${target.name} deliberately diverts ${BEREZINO_DRAIN_POINTS} pts to keep the phantom force convincingly supplied — the enemy still believes they're feeding us, not the reverse (§5.4.4).`, [], null, true);
+    return true;
+  });
 }
 
 // §11.4 Monastyr (Soviet capability) — the USSR's radio-games doctrine
@@ -6786,12 +7154,43 @@ function attemptMonastyrFabrication(sectorId){
   logAction('Allied', 'Radio Game', `Operation MONASTYR — the NKVD places a fabricated anti-Soviet 'resistance organization' on the air at ${target.name}, and the Abwehr accepts the bait. The network never existed until Moscow invented it; every word it transmits is scripted (§11.4).`, [], null, true);
   return {applied:true};
 }
+
+// §10.2 addition — the Oshima channel. MAGIC was diplomatic traffic, and
+// Ambassador Oshima's Berlin cables were arguably the best single Allied
+// source on German intentions — this gives MAGIC reach beyond Japan.
+// Once per year while USA holds MAGIC, read one EXACT dashboard-level
+// fact about either Axis power. Exact deliberately breaks from every
+// other intel product in this system (which are all banded/graded) —
+// Oshima's cables really were that good, and the once-a-year cap is the
+// balancing lever instead of uncertainty.
+function attemptOshimaIntercept(axisNation, factType){
+  const dash = dashboards.Allied;
+  if(dash.doctrine.USA.token!=='MAGIC') return {applied:false, reason:'USA does not currently hold the MAGIC National Token.'};
+  if(dash._oshimaUsedYear === clock.year) return {applied:false, reason:'The Oshima channel has already been read this year (once per year, §10.2).'};
+  const axisDash = dashboards.Axis;
+  let fact;
+  if(factType==='tokens'){
+    const t = axisDash.tokens[axisNation] || {};
+    const parts = Object.entries(t).filter(([,v])=>v>0).map(([k,v])=>`${k} ×${v}`);
+    fact = `Standard Token holdings: ${parts.length ? parts.join(', ') : 'none currently banked'}.`;
+  } else if(factType==='oq'){
+    const oq = axisDash.officerQuality[axisNation];
+    fact = `Officer Quality investment: ${oq!==undefined ? oq.toFixed(1) : 'not tracked for this nation'}.`;
+  } else { // 'forces'
+    const count = bgs.filter(b=>b.nation===axisNation && !b.isKampfgruppe).length;
+    const totalPts = bgs.filter(b=>b.nation===axisNation).reduce((s,b)=>s+b.points,0);
+    fact = `Standing force: ${count} Battle Group(s) fielded, ${totalPts.toLocaleString()} pts total.`;
+  }
+  dash._oshimaUsedYear = clock.year;
+  logAction('Allied', 'MAGIC', `OSHIMA CHANNEL — Ambassador Oshima's Berlin cable this period reports on ${axisNation}. ${fact} Grade A-1 — exact, not estimated (§10.2).`, [], null, true);
+  return {applied:true, fact};
+}
 // The Berezino drain: each turn a Soviet Radio Game is active, one
-// German BG in the game's sector or an adjacent sector loses 25 points —
+// German BG in the game's sector or an adjacent sector loses 100 points —
 // fuel, transport, and supply diverted to sustain a fiction. Logged to
 // the Axis player only as a routine, unremarkable line item; the true
 // cause is visible to the USSR and GM Mode only.
-const BEREZINO_DRAIN_POINTS = 25;
+const BEREZINO_DRAIN_POINTS = 100;
 function advanceMonastyrBerezino(){
   // Monastyr fabrication is player-initiated from the Allied dashboard
   // (§11.4 says the USSR "may" spend the token — a choice, not an
@@ -6894,8 +7293,9 @@ function advanceContestedAttrition(){
       here.forEach(b=>{
         const loss = Math.round(b.points * CONTESTED_ATTRITION_RATE);
         b.points = Math.max(0, b.points - loss);
+        b.fatigue = (b.fatigue||0) + 1; // was missing — spec calls for points AND fatigue, matching every other engagement-fatigue increment in the tool
       });
-      changes.push(`Contested attrition at ${s.name}: ${here.length} BG(s) each lose ~${Math.round(CONTESTED_ATTRITION_RATE*100)}% points from sustained deadlock.`);
+      changes.push(`Contested attrition at ${s.name}: ${here.length} BG(s) each lose ~${Math.round(CONTESTED_ATTRITION_RATE*100)}% points and gain 1 Fatigue from sustained deadlock.`);
     });
   return changes;
 }
@@ -7393,6 +7793,12 @@ function computeBgTier(bg, viewerFaction){
     (e.attacker.includes(bg.name) || e.defender.includes(bg.name)));
   if(sector.contested || foughtThisTurn) return 3;
   let tier = !sectorExposed(sector, bgFaction) ? 1 : 2;
+  // New immersion addition — Strategic Photo Reconnaissance (§10.1):
+  // a sector-scoped, one-turn Tier-2 window, independent of ordinary
+  // exposure. Only lifts Tier 1 → Tier 2 ("Partial Info") — it's
+  // deliberately weaker than the per-BG REC/INL targeting below, which
+  // grants full Tier 3 identification.
+  if(tier===1 && sector.strategicReconTurn===thisTurn) tier = 2;
   // §10.1 REC/INL targeting: spending a Reconnaissance or Infiltration
   // token on a specific enemy BG upgrades it straight to Tier 3 for the
   // turn — the half of this mechanic that was previously only ever
@@ -7540,9 +7946,19 @@ function logAction(faction, type, description, relevantSectors, bgId, forceSeale
 // a Sealed entry picks the same wording for the same category, rather
 // than three separate copies that could drift.
 const INTEL_LOG_TYPES = new Set(['ULTRA', 'MAGIC', 'Radio Game', 'Deception', 'HUMINT', 'REC', 'INL', 'Signals Intercept (B-Dienst)', 'Anti-Partisan Sweep']);
+const PROCUREMENT_LOG_TYPES = new Set(['CP Purchase', 'National Token']);
 function sealedEntryPlaceholder(e){
   if(INTEL_LOG_TYPES.has(e.type)){
     return `${e.faction} conducted intelligence operations this turn — details classified until revealed (§5.3).`;
+  }
+  // Procurement (Standard Token, NTF, standing air/sub forces, National
+  // Token) has no sector to become exposed at and no combat to fight
+  // its way into visibility — unlike a BG move, it is revealable only
+  // by ULTRA/MAGIC, or not at all. The generic BG-move placeholder
+  // below was factually wrong for these (nothing here "moves adjacent"
+  // or "fights"), so it gets its own accurate placeholder instead.
+  if(PROCUREMENT_LOG_TYPES.has(e.type)){
+    return `${e.faction} made a procurement or logistics decision this turn — details classified until revealed by Special Intelligence, if ever.`;
   }
   return `A ${e.faction} Battle Group took a Sealed action (§5.2) — hidden until it moves adjacent to the enemy, is targeted, or fights.`;
 }
@@ -7822,10 +8238,12 @@ function renderPanel(){
   const mixed = factionsHere.size > 1;
   const thisTurnLabel = `${clock.season} ${clock.year}`;
   const lodgementFreeTurn = s.lodgementTurn === thisTurnLabel;
-  const rotationActive = !!s.lodgementRotationActive;
-  const rotationHub = activeLodgementHub(s);
-  const adjacentRotationHub = (!rotationActive && rotationHub && rotationHub.id!==s.id) ? rotationHub : null;
-  const lodgementActive = lodgementFreeTurn || rotationActive || !!adjacentRotationHub;
+  // §11.1.6 (revised) — single-sector AMPH extension, replacing the old
+  // multi-sector rotationActive/adjacentRotationHub pair now that the
+  // shared pool is gone; a sector is either the free first turn, paid
+  // this turn, or neither, nothing shared with neighbors.
+  const lodgementExtended = s.lodgementExtendedTurn === thisTurnLabel;
+  const lodgementActive = lodgementFreeTurn || lodgementExtended;
   const stackWarnings = stackWarningFactions(s);
 
   const statusClass = (s.status||'NA').replace(/\s/g,'');
@@ -7835,10 +8253,9 @@ function renderPanel(){
       <h2>${s.name}</h2>
       <span class="faction-badge ${factionOf(s)}">${factionOf(s)}</span>
       ${s.contested ? `<span class="faction-badge rule-link" data-section="sec-9-3" style="color:var(--danger);border-color:var(--danger);cursor:pointer;" title="Result of a Stalemate (§8.1) — loser's score was >70% of the winner's, or tied. Both BGs stay, neither retreats. Clears when one side voluntarily moves out or a third BG enters and triggers a fresh engagement.">Contested</span>` : ''}
-      ${s.smallIslandOutpost ? `<span class="faction-badge" style="color:var(--gold);border-color:var(--gold-dim);" title="Small Island Outpost (house rule) — a genuinely tiny atoll whose real logistics footprint can't sustain more than 1 BG. Enforced: hard cap of 1 BG per faction here, overriding even an adjacent Lodgement Rotation pool.">Small Island Outpost — 1 BG limit enforced</span>` : ''}
-      ${lodgementFreeTurn ? `<span class="faction-badge rule-link" data-section="sec-8-1" style="color:var(--gold);border-color:var(--gold-dim);cursor:pointer;" title="§11.1.3 — free, automatic, this turn only. Stack cap here is 4 for Follow-On Exploitation. Reduce back to 2 by next turn's movement phase, or activate Lodgement Rotation below to keep it, or the excess takes 20%/turn attrition (not auto-enforced — track it yourself).">Lodgement Active (this turn)</span>` : ''}
-      ${rotationActive ? `<span class="faction-badge rule-link" data-section="sec-8-1" style="color:var(--gold);border-color:var(--gold-dim);cursor:pointer;" title="§11.1.6 Lodgement Rotation (simplified) — paid for ONCE with 1 AMPH token, stays active from then on. This sector and every directly adjacent sector share ONE pool of 6 BGs total, not 6 each; only 2 fight at a time per engagement (owner's choice), same pattern as a capital. No per-turn upkeep — it persists until this Lodgement is lost or consolidated into normal territory.">Lodgement Rotation Active (6 BG pool)</span>` : ''}
-      ${adjacentRotationHub ? `<span class="faction-badge rule-link" data-section="sec-8-1" style="color:var(--gold);border-color:var(--gold-dim);cursor:pointer;" title="§11.1.6 — this sector shares ${adjacentRotationHub.name}'s active Lodgement Rotation pool (6 BGs total across the whole zone, not 6 here alone).">Shares Lodgement Rotation pool (6 BG total)</span>` : ''}
+      ${s.smallIslandOutpost ? `<span class="faction-badge" style="color:var(--gold);border-color:var(--gold-dim);" title="Small Island Outpost (house rule) — a genuinely tiny atoll whose real logistics footprint can't sustain more than 1 BG. Enforced: hard cap of 1 BG per faction here.">Small Island Outpost — 1 BG limit enforced</span>` : ''}
+      ${lodgementFreeTurn ? `<span class="faction-badge rule-link" data-section="sec-8-1" style="color:var(--gold);border-color:var(--gold-dim);cursor:pointer;" title="§11.1.3 — free, automatic, this turn only. Stack cap here is 4 for Follow-On Exploitation. Reduce back to 2 by next turn's movement phase, or pay 1 AMPH below to extend it a turn, or the excess takes 20%/turn attrition (not auto-enforced — track it yourself).">Lodgement Active (this turn)</span>` : ''}
+      ${lodgementExtended ? `<span class="faction-badge rule-link" data-section="sec-8-1" style="color:var(--gold);border-color:var(--gold-dim);cursor:pointer;" title="§11.1.6 AMPH Extension — 1 AMPH token paid this turn extends the 4-BG cap in this sector only, for this turn only. Pay again next turn to keep it, or it reverts to the normal 2-BG cap.">Lodgement Extended (this turn)</span>` : ''}
     </div>
     <div class="panel-body">
       ${s.type!=='Sea' ? `<div class="field-group">
@@ -7890,6 +8307,19 @@ function renderPanel(){
         <div class="winter-note">${gmMode && !bomberTargetInRange(s) ? 'GM Mode — normally out of Bomber Force range, range requirement bypassed.' : 'Valid target — Axis RC within Bomber Force range.'} Spends an activation, same as moving a BG. Fighter defense resolves automatically.</div>
         <button class="cr-roll-btn" id="f_bomber_strike_btn" style="margin-top:8px;width:100%;">Resolve Bomber Strike Mission</button>
       </div>` : ''}
+      ${(s.type!=='Sea' && viewerFaction!=='Observer' && factionForNation(s.occupier||s.owner)!==viewerFaction) ? (()=>{
+        const inRange = gmMode || strategicReconInRange(viewerFaction, s);
+        const grounded = s.weather==='Storm/Blizzard';
+        const alreadyTagged = s.strategicReconTurn === thisTurnLabel;
+        if(!inRange && !gmMode) return '';
+        return `<div class="field-group">
+          <div class="fg-label rule-link" data-section="sec-10-1">Strategic Photo Reconnaissance</div>
+          <div class="winter-note">${alreadyTagged ? 'Already tasked this turn — Partial Info (§5.1) is open here.' : grounded ? `Grounded by Storm/Blizzard this turn — no sortie possible.` : `1 REC token opens a one-turn Partial Info window (§5.1) on this sector — location, category, wide strength band, no close identification. Outside any engagement, unlike ordinary REC/INL targeting.`}</div>
+          ${(!alreadyTagged && !grounded) ? `
+          <select id="strat_recon_nation">${MAJOR_NATIONS[viewerFaction].map(n=>`<option>${n}</option>`).join('')}</select>
+          <button class="cr-roll-btn" id="strat_recon_btn" style="margin-top:8px;width:100%;">Task Strategic Reconnaissance</button>` : ''}
+        </div>`;
+      })() : ''}
       ${stackWarnings.length ? `<div class="moved-banner" style="border-color:var(--danger);color:var(--danger);">⚠ Stack limit exceeded (§6) — more than ${effectiveStackCap(s)} ${stackWarnings.join(', ')} Battle Group(s) here. ${s.smallIslandOutpost ? 'This is a Small Island Outpost, capped at 1 BG per faction.' : 'Non-capital sectors are normally capped at 2.'} Move one out or resolve the excess.</div>` : ''}
       ${mixed ? `<div class="moved-banner">⚔ Both Axis and Allied Battle Groups are present in this sector.
         <button class="cr-roll-btn" id="resolveHereBtn" style="margin-top:8px;width:100%;">Resolve Engagement</button>
@@ -7900,8 +8330,8 @@ function renderPanel(){
         const ti = terrainInfo(s);
         const TERRAIN_TYPES = ['Plains','Mountain','Coastal','Steppe','Arctic/Tundra','Forest','Desert','Jungle'];
         const weatherTitle = "House rule — re-rolled every strategic turn, weighted by season and region (§ terrainInfo climate categories). Feeds the Visibility recommendation in the WinSPWW2 Match Setup tool.";
-        const forecast = s.weather ? forecastNextWeather(s) : null;
-        const forecastTitle = "Most likely condition next turn, given this turn's weather and neighbors — not a random guess re-rolled every time you look, and not a guarantee. The real roll at turn-advance can still land differently.";
+        const forecast = (s.weather && weatherForecastVisible(viewerFaction, s)) ? forecastNextWeather(s) : null;
+        const forecastTitle = "Most likely condition next turn, given this turn's weather and neighbors — not a random guess re-rolled every time you look, and not a guarantee. The real roll at turn-advance can still land differently. Allied viewers keep this in Western Europe regardless of year (§6.2 Weather War — the historical met-station edge); everyone else loses it from 1943 on.";
         if(editPositionsMode){
           return `<div class="field-group">
             <div class="fg-label rule-link" data-section="sec-6-1" title="Major terrain type affects the Combat Resolver's terrain multiplier by BG type (§3.1.1). Urban/River are automatic (RC/river-link), not editable here.">Terrain (Map Editor)</div>
@@ -7985,7 +8415,8 @@ function renderPanel(){
           return `<div class="field-group"><div class="fg-label rule-link" data-section="sec-5-4">Radio Game (§5.4)${gmMode&&viewerFaction!==g.fac?` — GM view (${g.fac})`:''}</div>
             <div class="stat-line"><span>Status</span><b class="pill-ok">Active — ${isHub?'hub sector':'in region of '+(hub?hub.name:'?')}, running since ${g.startTurn}</b></div>
             <div class="stat-line"><span>Expires</span><b>${Math.max(0, g.expiresAfterTurns - turnsSinceLabel(g.startTurn))} turn(s) remaining${g.isMonastyr?' · Monastyr fabrication':''}</b></div>
-            <div class="winter-note">Enemy INL-based intelligence gathering into this region comes back falsified without their knowledge (§5.4). ${(g.poisonedEntryIds||[]).length} poisoned product(s) fed so far. Blows on ULTRA counter-play (Axis games only), ground truth, or quiet expiry.</div></div>`;
+            ${g.turned ? `<div class="stat-line"><span>Turned (§5.4.4)</span><b class="pill-ok">Yes — by ${g.turnedBy}, ${g.turnedAtTurn}. The original operator has no idea.</b></div>` : ''}
+            <div class="winter-note">Enemy INL-based intelligence gathering into this region comes back falsified without their knowledge (§5.4). ${(g.poisonedEntryIds||[]).length} poisoned product(s) fed so far. ${g.turned ? 'Cannot be turned again — any further detection goes straight to Expose.' : 'Detection presents an Expose-or-Turn choice (§5.4.4).'} Blows on ULTRA counter-play (Axis games only), ground truth, or quiet expiry.</div></div>`;
         }).join('');
       })()}
 
@@ -8152,20 +8583,21 @@ function renderPanel(){
       </div>
 
       ${(isCoastalSector(s) && (s.contested || s.activeAmphibiousOp)) ? (()=>{
-        const hubForDisplay = rotationActive ? s : (adjacentRotationHub || null);
-        const poolCount = hubForDisplay ? lodgementZoneCount(hubForDisplay, 'Allied') : 0;
+        // §11.1.6 (revised) — single-sector extension only, replacing the
+        // old multi-sector shared pool. No neighbor-sector reads needed
+        // anymore: this sector's own cap is the whole story.
+        const alliedHere = bgs.filter(b=>b.sectorId===s.id && !b.isKampfgruppe &&
+          (b.faction||factionForNation(b.nation))==='Allied').length;
         let body;
-        if(rotationActive){
-          body = `<div class="winter-note">Paid for this turn — ${poolCount}/6 Allied BGs currently in the shared pool (this sector + every directly adjacent one, combined). Only 2 fight at a time per engagement (your choice when resolving it). Requires a fresh 1× AMPH token <b>every turn</b> to keep running — pay again after Advance Turn, or it reverts to the normal 2-BG cap immediately.</div>`;
-        } else if(adjacentRotationHub){
-          body = `<div class="winter-note">Sharing ${adjacentRotationHub.name}'s active pool this turn — ${poolCount}/6 Allied BGs across the whole zone. Manage the per-turn AMPH payment from ${adjacentRotationHub.name}'s own panel.</div>`;
+        if(lodgementExtended){
+          body = `<div class="winter-note">Paid for this turn — ${alliedHere}/4 Allied BGs here. Requires a fresh 1× AMPH token <b>every turn</b> to keep the elevated cap — pay again after Advance Turn, or it reverts to the normal 2-BG cap immediately.</div>`;
         } else {
-          body = `<div class="winter-note">Spend 1× AMPH token — no RC capture needed — to activate a shared pool of 6 BGs total across this sector and every sector directly adjacent to it (not 6 in each), only 2 fighting at a time per engagement, letting fresh forces relieve tired ones until breakout is achieved. This is a <b>per-turn</b> cost — pay again next turn to keep it running, or it reverts to the normal 2-BG cap. Capturing a nearby RC is a separate, ordinary path — it just operates as a normal RC once secured, no special stacking bonus tied to it.</div>
+          body = `<div class="winter-note">Spend 1× AMPH token — no RC capture needed — to extend this sector's elevated 4-BG cap for this turn only, letting fresh forces relieve tired ones until breakout is achieved. This is a <b>per-turn</b> cost — pay again next turn to keep it running, or it reverts to the normal 2-BG cap. Capturing a nearby RC is a separate, ordinary path — it just operates as a normal RC once secured, no special stacking bonus tied to it.</div>
             <select id="rotation_nation">${['USA','UK'].map(n=>`<option>${n}</option>`).join('')}</select>
             <button class="cr-roll-btn" id="rotation_activate_btn" style="margin-top:8px;">Pay 1× AMPH for This Turn</button>`;
         }
         return `<div class="field-group">
-          <div class="fg-label rule-link" data-section="sec-8-1">Lodgement Rotation (§11.1.6)</div>
+          <div class="fg-label rule-link" data-section="sec-8-1">AMPH Extension (§11.1.6)</div>
           ${body}
         </div>`;
       })() : ''}
@@ -8333,6 +8765,16 @@ function renderPanel(){
   const bomberStrikeBtn = document.getElementById('f_bomber_strike_btn');
   if(bomberStrikeBtn) bomberStrikeBtn.addEventListener('click', ()=>openBomberStrikeModal(s));
 
+  const stratReconBtn = document.getElementById('strat_recon_btn');
+  if(stratReconBtn) stratReconBtn.addEventListener('click', async ()=>{
+    const nation = document.getElementById('strat_recon_nation').value;
+    const result = performStrategicPhotoRecon(viewerFaction, nation, s.id);
+    if(!result.applied){ notify(result.reason); return; }
+    await saveState(true, true);
+    render();
+    selectSector(s.id);
+  });
+
   const flakBuyBtn = document.getElementById('f_flak_buy_btn');
   if(flakBuyBtn) flakBuyBtn.addEventListener('click', async ()=>{
     const flakNation = (s.owner==='Germany'||s.occupier==='Germany') ? 'Germany' : 'Japan';
@@ -8460,8 +8902,8 @@ function renderPanel(){
     const inv = (dashboards.Allied.tokens[nation]||{}).AMPH || 0;
     if(inv < 1){ notify(`${nation} has no AMPH tokens available.`); return; }
     dashboards.Allied.tokens[nation].AMPH = inv - 1;
-    s.lodgementRotationActive = true;
-    logAction('Allied', 'Lodgement Rotation', `${nation} spends 1× AMPH to activate Lodgement Rotation at ${s.name} — a one-time payment, no per-turn upkeep required (§11.1.6)`, [s]);
+    s.lodgementExtendedTurn = `${clock.season} ${clock.year}`;
+    logAction('Allied', 'Lodgement Rotation', `${nation} spends 1× AMPH to extend the elevated stacking cap at ${s.name} for this turn only — pay again next turn to keep it running (§11.1.6)`, [s]);
     await saveState(true, true);
     render();
     selectSector(s.id);
@@ -9684,37 +10126,25 @@ function desertOutflankApplies(sector, defenderBGs, attackerBGs){
 // Home Capitals: unlimited stacking, but only 2 BGs ever fight (owner's
 // choice — already how the Combat Resolver and manual battle entry work,
 // since both only take up to 2 BGs per side). A fresh Amphibious victory
-// Lodgement Rotation (§11.1.6, simplified) — 1 AMPH token spent ONCE
-// activates it persistently; no per-turn upkeep. While active, the hub
-// sector and all of its directly adjacent sectors share ONE pool of 6
-// BGs total (not 6 each).
-function activeLodgementHub(sector){
-  if(sector.lodgementRotationActive) return sector;
-  const adjHub = (sector.connections||[]).map(cid=>byId[cid]).find(adj=>adj && adj.lodgementRotationActive);
-  return adjHub || null;
-}
-function lodgementZoneSectors(hub){
-  return [hub, ...(hub.connections||[]).map(cid=>byId[cid]).filter(Boolean)];
-}
-function lodgementZoneCount(hub, faction){
-  const zoneIds = new Set(lodgementZoneSectors(hub).map(s=>s.id));
-  return bgs.filter(b=>zoneIds.has(b.sectorId) && !b.isKampfgruppe && (b.faction||factionForNation(b.nation))===faction).length;
-}
+// §11.1.6 Sustaining a Lodgement (revised) — a single-sector cap
+// extension, not a multi-sector shared pool. The approved final wording
+// explicitly removed the old "6-BG pool spanning the hub and every
+// adjacent sector" model; this replaces it with the same single-turn,
+// single-sector pattern lodgementTurn already uses for the free first
+// turn, just paid (1 AMPH) instead of free, and payable turn after turn.
 // Home Capitals: unlimited stacking, only 2 fight. A fresh Amphibious
 // victory gets one free turn at cap 4 for Follow-On Exploitation (§11.1.3).
 // A Deep-Water Port RC (§11.1.7) is a completely separate path — just a
 // normal RC once secured, no stacking bonus tied to it.
 // Small Island Outposts (house rule, sector.smallIslandOutpost): a hard
 // cap of 1 BG, genuinely tiny atolls whose real logistics footprint can't
-// sustain more — this overrides everything else, including an adjacent
-// Lodgement Rotation pool. The pool's extra capacity has to sit at the
-// OTHER sectors in the zone, not squeezed onto one of these.
+// sustain more — this overrides everything else.
 function effectiveStackCap(sector){
   if(sector.type==='Home Capital') return Infinity;
   if(sector.smallIslandOutpost) return 1;
   const thisTurn = `${clock.season} ${clock.year}`;
   if(sector.lodgementTurn === thisTurn) return 4;
-  if(activeLodgementHub(sector)) return null; // pooled — see stackWarningFactions
+  if(sector.lodgementExtendedTurn === thisTurn) return 4;
   return 2;
 }
 // §7.9 Second Echelon (house rule) — a garrison role distinct from combat
@@ -9731,7 +10161,7 @@ function reserveSlotCap(sector){
   if(sector.smallIslandOutpost) return 0;
   const thisTurn = `${clock.season} ${clock.year}`;
   if(sector.lodgementTurn === thisTurn) return 0;
-  if(activeLodgementHub(sector)) return 0;
+  if(sector.lodgementExtendedTurn === thisTurn) return 0;
   return 2;
 }
 function countCombatBGs(sector, faction){
@@ -9790,10 +10220,6 @@ function retreatOptionLabel(sector){
   const isNeutral = !controller || factionForNation(controller)==='Neutral';
   const neutralSuffix = isNeutral ? ' — INTERNMENT: disbands the BG, CP refund (§9.4)' : '';
   if(cap === Infinity) return sector.name + neutralSuffix;
-  if(cap === null){
-    const hub = activeLodgementHub(sector);
-    return (hub ? `${sector.name} (Lodgement Rotation zone — §8.1, shared 6-BG pool)` : sector.name) + neutralSuffix;
-  }
   return `${sector.name} (${count}/${cap}${count>=cap ? ' — already at cap' : ''})${neutralSuffix}`;
 }
 // §9.4 Internment (house rule) — retreating into a Neutral sector was
@@ -9839,14 +10265,12 @@ function stackWarningFactions(sector){
   // in the matter. Flagging them as "overstacked" would be a false
   // positive for units that were always meant to be there; the BGs
   // themselves, once created, already make clear what happened.
+  // §11.1.6: the old multi-sector pool check (a sector's warning
+  // depending on a neighboring hub's total) is gone along with the pool
+  // itself — effectiveStackCap() is now always a single-sector number, so
+  // a single per-sector count-vs-cap comparison is sufficient here too.
   const countable = (b) => b.sectorId===sector.id && !b.isKampfgruppe && !b.emergencyReserve;
   const factionsPresent = new Set(bgs.filter(countable).map(b=>b.faction||factionForNation(b.nation)));
-  if(!sector.smallIslandOutpost){
-    const hub = activeLodgementHub(sector);
-    if(hub){
-      return Array.from(factionsPresent).filter(f=>lodgementZoneCount(hub, f) > 6);
-    }
-  }
   const cap = effectiveStackCap(sector);
   return Array.from(factionsPresent).filter(f=>
     bgs.filter(b=>countable(b) && (b.faction||factionForNation(b.nation))===f).length > cap);
@@ -9873,7 +10297,7 @@ async function runInvasionPhase2(state){
         (state.useAirborne ? ' The Airborne BG survives but remains stuck in the pocket.' : '');
     } else if(result.winner==='ATTACKER'){
       outcome = 'victory';
-      note = `Defender retreats — the sector is secured. An Amphibious Lodgement is established: the stacking limit here is temporarily raised to 4 BGs, free, for this strategic turn only (§11.1.3, §11.1.4 Follow-On Exploitation is available manually) — this part is unconditional. To keep elevated capacity past this turn, activate Lodgement Rotation from this sector's panel afterward: 1× AMPH token, spent again every turn, gives this sector and each directly adjacent sector a SHARED pool of 6 BGs total (not 6 each), only 2 fighting at a time per engagement, same pattern as a capital. Skip a turn's payment and it reverts to 2 immediately. Without it at all, reduce back to 2 BGs by the end of next turn's movement phase or the excess takes 20%/turn attrition (§11.1.5) — this isn't auto-enforced, so track it yourself. Capturing a nearby RC is a separate, ordinary path with no special stacking bonus of its own.`;
+      note = `Defender retreats — the sector is secured. An Amphibious Lodgement is established: the stacking limit here is temporarily raised to 4 BGs, free, for this strategic turn only (§11.1.3, §11.1.4 Follow-On Exploitation is available manually) — this part is unconditional. To keep the elevated cap past this turn, pay 1× AMPH from this sector's panel each subsequent turn (§11.1.6) — this sector only, no neighboring sectors involved. Skip a turn's payment and it reverts to 2 immediately. Without it at all, reduce back to 2 BGs by the end of next turn's movement phase or the excess takes 20%/turn attrition (§11.1.5) — this isn't auto-enforced, so track it yourself. Capturing a nearby RC is a separate, ordinary path with no special stacking bonus of its own.`;
     } else {
       outcome = 'defeat';
       note = 'The conventional assault bounces back to its staging area.' +
@@ -10815,6 +11239,7 @@ function openSPMCalculatorModal(sector){
       if(r.baseline.winnerXP) b.experience = Math.min(100, b.experience + r.baseline.winnerXP);
       syncEliteStatus(b);
     });
+    grantPoWDebrief(r.controller, sector);
     r.loserBGs.forEach(b=>{
       b.points = Math.max(0, b.points - loserPerBG);
       b.fatigue = (b.fatigue||0) + 1;
@@ -10843,6 +11268,7 @@ function openSPMCalculatorModal(sector){
         const loserIds = new Set(r.loserBGs.map(b=>b.id));
         r.loserBGs.forEach(b=>recordReconstitutionOpportunity(b));
         bgs = bgs.filter(b=>!loserIds.has(b.id));
+        grantCapturedDocuments(r.controller);
         retreatDesc = `${loserFac} had no eligible retreat destination — Annihilated.`;
       }
     } else if(r.outcome==='Tactical Stalemate'){
@@ -11094,6 +11520,8 @@ async function applyCombatResult(){
     // §13.1 Second Army on the Don: a Hungarian BG winning in a USSR sector
     // always gets +5 XP, regardless of margin.
     winnerBGs.forEach(b=>{ b.experience = Math.min(100, b.experience + ((inUSSR && b.nation==='Hungary') ? 5 : winXP)); syncEliteStatus(b); });
+    const winnerFaction = winnerBGs[0] ? (winnerBGs[0].faction||factionForNation(winnerBGs[0].nation)) : null;
+    grantPoWDebrief(winnerFaction, pe.sector);
     const retreatSel = document.getElementById('cr_retreat_select');
     if(r.outcome==='Decisive Victory'){
       loserBGs.forEach(b=>{ b.experience = Math.max(0,b.experience-5); b.shattered = true; syncEliteStatus(b); });
@@ -11149,6 +11577,7 @@ async function applyCombatResult(){
       const loserIds = new Set(remainingLosers.map(b=>b.id));
       remainingLosers.forEach(b=>recordReconstitutionOpportunity(b));
       bgs = bgs.filter(b=>!loserIds.has(b.id));
+      if(remainingLosers.length) grantCapturedDocuments(winnerFaction);
       if(bystanders.length){
         notify(`Decisive Victory collapse at ${pe.sector.name}: ${bystanders.map(b=>b.name).join(', ')} were not part of the engagement and have no retreat destination — holding in place rather than being Annihilated, since they were never defeated.`);
       }
@@ -12226,6 +12655,25 @@ function buildIntelSectionHtml(faction, dash){
     </div>`;
   }
 
+  // §10.2 addition — the Oshima channel. Gated on the same hasMagic
+  // check as the MAGIC section above, since it's an extension of the
+  // same token, not a separate one.
+  if(hasMagic){
+    const oshimaUsed = dash._oshimaUsedYear === clock.year;
+    html += `
+    <div class="winter-nation">
+      <h3 title="§10.2 — Ambassador Oshima's Berlin cables were arguably the best single Allied source on German intentions. Exact, not estimated — the once-a-year cap is the balancing lever instead of uncertainty.">Oshima Channel (§10.2)</h3>
+      ${oshimaUsed
+        ? `<div class="winter-note">Already read this year (once per year). Available again next year.</div>`
+        : `<div class="winter-note">Read one EXACT dashboard-level fact about either Axis power this year — no token cost.</div>
+        <div class="field-row" style="margin-top:6px;">
+          <div><div class="fg-label">Axis Nation</div><select id="oshima_nation"><option>Germany</option><option>Japan</option></select></div>
+          <div><div class="fg-label">Fact</div><select id="oshima_fact"><option value="tokens">Token holdings</option><option value="oq">Officer Quality investment</option><option value="forces">Standing force totals</option></select></div>
+        </div>
+        <button class="cr-roll-btn" id="oshima_btn" style="margin-top:8px;">Read Oshima's Cable</button>`}
+    </div>`;
+  }
+
   // §11.4 Monastyr — the USSR's fabricated-channel Radio Game. Player-
   // initiated, once per year, 1 INL, any USSR home-territory sector.
   const monastyrUsed = dash._monastyrUsedYear === clock.year;
@@ -12549,6 +12997,16 @@ function wireDashboardInputs(faction){
   if(monastyrBtn) monastyrBtn.addEventListener('click', async ()=>{
     const sectorId = parseInt(document.getElementById('monastyr_sector').value);
     const result = attemptMonastyrFabrication(sectorId);
+    if(!result.applied){ notify(result.reason); return; }
+    await saveState(true, true);
+    render();
+    openDashboard(faction);
+  });
+  const oshimaBtn = document.getElementById('oshima_btn');
+  if(oshimaBtn) oshimaBtn.addEventListener('click', async ()=>{
+    const nation = document.getElementById('oshima_nation').value;
+    const factType = document.getElementById('oshima_fact').value;
+    const result = attemptOshimaIntercept(nation, factType);
     if(!result.applied){ notify(result.reason); return; }
     await saveState(true, true);
     render();
@@ -13548,6 +14006,8 @@ function openBattleLogModal(){
         const winXP = outcome==='Decisive Victory' ? 5 : 3;
         applyOQVictoryGrowth(winnerBgs, outcome);
         winnerBgs.forEach(b=>{ b.experience = Math.min(100, b.experience + winXP); syncEliteStatus(b); });
+        const winnerFac = winnerBgs[0] ? (winnerBgs[0].faction||factionForNation(winnerBgs[0].nation)) : null;
+        grantPoWDebrief(winnerFac, sec);
         if(outcome==='Decisive Victory'){
           loserBgs.forEach(b=>{ b.experience = Math.max(0,b.experience-5); b.shattered = true; syncEliteStatus(b); });
         }
@@ -13567,6 +14027,7 @@ function openBattleLogModal(){
           const loserIds = new Set(loserBgs.map(b=>b.id));
           loserBgs.forEach(b=>recordReconstitutionOpportunity(b));
           bgs = bgs.filter(b=>!loserIds.has(b.id));
+          grantCapturedDocuments(winnerFac);
         }
       }
     }
@@ -13735,6 +14196,7 @@ async function finishWinterLogistics(beforeSnap, comingYear){
   advanceGhostSightings(); // R1 — must run after Tier is otherwise settled for the turn
   advancePhantomContacts(); // §10.6
   advanceRadioGames(); // §5.4
+  await resolveRadioGameDetections(); // §5.4.4 — Turn/Expose choice for anything detected this turn
   checkVictoryMilestones(); // §14
   resetInitiativeForNewTurn(); // §7.1/§7.2
   const supplyChanges = advanceSupplyStatus();
@@ -13811,6 +14273,7 @@ document.getElementById('advanceTurn').addEventListener('click', async ()=>{
   advanceGhostSightings(); // R1 — must run after Tier is otherwise settled for the turn
   advancePhantomContacts(); // §10.6
   advanceRadioGames(); // §5.4
+  await resolveRadioGameDetections(); // §5.4.4 — Turn/Expose choice for anything detected this turn
   checkVictoryMilestones(); // §14
   resetInitiativeForNewTurn(); // §7.1/§7.2
   const supplyChanges = advanceSupplyStatus();
