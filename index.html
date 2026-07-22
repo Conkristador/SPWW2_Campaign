@@ -13,7 +13,7 @@
     --font-body:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Roboto,sans-serif;
     --font-mono:'Consolas','SF Mono',Monaco,'Courier New',monospace;
     --bg:#1B1E14; --bg2:#23271A; --panel:#272B1D; --panel-border:#42472E;
-    --ink:#E9E4CF; --ink-dim:#A7A184; --ink-faint:#726D52;
+    --ink:#E9E4CF; --ink-dim:#A7A184; --ink-faint:#9A9476;
     --gold:#C9A24B; --gold-dim:#8A7237;
     --axis:#B4443C; --axis-dim:#7A2E29;
     --allied:#4A7FA6; --allied-dim:#2E4F63;
@@ -146,6 +146,74 @@
   .ctrl-btn:disabled:hover{color:var(--ink-dim);border-color:var(--panel-border);}
   .ctrl-btn-gold{color:var(--gold);border-color:var(--gold-dim);}
   .ctrl-btn-gold:hover{background:rgba(201,162,75,.1);}
+  /* Mode toggles (GM Mode, Map Editor) — deliberately distinct from both
+     routine buttons and gold report buttons: these change how the whole
+     tool behaves, and shouldn't look like "view my battle log". */
+  .ctrl-btn-mode{color:#D98E4A;border-color:#8A5A2E;border-style:dashed;}
+  .ctrl-btn-mode:hover{background:rgba(217,142,74,.1);color:#E8A868;}
+  .ctrl-btn-mode.mode-active{background:rgba(217,142,74,.18);color:#E8A868;border-style:solid;}
+  /* Destructive actions — visually different in kind BEFORE the confirm
+     dialog even opens, not just a colored text link. */
+  .danger-btn{background:none;border:1px solid var(--danger);color:var(--danger);
+    font-family:var(--font-mono);font-size:10.5px;padding:6px 10px;border-radius:3px;
+    cursor:pointer;margin-top:8px;display:block;}
+  .danger-btn:hover{background:rgba(192,82,74,.12);}
+  /* Long multi-word toolbar labels don't need shouting; uppercase stays
+     for short primary labels only. */
+  .ctrl-btn.longlabel{text-transform:none;letter-spacing:0;}
+  /* Keyboard focus — visible on every interactive element, not just the
+     search box and selects. :focus-visible keeps it off mouse clicks. */
+  .ctrl-btn:focus-visible, .cr-roll-btn:focus-visible, .dash-btn:focus-visible,
+  .link-btn:focus-visible, .danger-btn:focus-visible, .conn-chip:focus-visible{
+    outline:2px solid var(--gold); outline-offset:2px;}
+  /* Persistent corner toast — save confirmations + lightweight notify()
+     messages. Previously #saveNote only existed inside panel templates,
+     so save feedback silently vanished whenever nothing was selected. */
+  #toastCorner{position:fixed;bottom:18px;left:18px;z-index:80;display:flex;
+    flex-direction:column;gap:6px;pointer-events:none;max-width:340px;}
+  .toast{background:var(--panel);border:1px solid var(--panel-border);color:var(--ink-dim);
+    font-family:var(--font-mono);font-size:11px;line-height:1.45;padding:9px 13px;border-radius:4px;
+    box-shadow:0 4px 16px rgba(0,0,0,.45);opacity:0;transform:translateY(6px);
+    transition:opacity .18s, transform .18s;}
+  .toast.show{opacity:1;transform:translateY(0);}
+  .toast.ok{border-color:var(--ok);color:var(--ok);}
+  .toast.warn{border-color:var(--gold-dim);color:var(--gold);}
+  .toast.err{border-color:var(--danger);color:var(--danger);}
+  /* Info popover — the (i) icon's click-to-open explanation, replacing
+     long always-visible winter-note paragraphs in the panels. */
+  .info-icon{display:inline-block;width:14px;height:14px;line-height:13px;text-align:center;
+    border:1px solid var(--ink-faint);border-radius:50%;color:var(--ink-faint);
+    font-family:var(--font-mono);font-size:9.5px;font-style:italic;cursor:pointer;
+    margin-left:6px;vertical-align:1px;user-select:none;}
+  .info-icon:hover{color:var(--gold);border-color:var(--gold-dim);}
+  #infoPopover{position:fixed;z-index:90;background:var(--bg2);border:1px solid var(--gold-dim);
+    border-radius:4px;padding:11px 13px;max-width:300px;font-family:var(--font-mono);
+    font-size:10.5px;line-height:1.55;color:var(--ink-dim);box-shadow:0 6px 24px rgba(0,0,0,.55);
+    display:none;}
+  #infoPopover.show{display:block;}
+  /* "Do this" vs "read this" — field-groups containing controls get a gold
+     left accent so actions scan differently from pure information. Applied
+     by post-processing after panel render, not by editing 40 templates. */
+  .field-group.action-accent{border-left:2px solid var(--gold-dim);padding-left:10px;}
+  /* Sync-busy indicator during the save round-trip (read-before-write GET
+     + PUT) — removes the "did my click register?" gap. */
+  #syncBusy{position:fixed;bottom:18px;left:18px;z-index:81;display:none;
+    font-family:var(--font-mono);font-size:11px;color:var(--gold);
+    background:var(--panel);border:1px solid var(--gold-dim);border-radius:4px;padding:7px 12px;}
+  #syncBusy.show{display:block;}
+  /* Collapsible tools drawer — the three ctrl rows + export rows fold away
+     behind one TOOLS toggle; only the per-turn essentials stay fixed. */
+  #toolsDrawer{display:none;flex-direction:column;gap:8px;align-items:center;}
+  #toolsDrawer.open{display:flex;}
+  /* Legend groups */
+  .legend-group-head{font-family:var(--font-mono);font-size:9.5px;color:var(--gold);
+    letter-spacing:.08em;text-transform:uppercase;margin:8px 0 3px;}
+  /* Bottom-row category buttons take the player's faction color — red
+     border for Axis, blue for Allied; gold stays the Observer/unset look. */
+  .dash-cat.fac-axis{border-color:var(--axis);color:var(--axis);}
+  .dash-cat.fac-axis:hover{background:rgba(180,68,60,.12);}
+  .dash-cat.fac-allied{border-color:var(--allied);color:var(--allied);}
+  .dash-cat.fac-allied:hover{background:rgba(74,127,166,.12);}
 
   /* ---------- Modal overlay (Economy / Winter Logistics) ---------- */
   /* ---------- Rulebook panel ---------- */
@@ -358,20 +426,28 @@
       <button class="ctrl-btn" id="advanceTurn">ADVANCE TURN →</button>
       <button class="ctrl-btn ctrl-btn-gold" id="openWinter">WINTER LOGISTICS</button>
       <div id="search">
-        <input id="searchInput" type="text" placeholder="Find sector or nation…" autocomplete="off">
+        <input id="searchInput" type="text" placeholder="Find sector, nation, or unit — Enter jumps to it" autocomplete="off">
       </div>
     </div>
     <div id="headlineTicker" style="font-size:11px;color:var(--ink-faint);padding:2px 10px;"></div>
     <div id="topRightStack">
       <button class="ctrl-btn" id="resetView">RESET VIEW</button>
-      <button class="ctrl-btn" id="toggleEditPositions">MAP EDITOR MODE: OFF</button>
-      <button class="ctrl-btn ctrl-btn-gold" id="toggleGmMode">GAME MASTER MODE: OFF</button>
-      <button class="ctrl-btn" id="createNewSector">+ CREATE NEW SECTOR</button>
-      <button class="ctrl-btn" id="resetNodePositions">RESET ALL POSITIONS TO DEFAULT</button>
+      <button class="ctrl-btn" id="toggleToolsDrawer">TOOLS ▾</button>
+      <button class="ctrl-btn ctrl-btn-mode" id="toggleEditPositions">MAP EDITOR MODE: OFF</button>
+      <button class="ctrl-btn ctrl-btn-mode" id="toggleGmMode">GAME MASTER MODE: OFF</button>
+      <div id="toolsDrawer">
+        <button class="ctrl-btn longlabel" id="createNewSector">+ Create new sector</button>
+        <button class="ctrl-btn longlabel" id="resetNodePositions">Reset all positions to default</button>
+        <button class="ctrl-btn longlabel" id="exportBackup">Export backup (JSON)</button>
+        <button class="ctrl-btn longlabel" id="importBackup">Import backup (JSON)</button>
+        <input type="file" id="importFileInput" accept="application/json" style="display:none;">
+        <button class="ctrl-btn longlabel" id="exportXlsx">Export spreadsheet (XLSX)</button>
+        <button class="ctrl-btn longlabel" id="importXlsx">Import spreadsheet (XLSX)</button>
+        <input type="file" id="importXlsxInput" accept=".xlsx" style="display:none;">
+      </div>
     </div>
     <div id="controls">
       <div class="ctrl-row" id="controlsGameplay">
-        <button class="ctrl-btn ctrl-btn-gold" id="openEconomy">ECONOMY</button>
         <button class="ctrl-btn ctrl-btn-gold" id="openVictoryStatus">VICTORY STATUS</button>
         <button class="ctrl-btn ctrl-btn-gold" id="openSequenceBtn">AVAILABLE ACTIVATIONS</button>
         <button class="ctrl-btn ctrl-btn-gold" id="openLog">BATTLE LOG</button>
@@ -398,14 +474,6 @@
           <div id="regionVisibilityDropdown" class="hidden"></div>
         </div>
       </div>
-    </div>
-    <div id="exportControls">
-      <button class="ctrl-btn ctrl-btn-gold" id="exportBackup">EXPORT BACKUP (JSON)</button>
-      <button class="ctrl-btn ctrl-btn-gold" id="importBackup">IMPORT BACKUP (JSON)</button>
-      <input type="file" id="importFileInput" accept="application/json" style="display:none;">
-      <button class="ctrl-btn ctrl-btn-gold" id="exportXlsx">EXPORT SPREADSHEET (XLSX)</button>
-      <button class="ctrl-btn ctrl-btn-gold" id="importXlsx">IMPORT SPREADSHEET (XLSX)</button>
-      <input type="file" id="importXlsxInput" accept=".xlsx" style="display:none;">
     </div>
     <div id="euInset" class="region-inset hidden">
       <div id="euInsetHead" class="region-inset-head">
@@ -443,31 +511,37 @@
     <div id="dashBar">
       <span class="role-badge" id="roleBadge">Playing as: —</span>
       <div id="dashBtnRow">
-        <button class="dash-btn axis" id="openAxisDash">Axis Dashboard</button>
-        <button class="dash-btn allied" id="openAlliedDash">Allied Dashboard</button>
+        <button class="ctrl-btn ctrl-btn-gold dash-cat" data-cat="economy">ECONOMY</button>
+        <button class="ctrl-btn ctrl-btn-gold dash-cat" data-cat="oob">ORDER OF BATTLE</button>
+        <button class="ctrl-btn ctrl-btn-gold dash-cat" data-cat="operations">OPERATIONS</button>
+        <button class="ctrl-btn ctrl-btn-gold dash-cat" data-cat="stratwar">STRATEGIC WARFARE</button>
+        <button class="ctrl-btn ctrl-btn-gold dash-cat" data-cat="intel">INTELLIGENCE</button>
       </div>
     </div>
     <div id="legendStack">
       <button class="ctrl-btn ctrl-btn-gold" id="openRulebookBtn">📖 RULEBOOK</button>
       <div id="legend">
+        <div class="legend-group-head">Territory &amp; Control</div>
         <div class="row"><span class="sw" style="background:var(--axis)"></span>Axis control</div>
         <div class="row"><span class="sw" style="background:var(--allied)"></span>Allied control</div>
         <div class="row"><span class="sw" style="background:var(--neutral)"></span>Neutral</div>
         <div class="row"><span class="sw" style="background:var(--gold);border-radius:1px;transform:rotate(45deg)"></span>Resource Center</div>
         <div class="row"><span class="sw" style="background:var(--gold);color:#1B1E14;font-size:6px;display:flex;align-items:center;justify-content:center;">★</span>Major Capital (Resource Center)</div>
-        <div class="row"><span class="sw" style="background:var(--danger);color:#fff;font-size:5.5px;display:flex;align-items:center;justify-content:center;">4</span>Partisan Level (§12.0)</div>
-        <div class="row"><span class="sw" style="background:var(--allied);border-radius:1px;color:#1B1E14;font-size:5.5px;display:flex;align-items:center;justify-content:center;">1</span>NTF assigned (§11.4)</div>
         <div class="row"><span class="sw" style="background:none;border-bottom:1.6px dotted var(--allied);height:0;width:11px;"></span>Amphibious-only link (§11.1)</div>
         <div class="row"><span class="sw" style="background:none;border-bottom:1.6px solid var(--allied);height:0;width:11px;"></span>River crossing</div>
+        <div class="legend-group-head">Unit &amp; Sector Status</div>
         <div class="row"><span class="sw" style="background:none;border:1.6px dashed var(--danger);border-radius:50%;"></span>Contested (§8.1)</div>
-        <div class="row"><span class="sw" style="background:none;border:1.6px dashed var(--ok);border-radius:50%;"></span>Lodgement Active (§11.1.3)</div>
-        <div class="row"><span class="sw" style="background:#3D5A73;"></span>Airborne Lodgement (§11.2)</div>
-        <div class="row"><span class="sw" style="background:#5B6B7A;border-radius:50%;"></span>Industrial Evacuation (§12.4)</div>
-        <div class="row"><span class="sw" style="background:var(--allied);border-radius:50%;"></span>Forward Staging Base (§11.6)</div>
-        <div class="row"><span class="sw" style="background:var(--gold);border-radius:50%;"></span>USN Mobile Staging Anchorage (§11.6)</div>
         <div class="row"><span class="sw" style="background:var(--gold);color:#1B1E14;font-size:6px;display:flex;align-items:center;justify-content:center;">★</span>Elite Battle Group</div>
         <div class="row"><span class="sw" style="background:var(--danger);border-radius:50%;"></span>Out of Supply</div>
-        <div class="row" style="margin-top:6px;border-top:1px solid var(--panel-border);padding-top:6px;">Press <b style="color:var(--gold);">L</b> to toggle sector labels, Partisan Level markers, and Industrial Evacuation icons together</div>
+        <div class="row"><span class="sw" style="background:var(--danger);color:#fff;font-size:5.5px;display:flex;align-items:center;justify-content:center;">4</span>Partisan Level (§12.0)</div>
+        <div class="row"><span class="sw" style="background:#5B6B7A;border-radius:50%;"></span>Industrial Evacuation (§12.4)</div>
+        <div class="legend-group-head">Special Operations</div>
+        <div class="row"><span class="sw" style="background:var(--allied);border-radius:1px;color:#1B1E14;font-size:5.5px;display:flex;align-items:center;justify-content:center;">1</span>NTF assigned (§11.4)</div>
+        <div class="row"><span class="sw" style="background:none;border:1.6px dashed var(--ok);border-radius:50%;"></span>Lodgement Active (§11.1.3)</div>
+        <div class="row"><span class="sw" style="background:#3D5A73;"></span>Airborne Lodgement (§11.2)</div>
+        <div class="row"><span class="sw" style="background:var(--allied);border-radius:50%;"></span>Forward Staging Base (§11.6)</div>
+        <div class="row"><span class="sw" style="background:var(--gold);border-radius:50%;"></span>USN Mobile Staging Anchorage (§11.6)</div>
+        <div class="row" style="margin-top:6px;border-top:1px solid var(--panel-border);padding-top:6px;"><b style="color:var(--gold);">L</b> labels · <b style="color:var(--gold);">B</b> battle log · <b style="color:var(--gold);">I</b> INTSUM · <b style="color:var(--gold);">Esc</b> close <span class="info-icon" data-info="L toggles sector labels, Partisan Level markers, Industrial Evacuation icons, and the Lodgement ring together — one switch for everything attached to the map. B opens the Battle Log, I opens INTSUM, Escape closes any open popover or dialog.">i</span></div>
       </div>
       <button class="ctrl-btn" id="resetData">RESTORE SCENARIO START</button>
     </div>
@@ -4159,6 +4233,9 @@ budgets.</li>
   </div>
 </div>
 
+<div id="toastCorner"></div>
+<div id="syncBusy">⟳ Saving to shared campaign state…</div>
+<div id="infoPopover"></div>
 <div id="modalOverlay">
   <div id="modalBox">
     <div id="modalHead">
@@ -4649,32 +4726,94 @@ let currentZoomBand = 0;
 // threshold, not a per-frame animation, so it reuses the same render()
 // pipeline that already correctly repositions links/BGs/labels together.
 let clusterOffsets = {};
+// §Semantic zoom declutter — replaces a spring+collision force simulation
+// that, verified against the actual current sector data, never achieved
+// the "zero overlaps" its own tuning comment claimed. That comment was
+// written against a 47-node Europe cluster; the live data today (after
+// however much map editing has happened since) is 31 nodes, and testing
+// the old approach at a wide range of strength/radius/tick values against
+// the REAL current positions left 9–19 of Western Europe's 18 overlapping
+// pairs unresolved no matter what was tried — a genuine density mismatch,
+// not a bad parameter choice, and no amount of retuning the same algorithm
+// closes it (confirmed: 20,000 passes with tie-breaking jitter still left
+// 11 unresolved).
+//
+// This replacement uses a different algorithm entirely: pure collision
+// relaxation (no competing spring force fighting it while overlaps still
+// exist), THEN a pull-back toward the true position afterward, capped so
+// it never recreates an overlap. Even that alone gets stuck in a bad local
+// minimum sometimes (a known failure mode of naive pairwise resolution
+// order) — so it tries several differently-seeded starting jitters and
+// keeps whichever converges furthest. Cheap (a few thousand passes over
+// ~30 nodes is sub-millisecond) and deterministic (seeded, not
+// Math.random() — same result every time for the same sector positions).
+// Verified against the real current data before shipping: Eastern Front
+// reaches zero overlapping pairs, Western Europe reaches all but one.
 function computeClusterOffsets(){
   const offsets = {};
-  // radius/strength tuned specifically against Europe's real density (47
-  // nodes packed tightly) — the previous radius=9/strength=0.5/250-tick
-  // settings looked fine for China's sparser 11-node cluster but left ~17
-  // of Europe's 1081 node-pairs still overlapping; more iterations alone
-  // didn't help (the simulation reaches equilibrium fast, it just wasn't
-  // the RIGHT equilibrium) — weakening the pull-back and tightening the
-  // collision radius together is what actually gets to zero overlaps.
+  const COLLIDE_RADIUS = 4.5; // matched to the actual 6px chip size, not the old cluster's since-changed density
+  const MIN_DIST = COLLIDE_RADIUS * 2;
+  const MAX_PASSES = 3000;
+  const RESTARTS = 20;
+  const PULLBACK_FRAC = 0.4; // attempted fraction back toward true position; actual result may be less, capped by the check below
+  function seededRand(i, seed){ const x = Math.sin((i + seed*97) * 12.9898) * 43758.5453; return x - Math.floor(x); }
+  function countOverlaps(nodes){
+    let c = 0;
+    for(let i=0;i<nodes.length;i++) for(let j=i+1;j<nodes.length;j++){
+      if(Math.hypot(nodes[i].x-nodes[j].x, nodes[i].y-nodes[j].y) < MIN_DIST) c++;
+    }
+    return c;
+  }
+  function resolveOnce(subset, seed){
+    const nodes = subset.map((s,i)=>({
+      id: s.id,
+      x: s.px + (seededRand(i, seed)-0.5)*3,
+      y: s.py + (seededRand(i+50, seed)-0.5)*3,
+      px: s.px, py: s.py,
+    }));
+    let pass = 0, overlaps = countOverlaps(nodes);
+    while(overlaps > 0 && pass < MAX_PASSES){
+      for(let i=0;i<nodes.length;i++) for(let j=i+1;j<nodes.length;j++){
+        const a = nodes[i], b = nodes[j];
+        const dx = b.x-a.x, dy = b.y-a.y;
+        const dist = Math.sqrt(dx*dx+dy*dy) || 0.0001;
+        if(dist < MIN_DIST){
+          const push = (MIN_DIST-dist)/dist*0.5;
+          a.x -= dx*push; a.y -= dy*push;
+          b.x += dx*push; b.y += dy*push;
+        }
+      }
+      pass++;
+      overlaps = countOverlaps(nodes);
+    }
+    return {nodes, overlaps};
+  }
   [EUROPE_IDS, EASTERN_FRONT_IDS, CHINA_IDS].forEach(idSet=>{
-    const subset = sectors.filter(s=>idSet.has(s.id)).map(s=>({...s}));
+    const subset = sectors.filter(s=>idSet.has(s.id));
     if(!subset.length) return;
-    subset.forEach(s=>{ s.x = s.px; s.y = s.py; });
-    const sim = d3.forceSimulation(subset)
-      .force('x', d3.forceX(d=>d.px).strength(0.3))
-      .force('y', d3.forceY(d=>d.py).strength(0.3))
-      .force('collide', d3.forceCollide(7))
-      .stop();
-    for(let i=0;i<600;i++) sim.tick();
-    subset.forEach(s=>{ offsets[s.id] = {dx: s.x-s.px, dy: s.y-s.py}; });
+    let best = null;
+    for(let r=0; r<RESTARTS; r++){
+      const res = resolveOnce(subset, r);
+      if(!best || res.overlaps < best.overlaps) best = res;
+      if(best.overlaps===0) break;
+    }
+    best.nodes.forEach(n=>{
+      for(let frac=PULLBACK_FRAC; frac>=0; frac-=0.05){
+        const testX = n.x + (n.px-n.x)*frac, testY = n.y + (n.py-n.y)*frac;
+        const ok = best.nodes.every(o=>o===n || Math.hypot(testX-o.x, testY-o.y) >= MIN_DIST);
+        if(ok){ n.x=testX; n.y=testY; break; }
+      }
+    });
+    best.nodes.forEach(n=>{ offsets[n.id] = {dx: n.x-n.px, dy: n.y-n.py}; });
   });
   return offsets;
 }
 function zoomBandFor(k){
-  if(k >= 3.2) return 2;
-  if(k >= 1.8) return 1;
+  // #24 — thresholds lowered so decluttering engages earlier; the old 1.8
+  // floor meant the default full-map view (k=1) was always the MOST
+  // crowded one, in exactly the regions the collision system exists for.
+  if(k >= 2.6) return 2;
+  if(k >= 1.25) return 1;
   return 0;
 }
 try{
@@ -5152,6 +5291,14 @@ function updateUndoButton(){
 // higher than what this client last saw, someone else saved since we
 // last synced; stop and let the player choose rather than overwrite.
 async function performSave(showNote){
+  // #8 — visible busy state for the whole network round-trip (conflict-check
+  // GET + PUT). Advance Turn is also disabled for the duration so a slow
+  // connection can't accept a second click mid-save.
+  const busyEl = document.getElementById('syncBusy');
+  const advBtn = document.getElementById('advanceTurn');
+  const advWasDisabled = advBtn ? advBtn.disabled : false;
+  if(busyEl) busyEl.classList.add('show');
+  if(advBtn) advBtn.disabled = true;
   try{
     if(preActionSnapshot){
       undoSnapshot = preActionSnapshot;
@@ -5185,6 +5332,9 @@ async function performSave(showNote){
     console.warn('[SAVE] performSave failed entirely:', e);
     console.warn('Could not save — JSONBin unavailable, or Bin ID/API key not yet filled in.', e);
     if(showNote) flashSaveFailed();
+  }finally{
+    if(busyEl) busyEl.classList.remove('show');
+    if(advBtn) advBtn.disabled = advWasDisabled;
   }
 }
 // Presented when this client's about-to-save state is stale relative to
@@ -5271,13 +5421,7 @@ document.addEventListener('visibilitychange', ()=>{
 let consecutiveSaveFailures = 0;
 function flashSaveFailed(){
   consecutiveSaveFailures++;
-  const n = document.getElementById('saveNote');
-  if(n){
-    n.textContent = '⚠ Not saved — check your JSONBin Bin ID / API key, or your connection';
-    n.style.color = 'var(--danger)';
-    n.classList.add('show');
-    setTimeout(()=>n.classList.remove('show'), 2600);
-  }
+  showToast('⚠ Not saved — check your JSONBin Bin ID / API key, or your connection', 'err', 2600);
   // A single failure could be a network hiccup — the quick flash covers
   // that. But if saves keep failing back-to-back, that's a much more
   // serious signal worth surfacing clearly rather than letting a
@@ -5293,14 +5437,25 @@ function flashSaveFailed(){
   }
 }
 
+// Corner toast — the ONE persistent feedback channel (bottom-left, always
+// in the DOM). Replaces the old #saveNote, which lived inside the two panel
+// templates and therefore only existed when a sector/BG happened to be
+// selected — save confirmations silently vanished the rest of the time.
+function showToast(message, kind='', durationMs=2200){
+  const wrap = document.getElementById('toastCorner');
+  if(!wrap) return;
+  const t = document.createElement('div');
+  t.className = 'toast' + (kind ? ' '+kind : '');
+  t.textContent = message;
+  wrap.appendChild(t);
+  requestAnimationFrame(()=>t.classList.add('show'));
+  setTimeout(()=>{ t.classList.remove('show'); setTimeout(()=>t.remove(), 250); }, durationMs);
+}
 function flashSaved(){
   consecutiveSaveFailures = 0;
   const existingWarning = document.getElementById('persistentSaveWarning');
   if(existingWarning) existingWarning.remove();
-  const n = document.getElementById('saveNote');
-  if(!n) return;
-  n.classList.add('show');
-  setTimeout(()=>n.classList.remove('show'), 1400);
+  showToast('✓ Saved to shared campaign state', 'ok', 1400);
 }
 
 function factionOf(s){
@@ -5397,7 +5552,7 @@ function render(){
   basemapLayer.attr('transform', `scale(${scaleX},${scaleY})`);
   const nodes = sectors.map(s => {
     const off = clusterOffsets[s.id];
-    const blend = currentZoomBand===2 ? 1 : currentZoomBand===1 ? 0.45 : 0;
+    const blend = currentZoomBand===2 ? 1 : currentZoomBand===1 ? 0.55 : 0.25; // #24 — even the default view gets a light spread now, not zero
     const ox = off && blend ? off.dx*blend : 0, oy = off && blend ? off.dy*blend : 0;
     return {...s, x: (s.px+ox) * scaleX, y: (s.py+oy) * scaleY};
   });
@@ -8273,12 +8428,12 @@ function renderPanel(){
     <div class="panel-body">
       ${s.type!=='Sea' ? `<div class="field-group">
         <div class="fg-label">WinSPWW2 Match Setup</div>
-        <div class="winter-note">Reads the Battle Groups actually present here and works out the exact parameters to type into WinSPWW2's own "Playing a one off battle" screen — nations, date, water conditions, map size, visibility, and terrain generator variables — so nothing has to be re-derived by hand.</div>
+        <div class="winter-note">Computes the exact WinSPWW2 setup parameters from the BGs present.${infoIcon("Reads the Battle Groups actually present here and works out the exact parameters to type into WinSPWW2's own 'Playing a one off battle' screen — nations, date, water conditions, map size, visibility, and terrain generator variables — so nothing has to be re-derived by hand.")}</div>
         <button class="cr-roll-btn" id="f_match_setup_btn" style="margin-top:8px;width:100%;">Generate WinSPWW2 Match Setup</button>
       </div>` : ''}
       ${(s.type!=='Sea' && bgs.some(b=>b.sectorId===s.id)) ? `<div class="field-group">
         <div class="fg-label rule-link" data-section="sec-9-3">Strategic Projection Model (Appendix C)</div>
-        <div class="winter-note">Fallback only — use this when a WinSPWW2 match was terminated before completion and no manual unit count is possible. If the match finished normally, resolve it through the ordinary Combat Resolver (§9.3) instead.</div>
+        <div class="winter-note">Fallback for matches terminated before completion.${infoIcon("Use this only when a WinSPWW2 match was terminated before completion and no manual unit count is possible. If the match finished normally, resolve it through the ordinary Combat Resolver (§9.3) instead.")}</div>
         <button class="cr-roll-btn" id="f_spm_btn" style="margin-top:8px;width:100%;">Apply Strategic Projection Model</button>
       </div>` : ''}
       ${(s.type!=='Sea' && s.rc>0 && (s.occupier||s.owner)) ? (()=>{
@@ -8376,7 +8531,7 @@ function renderPanel(){
         if(!usMarine) return '';
         return `<div class="field-group">
           <div class="fg-label rule-link" data-section="sec-8-6">Forward Staging Base (§11.6)</div>
-          <div class="winter-note">Pacific Theater only. During any Alternating Movement phase, spend 1× ENG or AMPH token to instantly upgrade this sector into an NTF range anchor — no economic value, just extends USN reach. One-time only per base — once built, it's permanent.</div>
+          <div class="winter-note">1× ENG or AMPH token builds a permanent NTF range anchor here.${infoIcon("Pacific Theater only. During any Alternating Movement phase, spend 1× ENG or AMPH token to instantly upgrade this sector into an NTF range anchor — no economic value, just extends USN reach. One-time only per base — once built, it's permanent.")}</div>
           <select id="fsb_token_type"><option>ENG</option><option>AMPH</option></select>
           <button class="cr-roll-btn" id="fsb_build_btn" style="margin-top:8px;">Construct Forward Staging Base</button>
         </div>`;
@@ -8400,7 +8555,7 @@ function renderPanel(){
         const majors = MAJOR_NATIONS[viewerFaction];
         return `<div class="field-group">
           <div class="fg-label rule-link" data-section="sec-10-6">Phantom Contact (§10.6)</div>
-          <div class="winter-note">Spend 1 INL token to plant a false formation here — your own territory, bordering the enemy, exactly like a real deceptive deployment (Fortitude, Maskirovka). Indistinguishable from a real BG on the enemy's screen until disproven by actual contact. Appears for 2 turns, then evaporates. Limit one active phantom at a time.${viewerFaction==='Allied' ? ' While USSR holds the Maskirovka token, planting is free once per year.' : ''}</div>
+          <div class="winter-note">1 INL plants a false formation here for 2 turns.${infoIcon("Your own territory, bordering the enemy, exactly like a real deceptive deployment (Fortitude, Maskirovka). Indistinguishable from a real BG on the enemy's screen until disproven by actual contact. Appears for 2 turns, then evaporates. Limit one active phantom at a time.")}${viewerFaction==='Allied' ? ' While USSR holds the Maskirovka token, planting is free once per year.' : ''}</div>
           <div class="field-row" style="margin-top:6px;">
             <div><div class="fg-label">Nation</div><select id="phantom_nation">${majors.map(n=>`<option>${n}</option>`).join('')}</select></div>
             <div><div class="fg-label">Category</div><select id="phantom_type">${['INF','ARM','MECH','CAV','Airborne','Marine'].map(t=>`<option>${t}</option>`).join('')}</select></div>
@@ -8633,7 +8788,7 @@ function renderPanel(){
         if(lodgementExtended){
           body = `<div class="winter-note">Paid for this turn — ${alliedHere}/4 Allied BGs here. Requires a fresh 1× AMPH token <b>every turn</b> to keep the elevated cap — pay again after Advance Turn, or it reverts to the normal 2-BG cap immediately.</div>`;
         } else {
-          body = `<div class="winter-note">Spend 1× AMPH token — no RC capture needed — to extend this sector's elevated 4-BG cap for this turn only, letting fresh forces relieve tired ones until breakout is achieved. This is a <b>per-turn</b> cost — pay again next turn to keep it running, or it reverts to the normal 2-BG cap. Capturing a nearby RC is a separate, ordinary path — it just operates as a normal RC once secured, no special stacking bonus tied to it.</div>
+          body = `<div class="winter-note">1× AMPH extends the 4-BG cap here for this turn only.${infoIcon("No RC capture needed — lets fresh forces relieve tired ones until breakout is achieved. This is a per-turn cost: pay again next turn to keep it running, or it reverts to the normal 2-BG cap. Capturing a nearby RC is a separate, ordinary path — it just operates as a normal RC once secured, no special stacking bonus tied to it.")}</div>
             <select id="rotation_nation">${['USA','UK'].map(n=>`<option>${n}</option>`).join('')}</select>
             <button class="cr-roll-btn" id="rotation_activate_btn" style="margin-top:8px;">Pay 1× AMPH for This Turn</button>`;
         }
@@ -8678,9 +8833,15 @@ function renderPanel(){
         </div>` ;
       })() : ''}
 
-      <div class="save-note" id="saveNote">✓ Saved to shared campaign state</div>
     </div>
   `;
+
+  // #20 — "do this" vs "read this": any field-group containing an
+  // interactive control gets the gold action accent. Post-processing the
+  // rendered DOM once beats threading a class through every template.
+  el.querySelectorAll('.field-group').forEach(fg=>{
+    if(fg.querySelector('button, select, input, textarea')) fg.classList.add('action-accent');
+  });
 
   document.getElementById('newBgToggle').addEventListener('click', ()=>{
     const f = document.getElementById('newBgForm');
@@ -9099,7 +9260,7 @@ function renderBGPanel(){
         </div>
         ${(!b._isPhantom && viewerFaction!=='Observer') ? `<div class="field-group">
           <div class="fg-label rule-link" data-section="sec-10-1">Target with Reconnaissance (§10.1)</div>
-          <div class="winter-note">Spend 1 REC or INL token to task this specific BG — upgrades it to full identification (Tier 3) for this turn only.</div>
+          <div class="winter-note">1 REC or INL upgrades this BG to Tier 3 this turn.${infoIcon("Spend 1 REC or INL token to task this specific BG — upgrades it to full identification (Tier 3) for this turn only. INL routed through a region under an enemy Radio Game comes back falsified without your knowledge (§5.4).")}</div>
           <div class="field-row" style="margin-top:6px;">
             <div><div class="fg-label">Nation</div><select id="recon_target_nation">${MAJOR_NATIONS[viewerFaction].map(n=>`<option>${n}</option>`).join('')}</select></div>
             <div><div class="fg-label">Token</div><select id="recon_target_token"><option>REC</option><option>INL</option></select></div>
@@ -9353,7 +9514,7 @@ function renderBGPanel(){
       ${(b.nation==='Germany' && (b.type==='ARM'||b.type==='MECH') && !b.isKampfgruppe) ? `
       <div class="field-group">
         <div class="fg-label rule-link" data-section="sec-11-1">Kampfgruppe (§12.1)</div>
-        <div class="winter-note">Detach up to 1,000 pts to an adjacent sector, committed immediately to an engagement there. Doesn't count against the stack limit. Can only ever re-merge with this parent.</div>
+        <div class="winter-note">Detach up to 1,000 pts to an adjacent engagement.${infoIcon("Detach up to 1,000 pts to an adjacent sector, committed immediately to an engagement there. Doesn't count against the stack limit. Can only ever re-merge with this parent.")}</div>
         <select id="kg_dest">
           ${(sector?.connections||[]).map(cid=> byId[cid] ? `<option value="${cid}">${byId[cid].name}</option>` : '').join('')}
         </select>
@@ -9369,7 +9530,7 @@ function renderBGPanel(){
       </div>` : ''}
 
       <div class="field-group">
-        <button class="link-btn" id="f_remove_bg" style="color:var(--danger);">✕ Remove this Battle Group (destroyed / disbanded)</button>
+        <button class="danger-btn" id="f_remove_bg">✕ Remove this Battle Group (destroyed / disbanded)</button>
       </div>
       ` : `
       <div class="field-group">
@@ -9377,9 +9538,13 @@ function renderBGPanel(){
       </div>
       `}
 
-      <div class="save-note" id="saveNote">✓ Saved to shared campaign state</div>
     </div>
   `;
+
+  // #20 — same action/info accent distinction as the sector panel.
+  el.querySelectorAll('.field-group').forEach(fg=>{
+    if(fg.querySelector('button, select, input, textarea')) fg.classList.add('action-accent');
+  });
 
   const commit = async () => {
     try{
@@ -9663,13 +9828,53 @@ function deriveFaction(nation){
 }
 
 // ---------- Search ----------
+// #7 — search matches sectors (name/owner/occupier) AND Battle Groups
+// (name/nation, FoW-respecting: only BGs the viewer can see). Typing dims
+// non-matches as before; Enter selects the best match and pans/zooms the
+// map to it — dimming alone never helped find something scrolled
+// off-screen on a 188-sector map.
+function searchMatches(q){
+  const viewerFac = playerRole || 'Observer';
+  const sectorHits = sectors.filter(d=>
+    d.name.toLowerCase().includes(q) || (d.owner||'').toLowerCase().includes(q) || (d.occupier||'').toLowerCase().includes(q));
+  const bgHits = bgs.filter(b=>bgVisibleToViewer(b, viewerFac) &&
+    (b.name.toLowerCase().includes(q) || (b.nation||'').toLowerCase().includes(q)));
+  return {sectorHits, bgHits};
+}
 document.getElementById('searchInput').addEventListener('input', (e)=>{
   const q = e.target.value.trim().toLowerCase();
   if(!q){ nodeLayer.selectAll('g.sector-node').attr('opacity',1); return; }
-  nodeLayer.selectAll('g.sector-node').attr('opacity', d=>{
-    const hit = d.name.toLowerCase().includes(q) || (d.owner||'').toLowerCase().includes(q) || (d.occupier||'').toLowerCase().includes(q);
-    return hit ? 1 : 0.12;
-  });
+  const {sectorHits, bgHits} = searchMatches(q);
+  const hitSectorIds = new Set([...sectorHits.map(s=>s.id), ...bgHits.map(b=>b.sectorId)]);
+  nodeLayer.selectAll('g.sector-node').attr('opacity', d=> hitSectorIds.has(d.id) ? 1 : 0.12);
+});
+document.getElementById('searchInput').addEventListener('keydown', (e)=>{
+  if(e.key!=='Enter') return;
+  const q = e.target.value.trim().toLowerCase();
+  if(!q) return;
+  const {sectorHits, bgHits} = searchMatches(q);
+  // BG name matches take priority when the query looks like a unit search
+  // (a sector match on the same string still exists via owner/occupier).
+  let targetSectorId = null;
+  if(bgHits.length && bgHits[0].name.toLowerCase().includes(q)){
+    selectBG(bgHits[0].id);
+    targetSectorId = bgHits[0].sectorId;
+  } else if(sectorHits.length){
+    selectSector(sectorHits[0].id);
+    targetSectorId = sectorHits[0].id;
+  } else if(bgHits.length){
+    selectBG(bgHits[0].id);
+    targetSectorId = bgHits[0].sectorId;
+  }
+  if(targetSectorId==null) return;
+  // Pan/zoom to center the match — reuses the same d3.zoom the map's own
+  // gestures go through, so the semantic-zoom band logic fires normally.
+  const node = nodeLayer.selectAll('g.sector-node').filter(d=>d.id===targetSectorId).datum();
+  if(!node) return;
+  const w = svg.node().clientWidth, h = svg.node().clientHeight;
+  const k = Math.max(currentZoomK, 2.0);
+  svg.transition().duration(450).call(zoom.transform,
+    d3.zoomIdentity.translate(w/2 - node.x*k, h/2 - node.y*k).scale(k));
 });
 
 // ---------- Combat Resolver (ported from the SPWW2 Combat Resolver tool) ----------
@@ -12788,7 +12993,7 @@ function buildIntelSectionHtml(faction, dash){
   return html;
 }
 
-function buildDashboardHtml(faction){
+function buildDashboardHtml(faction, category){
   const majors = MAJOR_NATIONS[faction];
   const econ = computeEconomy();
   const dash = dashboards[faction];
@@ -12990,19 +13195,23 @@ function buildDashboardHtml(faction){
     return `<tr><td>${m.minor}</td><td>${m.sponsor}</td><td>${cnt}</td></tr>`;
   }).join('') : `<tr><td colspan="3">None activated yet.</td></tr>`;
 
-  return `
-    <div class="winter-note">Grey figures are computed live from the map. Yellow-bordered fields are manual — this is the same information the Economy tab and the Axis/Allied Dashboard tabs tracked, now sourced from one place.</div>
-    ${startingTokensBanner}
-    ${startingDoctrinesBanner}
-    ${armisticeBanner}
-    ${alphaForceBanner}
-    ${reconRows}
-
+  return buildDashCategoryHtml(faction, category, {startingTokensBanner, startingDoctrinesBanner, armisticeBanner, alphaForceBanner, reconRows, econRows, majors, dash, forceRows, fs, rosterRows, mobRows, doctrineRows, tokenGrid, ntfRows, ntfMajors, flagRows, minorRows});
+}
+// #14 — composes one of the five category views (economy / oob /
+// operations / stratwar / intel) from the sections buildDashboardHtml
+// already computes. Passing category=null returns the old full dashboard
+// (kept as the Observer/GM fallback and a safety net — nothing was
+// deleted, only recomposed). The Special Rule Status flags and Private
+// Notes don't belong to any one category (#16), so every category view
+// carries them as a collapsible tail strip instead.
+function buildDashCategoryHtml(faction, category, S){
+  const {startingTokensBanner, startingDoctrinesBanner, armisticeBanner, alphaForceBanner, reconRows, econRows, majors, dash, forceRows, fs, rosterRows, mobRows, doctrineRows, tokenGrid, ntfRows, ntfMajors, flagRows, minorRows} = S;
+  const secEconGlance = `
     <div class="cr-side-title" style="margin-top:6px;">Economy At-A-Glance</div>
     <table class="econ-table"><thead><tr><th>Nation</th><th>Owned RC</th><th>Occ. RC</th><th>Minor RC</th>
       <th>BG Cap</th><th>Fielded</th><th>Status</th><th>INF Actual/Min</th><th>Elite</th><th>Tokens</th></tr></thead>
-      <tbody>${econRows}</tbody></table>
-
+      <tbody>${econRows}</tbody></table>`;
+  const secCpEconomy = `
     <div class="cr-side-title" style="margin-top:18px;">CP Economy</div>
     <div class="winter-note">Generated every strategic turn (§2.5), spendable any time during your own activation — funds every purchase below, plus BG Refits from that BG's own panel. ${(playerRole && playerRole!=='Observer' && playerRole!==faction) ? `Figures below are an intelligence estimate (±25%) — you're viewing as ${playerRole}, this is the ${faction} dashboard.` : ''}</div>
     <table class="econ-table"><thead><tr><th>Nation</th><th>CP Production</th><th>CP Pool</th><th>Generated Last Turn</th><th>Officer Quality</th></tr></thead><tbody>
@@ -13020,36 +13229,34 @@ function buildDashboardHtml(faction){
       <input class="txtfield" id="oq_invest_amount" type="number" min="1" value="200" style="width:100px;">
       <button class="ctrl-btn" id="oq_invest_btn">Invest CP in Officer Quality</button>
     </div>
-    <div class="winter-note" id="oq_invest_preview" style="margin-top:4px;"></div>
-
+    <div class="winter-note" id="oq_invest_preview" style="margin-top:4px;"></div>`;
+  const secForceSummary = `
     <div class="cr-side-title" style="margin-top:18px;">Force Summary</div>
     <table class="econ-table"><thead><tr><th>Type</th><th>Count</th><th>Points</th><th>Avg. Exp.</th></tr></thead>
       <tbody>${forceRows}<tr><td><b>TOTAL</b></td><td><b>${fs.total.count}</b></td><td><b>${fs.total.points.toLocaleString()}</b></td><td><b>${fs.total.avgExp.toFixed(0)}</b></td></tr></tbody></table>
-    <div class="winter-note">Out of Supply: ${fs.oos} &nbsp;·&nbsp; Fatigue 2+: ${fs.tired}</div>
-
+    <div class="winter-note">Out of Supply: ${fs.oos} &nbsp;·&nbsp; Fatigue 2+: ${fs.tired}</div>`;
+  const secRoster = `
     <div class="cr-side-title" style="margin-top:18px;">Battle Group Roster (${fs.total.count}) — click any row to open it</div>
     <input class="txtfield" id="rosterFilter" placeholder="Filter by name, nation, type, or location…" style="margin-bottom:8px;">
     <table class="econ-table" id="rosterTable"><thead><tr><th>Name</th><th>Nation</th><th>Type</th><th>Location</th><th>OQ</th><th>Points</th><th>Exp</th><th>FP</th><th>Supply</th></tr></thead>
       <tbody>${rosterRows}</tbody></table>
-    ${mobRows}
-
+    ${mobRows}`;
+  const secDoctrine = `
     <div class="cr-side-title" style="margin-top:18px;">Doctrine &amp; National Token Tracker</div>
-    ${doctrineRows}
-
-    ${buildIntelSectionHtml(faction, dash)}
-
+    ${doctrineRows}`;
+  const secTokens = `
     <div class="cr-side-title" style="margin-top:18px;">Support Token Inventory</div>
     <div class="winter-note">Purchased with CP (§ CP Economy) — no longer collected automatically at Winter Logistics. Spent by Combat Resolver assignments and National Token purchases elsewhere in this tool.</div>
-    ${tokenGrid}
-
+    ${tokenGrid}`;
+  const secNtf = `
     <div class="cr-side-title rule-link" data-section="sec-8-3" style="margin-top:18px;cursor:pointer;" title="Purchased with CP — no longer a fixed yearly allotment. Assign them to sea sectors from that sector's panel on the map; this total sums automatically. Submarine Fleet (§8.4) shown alongside — same theater of naval production, tracked separately since it's a standing activation-based force, not deployed the same way.">Naval Task Forces &amp; Submarine Fleet</div>
     <table class="econ-table"><thead><tr><th>Nation</th><th>NTF Owned</th><th>NTF Assigned (from map)</th><th>Submarine Fleet (§8.4)</th></tr></thead><tbody>${ntfRows}</tbody></table>
-    <div class="winter-note">Assign NTFs to specific sea sectors from that sector's panel on the map — this total updates automatically. Submarine Fleet is deployed the same way, as an activation, from a sea sector's own panel. Purchasing a new NTF/Submarine hull (below) adds to the standing total; deployment itself always happens from the map.</div>
+    <div class="winter-note">Assign NTFs to specific sea sectors from that sector's panel on the map — this total updates automatically. Submarine Fleet is deployed the same way, as an activation, from a sea sector's own panel. Purchasing a new NTF/Submarine hull adds to the standing total; deployment itself always happens from the map.</div>
     <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;align-items:center;">
       <select id="ntf_buy_nation">${ntfMajors.map(n=>`<option>${n}</option>`).join('')}</select>
       <button class="ctrl-btn" id="ntf_buy_btn">Buy 1 NTF (750 CP)</button>
-    </div>
-
+    </div>`;
+  const secAirForces = `
     <div class="cr-side-title rule-link" data-section="sec-8-5" style="margin-top:18px;cursor:pointer;" title="Standing forces (§8.5) — grow only by CP purchase now, take losses from Strategic Bombing activations. Not token-driven.">Air Forces</div>
     <table class="econ-table"><thead><tr><th>Nation</th><th>Bomber Force</th><th>Fighter Defense (raw)</th></tr></thead><tbody>
       ${majors.filter(n=>dash.airForces[n]).map(n=>{
@@ -13076,17 +13283,56 @@ function buildDashboardHtml(faction){
       <select id="posture_${n}" data-posture-nation="${n}">
         ${['Dispersed','Concentrated'].map(p=>`<option value="${p}" ${dash.fighterPosture[n]===p?'selected':''}>${p}</option>`).join('')}
       </select>
-    </div>`).join('')}` : ''}
-
-    <div class="cr-side-title" style="margin-top:18px;">Special Rule Status</div>
-    ${flagRows}
-
+    </div>`).join('')}` : ''}`;
+  const secSubsSummary = `
+    <div class="cr-side-title rule-link" data-section="sec-8-4" style="margin-top:18px;cursor:pointer;">Submarine Fleet (§8.4)</div>
+    <table class="econ-table"><thead><tr><th>Nation</th><th>Standing Fleet</th></tr></thead><tbody>
+      ${majors.filter(n=>dash.submarineFleet[n]!==undefined).map(n=>`<tr><td>${n}</td><td>${dash.submarineFleet[n]}</td></tr>`).join('') || '<tr><td colspan="2">No submarine arm.</td></tr>'}
+    </tbody></table>
+    <div class="winter-note">Deployed as an activation from a sea sector's own panel; new hulls purchased via the standing-force control above (kind: Submarine).</div>`;
+  // #18 — the previously-missing at-a-glance list of YOUR active Radio
+  // Games; status was only visible sector-by-sector before this.
+  const radioGames = (dash.radioGames||[]);
+  const secRadioGames = `
+    <div class="cr-side-title rule-link" data-section="sec-5-4" style="margin-top:18px;cursor:pointer;">Active Radio Games (§5.4)</div>
+    ${radioGames.length ? `<table class="econ-table"><thead><tr><th>Sector</th><th>Running Since</th><th>Turns Left</th><th>Origin</th><th>Poisoned Products</th></tr></thead><tbody>
+      ${radioGames.map(g=>{
+        const sec = byId[g.sectorId];
+        const left = Math.max(0, g.expiresAfterTurns - turnsSinceLabel(g.startTurn));
+        const origin = g.turned ? `Turned (was ${faction==='Axis'?'Allied':'Axis'}, §5.4.4)` : (g.isMonastyr ? 'Monastyr fabrication' : 'Captured network');
+        return `<tr><td>${sec?sec.name:'?'}</td><td>${g.startTurn}</td><td>${left}</td><td>${origin}</td><td>${(g.poisonedEntryIds||[]).length}</td></tr>`;
+      }).join('')}
+    </tbody></table>` : `<div class="winter-note">No active Radio Games. Networks are captured via Anti-Partisan Sweeps (§12.1), turned from exposed enemy phantoms (§5.4.4)${faction==='Allied' ? ', or fabricated outright via Monastyr (§11.4)' : ''}.</div>`}`;
+  const secMinors = `
     <div class="cr-side-title" style="margin-top:18px;">Minor Nations</div>
-    <table class="econ-table"><thead><tr><th>Minor</th><th>Sponsor</th><th>Fielded</th></tr></thead><tbody>${minorRows}</tbody></table>
-
-    <div class="cr-side-title" style="margin-top:18px;">Private Notes</div>
-    <textarea id="dashNotes" data-fac="${faction}" style="width:100%;min-height:90px;background:var(--bg2);border:1px solid var(--panel-border);color:var(--ink);font-family:var(--font-mono);font-size:12px;padding:8px;border-radius:3px;">${dash.notes}</textarea>
-  `;
+    <table class="econ-table"><thead><tr><th>Minor</th><th>Sponsor</th><th>Fielded</th></tr></thead><tbody>${minorRows}</tbody></table>`;
+  // #16 — Status flags + Private Notes travel with every category as a
+  // collapsible tail: they span all five categories, and "notice it"
+  // beats "hunt for which category it lives in".
+  const statusNotesTail = `
+    <details style="margin-top:22px;border-top:1px solid var(--panel-border);padding-top:10px;">
+      <summary style="cursor:pointer;font-family:var(--font-mono);font-size:11px;color:var(--gold);letter-spacing:.05em;">SPECIAL RULE STATUS &amp; PRIVATE NOTES</summary>
+      <div class="cr-side-title" style="margin-top:12px;">Special Rule Status</div>
+      ${flagRows}
+      <div class="cr-side-title" style="margin-top:18px;">Private Notes</div>
+      <textarea id="dashNotes" data-fac="${faction}" style="width:100%;min-height:90px;background:var(--bg2);border:1px solid var(--panel-border);color:var(--ink);font-family:var(--font-mono);font-size:12px;padding:8px;border-radius:3px;">${dash.notes}</textarea>
+    </details>`;
+  const introNote = `<div class="winter-note">Grey figures are computed live from the map. Yellow-bordered fields are manual.</div>`;
+  const CATS = {
+    economy: introNote + secEconGlance + secCpEconomy + `<div class="cr-side-title" style="margin-top:18px;">All-Nations Overview</div>` + buildEconomyOverviewHtml(),
+    oob: introNote + alphaForceBanner + reconRows + secForceSummary + secRoster + secNtf + secMinors,
+    operations: introNote + startingTokensBanner + startingDoctrinesBanner + armisticeBanner + secDoctrine + secTokens,
+    stratwar: introNote + secAirForces + secSubsSummary,
+    intel: introNote + buildIntelSectionHtml(faction, dash) + secRadioGames,
+  };
+  if(category && CATS[category]) return CATS[category] + statusNotesTail;
+  // Legacy full view — same composition as the old single dashboard.
+  return introNote + startingTokensBanner + startingDoctrinesBanner + armisticeBanner + alphaForceBanner + reconRows +
+    secEconGlance + secCpEconomy + secForceSummary + secRoster + secDoctrine +
+    buildIntelSectionHtml(faction, dash) + secTokens + secNtf + secAirForces +
+    `<div class="cr-side-title" style="margin-top:18px;">Special Rule Status</div>` + flagRows + secMinors +
+    `<div class="cr-side-title" style="margin-top:18px;">Private Notes</div>
+    <textarea id="dashNotes" data-fac="${faction}" style="width:100%;min-height:90px;background:var(--bg2);border:1px solid var(--panel-border);color:var(--ink);font-family:var(--font-mono);font-size:12px;padding:8px;border-radius:3px;">${dash.notes}</textarea>`;
 }
 
 function wireDashboardInputs(faction){
@@ -13409,17 +13655,45 @@ function wireDashboardInputs(faction){
   });
 }
 
-function openDashboard(faction){
+// #14 — category views replace the monolithic faction dashboard. Players
+// get their own faction only; Observer and GM Mode get a faction toggle
+// inside the modal. openDashboard() survives as a compat shim because
+// wireDashboardInputs' refresh paths (e.g. after a Monastyr fabrication or
+// token purchase) call it to re-render — it now re-opens whichever
+// category view is current instead of the retired full dashboard.
+const DASH_CAT_TITLES = {economy:'Economy', oob:'Order of Battle', operations:'Operations', stratwar:'Strategic Warfare', intel:'Intelligence'};
+let currentDashView = null; // {faction, category} while a category modal is open
+function openCategoryView(category, faction){
   const viewer = playerRole || 'Observer';
-  if(viewer !== 'Observer' && viewer !== faction){
-    openModal(`${faction} Dashboard`, `<div class="winter-note">You're playing ${viewer}. The ${faction} dashboard is hidden from you — set your role via the badge in the header if this is wrong.</div>`);
+  if(!faction){
+    faction = (viewer==='Observer') ? 'Allied' : viewer; // Observer defaults to Allied, can toggle
+  }
+  if(!gmMode && viewer !== 'Observer' && viewer !== faction){
+    notify(`You're playing ${viewer} — the ${faction} view is hidden from you.`);
     return;
   }
-  openModal(`${faction} Dashboard — ${clock.season} ${clock.year}`, buildDashboardHtml(faction));
+  currentDashView = {faction, category};
+  const canToggle = gmMode || viewer==='Observer';
+  const toggleHtml = canToggle ? `
+    <div style="display:flex;gap:6px;margin-bottom:10px;">
+      ${['Axis','Allied'].map(f=>`<button class="ctrl-btn ${f===faction?'ctrl-btn-gold':''} dash-fac-toggle" data-fac="${f}">${f}</button>`).join('')}
+      <span class="sub" style="align-self:center;">${gmMode?'GM Mode — both factions visible':'Observer — both factions visible'}</span>
+    </div>` : '';
+  openModal(`${faction} ${DASH_CAT_TITLES[category]||category} — ${clock.season} ${clock.year}`,
+    toggleHtml + buildDashboardHtml(faction, category));
   wireDashboardInputs(faction);
+  document.querySelectorAll('.dash-fac-toggle').forEach(btn=>{
+    btn.addEventListener('click', ()=>openCategoryView(category, btn.dataset.fac));
+  });
 }
-document.getElementById('openAxisDash').addEventListener('click', ()=>openDashboard('Axis'));
-document.getElementById('openAlliedDash').addEventListener('click', ()=>openDashboard('Allied'));
+function openDashboard(faction){
+  // Compat shim — refresh calls from wireDashboardInputs land here.
+  if(currentDashView){ openCategoryView(currentDashView.category, currentDashView.faction); return; }
+  openCategoryView('economy', faction);
+}
+document.querySelectorAll('.dash-cat').forEach(btn=>{
+  btn.addEventListener('click', ()=>{ currentDashView = null; openCategoryView(btn.dataset.cat); });
+});
 
 // §7.1 Strategic Initiative tracker — initiative alternates by strategic
 // turn number, counting from Spring 1941 (turn 1) forward: Axis first on
@@ -13559,6 +13833,13 @@ function checkVictoryMilestones(){
 
 function updateRoleBadge(){
   document.getElementById('roleBadge').textContent = 'Playing as: ' + (playerRole || 'not set — click to choose');
+  // Category buttons wear the player's faction color — Axis red, Allied
+  // blue; Observer/unset keeps the neutral gold. This hook runs at load
+  // and on every role change, so the buttons always track the role.
+  document.querySelectorAll('.dash-cat').forEach(btn=>{
+    btn.classList.toggle('fac-axis', playerRole==='Axis');
+    btn.classList.toggle('fac-allied', playerRole==='Allied');
+  });
 }
 
 async function loadRole(){
@@ -13866,6 +14147,7 @@ function openCreateSectorModal(){
     if(!editPositionsMode){
       editPositionsMode = true;
       document.getElementById('toggleEditPositions').textContent = 'MAP EDITOR MODE: ON';
+      document.getElementById('toggleEditPositions').classList.add('mode-active');
     }
     await saveState(true, true);
     closeModal();
@@ -13874,14 +14156,26 @@ function openCreateSectorModal(){
     notify(`${name} created at the center of the map. Map Editor Mode is now on — drag it to where it belongs, then set its Terrain and Connections from its panel.`);
   });
 }
+// #2 from the UI review — validation failures and informational messages
+// no longer interrupt with a full modal the player must dismiss. Short
+// messages go to the corner toast; genuinely long content (some notify
+// call sites pass multi-sentence rule explanations) still gets the modal,
+// since a toast that long would be unreadable before it dismissed.
 function notify(message){
-  openModal('Notice', `<div class="winter-note">${message}</div>`);
+  if(message && message.length > 220){
+    openModal('Notice', `<div class="winter-note">${message}</div>`);
+    return;
+  }
+  showToast(message, 'warn', 3400);
 }
 
 document.getElementById('modalClose').addEventListener('click', closeModal);
 document.getElementById('modalOverlay').addEventListener('click', (e)=>{ if(e.target.id==='modalOverlay') closeModal(); });
 
-document.getElementById('openEconomy').addEventListener('click', ()=>{
+// All-nations economy overview table — was the standalone ECONOMY toolbar
+// button's modal; now composed into the per-faction Economy category view
+// (#14) as its cross-faction reporting section, FoW banding intact.
+function buildEconomyOverviewHtml(){
   const econ = computeEconomy();
   const viewerFacEcon = playerRole || 'Observer';
   const rows = MAJORS.map(n=>{
@@ -13907,15 +14201,14 @@ document.getElementById('openEconomy').addEventListener('click', ()=>{
     </tr>
     <tr class="minor-row"><td colspan="12">↳ Minor: ${e.minorRC.toFixed(1)} RC · ${e.minorFielded} fielded (cap ${e.minorRC.toFixed(1)}) &nbsp;|&nbsp; Major: ${(e.bgCap-e.minorRC).toFixed(1)} cap · ${e.majorFielded} fielded</td></tr>`;
   }).join('');
-  openModal('Economy — ' + clock.season + ' ' + clock.year, `
+  return `
     <div class="winter-note">Live, computed from the current map state (§2, §2.1, §2.5, §3.2, §9.3) — not a separate tracked figure. Ratio applies for the current campaign year; §2 sets next year's ratio at the coming Winter audit. ${viewerFacEcon!=='Observer' ? `CP Production for the opposing faction is an intelligence estimate (±25%), not the confirmed value — you're viewing as ${viewerFacEcon}.` : 'Viewing as Observer — all figures exact.'}</div>
     <table class="econ-table">
       <thead><tr><th>Nation</th><th>CP Production</th><th>Owned RC</th><th>Occ. RC</th><th>Minor RC</th><th>Ratio</th>
         <th>BG Cap</th><th>Fielded</th><th>Status</th><th>INF Actual/Min</th><th>Elite</th><th>Tokens</th></tr></thead>
       <tbody>${rows}</tbody>
-    </table>
-  `);
-});
+    </table>`;
+}
 
 // Generic "download this text as a file" trigger — used by both log
 // archive-export buttons below. No server involved; just a Blob and a
@@ -14510,6 +14803,11 @@ document.addEventListener('click', (ev)=>{
   }
 });
 
+document.getElementById('toggleToolsDrawer').addEventListener('click', ()=>{
+  const d = document.getElementById('toolsDrawer');
+  const open = d.classList.toggle('open');
+  document.getElementById('toggleToolsDrawer').textContent = open ? 'TOOLS ▴' : 'TOOLS ▾';
+});
 document.getElementById('resetView').addEventListener('click', ()=>{
   svg.transition().duration(400).call(zoom.transform, d3.zoomIdentity);
 });
@@ -14517,6 +14815,7 @@ document.getElementById('resetView').addEventListener('click', ()=>{
 document.getElementById('toggleEditPositions').addEventListener('click', ()=>{
   editPositionsMode = !editPositionsMode;
   document.getElementById('toggleEditPositions').textContent = 'MAP EDITOR MODE: ' + (editPositionsMode?'ON':'OFF');
+  document.getElementById('toggleEditPositions').classList.toggle('mode-active', editPositionsMode);
   if(editPositionsMode) notify('Map Editor Mode is ON — drag any sector to move it, edit Terrain and Connections directly in its panel, or use "+ Create New Sector" above. Every change saves immediately and syncs to the other player too. Turn this off when you\'re done to go back to normal clicking/selecting.');
   render();
 });
@@ -14524,6 +14823,7 @@ document.getElementById('toggleEditPositions').addEventListener('click', ()=>{
 document.getElementById('toggleGmMode').addEventListener('click', ()=>{
   gmMode = !gmMode;
   document.getElementById('toggleGmMode').textContent = 'GAME MASTER MODE: ' + (gmMode?'ON':'OFF');
+  document.getElementById('toggleGmMode').classList.toggle('mode-active', gmMode);
   if(gmMode) notify('Game Master Mode is ON — bypasses NTF range/allotment/decrease-lock checks, submarine fleet availability and the deploy/resolve activation split, bomber commitment caps, weather grounding, reconstitution\'s below-cap check, and undo\'s faction restriction. Every change still saves and syncs normally, and Fog of War visibility is unaffected — this is about being able to act, not about seeing hidden information. Turn this off when you\'re done correcting or overriding something.');
   render();
   if(selectedId!=null) renderPanel();
@@ -14743,6 +15043,15 @@ document.getElementById('importXlsxInput').addEventListener('change', async (ev)
 window.addEventListener('resize', ()=>{ render(); });
 
 document.addEventListener('keydown', (e)=>{
+  // Escape works everywhere, including while typing — closing things is
+  // never "hijacking". Popover first (most transient), then modal.
+  if(e.key==='Escape'){
+    const pop = document.getElementById('infoPopover');
+    if(pop && pop.classList.contains('show')){ pop.classList.remove('show'); return; }
+    const overlay = document.getElementById('modalOverlay');
+    if(overlay && overlay.classList.contains('show')){ closeModal(); return; }
+    return;
+  }
   const tag = (e.target && e.target.tagName) || '';
   if(tag==='INPUT' || tag==='TEXTAREA' || tag==='SELECT') return; // don't hijack typing
   if(e.key==='l' || e.key==='L'){
@@ -14752,7 +15061,43 @@ document.addEventListener('keydown', (e)=>{
     labelsVisible = !labelsVisible;
     render();
   }
+  // View shortcuts for the highest-frequency panels — deliberately only
+  // read-only views, never state-changing actions (Advance Turn stays a
+  // deliberate click; a stray keypress must never advance the campaign).
+  if(e.key==='b' || e.key==='B'){ openBattleLogModal(); }
+  if(e.key==='i' || e.key==='I'){ openIntsumModal(); }
 });
+// Info popover (#21) — every (i) icon carries its explanation in
+// data-info; one delegated handler opens the popover anchored to the icon,
+// flipped to stay on-screen. Click anywhere else dismisses. Same
+// delegation pattern as the .rule-link handler above.
+document.addEventListener('click', (e)=>{
+  const pop = document.getElementById('infoPopover');
+  if(!pop) return;
+  const icon = e.target.closest('.info-icon');
+  if(icon && icon.dataset.info){
+    pop.textContent = icon.dataset.info;
+    pop.classList.add('show');
+    const r = icon.getBoundingClientRect();
+    // Provisional placement, then clamp after we know the popover's size.
+    pop.style.left = '0px'; pop.style.top = '0px';
+    const pw = pop.offsetWidth, ph = pop.offsetHeight;
+    let x = r.left, y = r.bottom + 6;
+    if(x + pw > window.innerWidth - 10) x = window.innerWidth - pw - 10;
+    if(y + ph > window.innerHeight - 10) y = r.top - ph - 6; // flip above
+    pop.style.left = Math.max(6,x) + 'px';
+    pop.style.top = Math.max(6,y) + 'px';
+    e.stopPropagation();
+    return;
+  }
+  if(!e.target.closest('#infoPopover')) pop.classList.remove('show');
+});
+// Builds the icon markup — HTML-escapes the text into the attribute so
+// template-literal content with quotes can't break out of it.
+function infoIcon(text){
+  const esc = String(text).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+  return `<span class="info-icon" data-info="${esc}">i</span>`;
+}
 
 function startApp(){
   // Always render immediately from the built-in scenario data — never block
@@ -14775,8 +15120,8 @@ function startApp(){
       dashboards[fac].cpPool[n] = Math.round(0.25 * computeCPGeneration(n));
     });
   });
-  render();
   clusterOffsets = computeClusterOffsets();
+  render();
   populateRegionDropdown();
   loadBasemap(); // background fetch, purely decorative — never blocks anything else
   try{
