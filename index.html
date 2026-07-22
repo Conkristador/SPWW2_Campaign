@@ -214,6 +214,21 @@
   .dash-cat.fac-axis:hover{background:rgba(180,68,60,.12);}
   .dash-cat.fac-allied{border-color:var(--allied);color:var(--allied);}
   .dash-cat.fac-allied:hover{background:rgba(74,127,166,.12);}
+  /* Victory Status theater tracks — each city a faction-colored block,
+     stars on must-own-for-victory objectives. */
+  .vt-theater{font-family:var(--font-mono);font-size:11px;color:var(--gold);
+    letter-spacing:.06em;text-transform:uppercase;margin:14px 0 5px;}
+  .vt-track{display:flex;flex-wrap:wrap;align-items:center;gap:3px;}
+  .vt-block{position:relative;font-family:var(--font-mono);font-size:10px;line-height:1.2;
+    padding:5px 8px;border-radius:3px;color:#fff;text-align:center;min-width:52px;
+    border:1px solid rgba(0,0,0,.35);}
+  .vt-block.axis{background:var(--axis);}
+  .vt-block.allied{background:var(--allied);}
+  .vt-block.neutral{background:var(--neutral);}
+  .vt-block.mixed{background:repeating-linear-gradient(45deg,var(--axis),var(--axis) 6px,var(--allied) 6px,var(--allied) 12px);}
+  .vt-star{position:absolute;top:-7px;right:-4px;color:var(--gold);font-size:12px;
+    text-shadow:0 0 3px #000, 0 0 3px #000;}
+  .vt-arrow{color:var(--ink-faint);font-size:10px;}
 
   /* ---------- Modal overlay (Economy / Winter Logistics) ---------- */
   /* ---------- Rulebook panel ---------- */
@@ -13796,11 +13811,89 @@ function computeVictoryStatus(){
       : 'Undecided — campaign still in progress.',
   };
 }
+// Theater advance tracks — each block is one or more real SEED sectors,
+// color-coded live by controller. Stars mark must-own-for-victory
+// objectives: the two Axis capitals (Allied victory conditions), London
+// (the Axis sudden-death component), and the Crest set (Moscow, Leningrad,
+// Stalingrad, Cairo, Delhi, Calcutta, Sydney, Hawaii — territory beyond
+// the historical Axis high-water mark, §14). Slash-grouped cities from the
+// design share one block; a block with sectors under different control
+// renders as diagonally striped MIXED.
+const VICTORY_TRACKS = [
+  {theater:'Eastern Front', blocks:[
+    {label:'Berlin', sectors:['Berlin'], star:true},
+    {label:'Warsaw / E. Prussia', sectors:['Warsaw','East Prussia']},
+    {label:'Minsk', sectors:['Minsk']},
+    {label:'Smolensk', sectors:['Smolensk']},
+    {label:'Moscow', sectors:['Moscow'], star:true},
+    {label:'Leningrad', sectors:['Leningrad'], star:true},
+    {label:'Stalingrad', sectors:['Stalingrad'], star:true},
+  ]},
+  {theater:'Western Front', blocks:[
+    {label:'London', sectors:['London'], star:true},
+    {label:'Normandy', sectors:['Normandy']},
+    {label:'Paris', sectors:['Paris']},
+    {label:'Amsterdam / Brussels', sectors:['Amsterdam','Brussels']},
+    {label:'Ruhr', sectors:['Ruhr']},
+    {label:'Berlin', sectors:['Berlin'], star:true},
+  ]},
+  {theater:'Italian / North Africa Front', blocks:[
+    {label:'Rome', sectors:['Rome']},
+    {label:'Naples', sectors:['Naples']},
+    {label:'Sicily', sectors:['Sicily']},
+    {label:'Tunisia', sectors:['Tunis']},
+    {label:'Tripoli', sectors:['Tripoli']},
+    {label:'Tobruk', sectors:['Tobruk']},
+    {label:'El Alamein', sectors:['El Alamein']},
+    {label:'Cairo', sectors:['Cairo'], star:true},
+  ]},
+  {theater:'India / Burma Front', blocks:[
+    {label:'Delhi', sectors:['India (Delhi)'], star:true},
+    {label:'Calcutta', sectors:['India (Calcutta)'], star:true},
+    {label:'Burma', sectors:['Burma']},
+    {label:'Thailand', sectors:['Thailand']},
+    {label:'Malaya', sectors:['Malaya']},
+    {label:'Singapore', sectors:['Singapore']},
+  ]},
+  {theater:'Southwest Pacific', blocks:[
+    {label:'Kyushu', sectors:['Japan (Kyushu)']},
+    {label:'Formosa / Okinawa', sectors:['Formosa','Okinawa']},
+    {label:'Luzon', sectors:['Philippines (Luzon)']},
+    {label:'Mindanao', sectors:['Philippines (Mindanao)']},
+    {label:'New Guinea', sectors:['New Guinea']},
+    {label:'Sydney', sectors:['Sydney'], star:true},
+  ]},
+  {theater:'Central Pacific', blocks:[
+    {label:'Tokyo', sectors:['Japan (Tokyo)'], star:true},
+    {label:'Iwo Jima', sectors:['Iwo Jima']},
+    {label:'Marianas', sectors:['Marianas']},
+    {label:'Caroline / Marshall / Gilbert Is.', sectors:['Caroline Islands','Marshall Islands','Gilbert Islands']},
+    {label:'Pearl Harbor', sectors:['Hawaii'], star:true},
+  ]},
+];
+function buildVictoryTracksHtml(){
+  return VICTORY_TRACKS.map(t=>{
+    const blockHtml = t.blocks.map((b,i)=>{
+      const facs = new Set(b.sectors.map(name=>{
+        const s = sectors.find(x=>x.name===name);
+        return s ? factionForNation(s.occupier||s.owner) : 'Neutral';
+      }));
+      const cls = facs.size>1 ? 'mixed' : ({Axis:'axis', Allied:'allied'}[[...facs][0]] || 'neutral');
+      const title = b.sectors.map(name=>{
+        const s = sectors.find(x=>x.name===name);
+        return `${name}: ${s ? (s.occupier ? s.occupier+' (occupying)' : s.owner) : '?'}`;
+      }).join(' · ') + (b.star ? ' — ★ victory objective (§14)' : '');
+      return `${i>0?'<span class="vt-arrow">–</span>':''}<span class="vt-block ${cls}" title="${title}">${b.label}${b.star?'<span class="vt-star">★</span>':''}</span>`;
+    }).join('');
+    return `<div class="vt-theater">${t.theater}</div><div class="vt-track">${blockHtml}</div>`;
+  }).join('');
+}
 function openVictoryStatusModal(){
   const v = computeVictoryStatus();
   openModal('Victory Status (§14)', `
-    <div class="winter-note">Dynamic, not Victory-Point-scored (§14): the Axis wins by surviving to the end of 1946; the Allies win by reaching a concrete high-water mark — each capital's capture — before that deadline. Each theater is assessed on its own; one nation falling doesn't decide the other's fate.</div>
-    <div class="winter-line" style="margin-top:8px;"><b>European Theater:</b> ${v.germanyOutcome}</div>
+    <div class="winter-note">Dynamic, not Victory-Point-scored (§14): the Axis wins by surviving to the end of 1946; the Allies win by reaching a concrete high-water mark — each capital's capture — before that deadline. Each theater is assessed on its own; one nation falling doesn't decide the other's fate. Blocks below are color-coded by current controller (striped = mixed control within the group); ★ marks must-own victory objectives — the Axis capitals and London, plus the Crest set beyond the historical Axis high-water mark. Hover any block for exact ownership.</div>
+    ${buildVictoryTracksHtml()}
+    <div class="winter-line" style="margin-top:14px;"><b>European Theater:</b> ${v.germanyOutcome}</div>
     <div class="winter-line"><b>Pacific Theater:</b> ${v.japanOutcome}</div>
     <div class="winter-note" style="margin-top:8px;">Current turn: ${clock.season} ${clock.year}. Campaign horizon: end of 1946 (Winter 1946).</div>
   `);
