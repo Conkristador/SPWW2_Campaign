@@ -5703,6 +5703,17 @@ function renderBGs(nodeById, layer, chipSize, idFilter, yOffset){
       const g = enter.append('g').attr('class','overflow-badge');
       g.append('circle').attr('r', chipSize*0.55);
       g.append('text').attr('text-anchor','middle').attr('dominant-baseline','central');
+      // Previously dead visually — no click handler at all, so a stack
+      // deep enough to overflow the 2-chip display had no way in from
+      // the map itself. The sector panel already lists every visible BG
+      // here individually (see "Battle Groups Here" — sectorBGs, no cap
+      // at 2), so this just opens the door to it: clicking the badge
+      // selects the sector the same as clicking the node underneath it
+      // would, rather than requiring the user to already know that
+      // detour exists.
+      g.style('cursor','pointer');
+      g.on('click', (ev,d)=>{ ev.stopPropagation(); selectSector(parseInt(d.key.split('::')[0])); });
+      g.append('title');
       return g;
     });
   badgeSel.attr('transform', d=>`translate(${d.cx},${d.cy})`);
@@ -5712,6 +5723,8 @@ function renderBGs(nodeById, layer, chipSize, idFilter, yOffset){
   badgeSel.select('text')
     .attr('font-size', chipSize*0.62).attr('fill', '#fff')
     .text(d=>`+${d.count}`);
+  badgeSel.select('title')
+    .text(d=>`${d.count} more ${d.faction} Battle Group(s) here — click to open the sector panel and see all of them.`);
 }
 // R1 — faint, dashed-outline markers for enemy BGs this viewer has lost
 // contact with. Deliberately understated relative to a live chip: never
@@ -8582,6 +8595,34 @@ function renderPanel(){
         </div>
       </div>
 
+      ${(()=>{
+        // New immersion/UX addition — direct per-unit Combat/Second
+        // Echelon assignment from the sector panel, listing every OWN
+        // BG present (own faction only — this isn't something you can
+        // set for an enemy unit) rather than requiring a counterpart to
+        // swap with, the way the single-BG panel's button still does.
+        if(viewerFaction==='Observer') return '';
+        const ownHere = bgs.filter(b=>b.sectorId===s.id && !b.isKampfgruppe && !b.emergencyReserve &&
+          (b.faction||factionForNation(b.nation))===viewerFaction);
+        if(!ownHere.length) return '';
+        const combatCap = effectiveStackCap(s), reserveCap = reserveSlotCap(s);
+        const combatCount = countCombatBGs(s, viewerFaction), reserveCount = countReserveBGs(s, viewerFaction);
+        return `<div class="field-group">
+          <div class="fg-label rule-link" data-section="sec-7-9" title="Assign each unit here directly, rather than swapping pairs — a change still costs that unit's own activation (§7.9) and needs an open slot of the target role. Sealed by default, same as the old swap.">Echelon Assignment (§7.9)</div>
+          <div class="winter-note">Combat ${combatCount}/${combatCap===Infinity?'∞':combatCap} · Second Echelon ${reserveCount}/${reserveCap===Infinity?'∞':reserveCap}</div>
+          ${ownHere.map(b=>`
+          <div class="field-row" style="margin-top:6px;align-items:center;">
+            <div style="flex:2;font-family:var(--font-mono);font-size:11.5px;color:var(--ink-dim);">${b.name}<br><span style="color:var(--ink-faint);">${b.nation} ${b.type}</span></div>
+            <div style="flex:1;">
+              <select class="echelon_role_select" data-bgid="${b.id}" ${b.movedThisTurn?'disabled':''} title="${b.movedThisTurn?'Already activated this turn — no further role change possible.':''}">
+                <option value="combat" ${!b.reserve?'selected':''}>Combat</option>
+                <option value="reserve" ${b.reserve?'selected':''}>Second Echelon</option>
+              </select>
+            </div>
+          </div>`).join('')}
+        </div>`;
+      })()}
+
       ${(isCoastalSector(s) && (s.contested || s.activeAmphibiousOp)) ? (()=>{
         // §11.1.6 (revised) — single-sector extension only, replacing the
         // old multi-sector shared pool. No neighbor-sector reads needed
@@ -8684,6 +8725,22 @@ function renderPanel(){
   el.querySelectorAll('.bg-chip').forEach(chip=>{
     chip.addEventListener('click', ()=> selectBG(parseInt(chip.dataset.bgid)));
   });
+  el.querySelectorAll('.echelon_role_select').forEach(sel=>{
+    sel.addEventListener('change', async ()=>{
+      const bg = bgs.find(b=>b.id===parseInt(sel.dataset.bgid));
+      if(!bg){ return; }
+      const toReserve = sel.value==='reserve';
+      const result = attemptEchelonRoleChange(bg, toReserve);
+      if(!result.applied){
+        notify(result.reason);
+        sel.value = bg.reserve ? 'reserve' : 'combat'; // revert the dropdown to the actual current state
+        return;
+      }
+      await saveState(true, true);
+      render();
+      selectSector(s.id);
+    });
+  });
 
   const resolveBtn = document.getElementById('resolveHereBtn');
   if(resolveBtn) resolveBtn.addEventListener('click', ()=>{
@@ -8712,6 +8769,16 @@ function renderPanel(){
   });
 
   el.querySelectorAll('.conn-chip').forEach(chip=>{
+    // bg-chip elements carry BOTH classes purely to inherit .conn-chip's
+    // visual styling (chip background/border/font) — there's no separate
+    // .bg-chip CSS rule of its own. But this generic selector was also
+    // matching them and attaching a SECOND click handler on top of the
+    // one .bg-chip already gets below: since a bg-chip has no data-id
+    // attribute (only data-bgid), this handler fired selectSector(NaN)
+    // immediately after the correct selectBG(id) call, wiping the just-
+    // opened unit panel back to an empty state. Skip anything that's
+    // already claimed by the more specific .bg-chip handler.
+    if(chip.classList.contains('bg-chip')) return;
     chip.addEventListener('click', ()=> selectSector(parseInt(chip.dataset.id)));
   });
 
@@ -9109,9 +9176,10 @@ function renderBGPanel(){
           (o.faction||factionForNation(o.nation))===faction && (!!o.reserve)===(counterpartRole==='reserve'));
         const canSwap = isOwnUnit && !moved && !!counterpart;
         return `<div class="field-group">
-        <div class="fg-label rule-link" data-section="sec-7-9" title="Second Echelon (§7.9) is a garrison role separate from the combat stack cap — up to 2 BGs per faction may sit in Second Echelon at any Home-side RC (owned by your side, unoccupied). A Second Echelon BG doesn't count toward the combat cap, can't join an engagement, but still moves and activates normally otherwise. Swapping roles with a combat BG in the same sector is a single activation for both.">Role (§7.9)</div>
+        <div class="fg-label rule-link" data-section="sec-7-9" title="Second Echelon (§7.9) is a garrison role separate from the combat stack cap — up to 2 BGs per faction may sit in Second Echelon at any Home-side RC (owned by your side, unoccupied). A Second Echelon BG doesn't count toward the combat cap, can't join an engagement, but still moves and activates normally otherwise. Changing role still costs this BG's activation, same as before.">Role (§7.9)</div>
         <div class="stat-line"><span>Current</span><b>${b.reserve ? 'Second Echelon (garrison)' : 'Combat'}</b></div>
         ${canSwap ? `<button class="cr-roll-btn" id="f_role_swap_btn" style="margin-top:8px;width:100%;">Swap roles with ${counterpart.name} (${counterpart.reserve?'Second Echelon':'Combat'} → ${b.reserve?'Combat':'Second Echelon'})</button>` : ''}
+        <div class="winter-note" style="margin-top:6px;">Assigning several units at once, or without needing a specific counterpart, is faster from the sector panel's Echelon Assignment list further down.</div>
       </div>`;
       })()}
 
@@ -10171,6 +10239,35 @@ function countCombatBGs(sector, faction){
 function countReserveBGs(sector, faction){
   return bgs.filter(b=>b.sectorId===sector.id && b.reserve &&
     (b.faction||factionForNation(b.nation))===faction).length;
+}
+// New immersion/UX addition — direct per-unit role assignment from the
+// SECTOR panel, generalizing the old single-BG "swap with a counterpart"
+// button (still present on the individual BG panel) to any number of
+// units at once, with no counterpart required: each change just needs
+// an open slot of the target role, checked independently. Same
+// activation-cost rule as the old swap (§7.9 Reserve Rotation) — a role
+// change consumes THIS BG's activation — but no longer requires a
+// second BG willing to trade roles in the same moment.
+function attemptEchelonRoleChange(bg, toReserve){
+  if(!!bg.reserve === toReserve) return {applied:false, reason:'Already in that role.'};
+  if(bg.movedThisTurn) return {applied:false, reason:`${bg.name} has already activated this turn.`};
+  if(bg.isKampfgruppe || bg.emergencyReserve) return {applied:false, reason:'This BG type is outside the normal stacking system and cannot hold Second Echelon status.'};
+  const sector = byId[bg.sectorId];
+  if(!sector) return {applied:false, reason:'Invalid sector.'};
+  const faction = bg.faction || factionForNation(bg.nation);
+  if(toReserve){
+    const cap = reserveSlotCap(sector);
+    if(countReserveBGs(sector, faction) >= cap) return {applied:false, reason:`No open Second Echelon slot at ${sector.name} (cap ${cap===Infinity?'unlimited':cap}).`};
+  } else {
+    const cap = effectiveStackCap(sector);
+    if(countCombatBGs(sector, faction) >= cap) return {applied:false, reason:`No open combat slot at ${sector.name} (cap ${cap===Infinity?'unlimited':cap}).`};
+  }
+  bg.reserve = toReserve;
+  bg.movedThisTurn = true;
+  // Sealed by default (§7.9) — a role change is exactly the kind of
+  // preparation Fog of War should hide, same as the old swap button.
+  logAction(faction, 'Echelon Assignment', `${bg.name} (${bg.nation}) assigned to ${toReserve?'Second Echelon':'Combat'} at ${sector.name} (§7.9)`, [sector], null, true);
+  return {applied:true};
 }
 // §7.9 "Home RC" for Second Echelon eligibility — any RC sector owned by
 // the stacking player's own SIDE (not necessarily their own nation) and
